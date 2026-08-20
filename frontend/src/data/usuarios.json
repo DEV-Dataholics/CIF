@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "nombre": "MARGARITA",
+    "email": "margarita@cif.mx",
+    "rol": "operador",
+    "permiso": 1,
+    "activo": true
+  },
+  {
+    "id": 2,
+    "nombre": "OMAR",
+    "email": "omar@cif.mx",
+    "rol": "operador",
+    "permiso": 1,
+    "activo": true
+  },
+  {
+    "id": 3,
+    "nombre": "MIRIAM",
+    "email": "miriam@cif.mx",
+    "rol": "operador",
+    "permiso": 1,
+    "activo": true
+  },
+  {
+    "id": 4,
+    "nombre": "ADRIAN",
+    "email": "adrian@cif.mx",
+    "rol": "operador",
+    "permiso": 1,
+    "activo": true
+  },
+  {
+    "id": 5,
+    "nombre": "CHARLY",
+    "email": "charly@cif.mx",
+    "rol": "operador",
+    "permiso": 1,
+    "activo": true
+  },
+  {
+    "id": 6,
+    "nombre": "CINTHYA",
+    "email": "cinthya@cif.mx",
+    "rol": "operador",
+    "permiso": 1,
+    "activo": true
+  },
+  {
+    "id": 7,
+    "nombre": "MAO",
+    "email": "mao@cif.mx",
+    "rol": "operador",
+    "permiso": 1,
+    "activo": true
+  }
+]

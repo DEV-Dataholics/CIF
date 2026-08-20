@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "folio": "V-2026-001",
+    "cliente": "Ejemplo Corp",
+    "origen": "Planta Juárez",
+    "destino": "Bodega El Paso",
+    "fecha_solicitud": "2026-05-14T10:00:00Z",
+    "estatus": "solicitado",
+    "operador_id": null,
+    "tractocamion_id": null,
+    "caja_id": null
+  },
+  {
+    "id": 2,
+    "folio": "V-2026-002",
+    "cliente": "Maquila S.A.",
+    "origen": "Bodega Juárez",
+    "destino": "Aduana Zaragoza",
+    "fecha_solicitud": "2026-05-13T08:30:00Z",
+    "estatus": "en_transito",
+    "operador_id": 3,
+    "tractocamion_id": 2,
+    "caja_id": 2
+  }
+]

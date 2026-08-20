@@ -1,0 +1,394 @@
+[
+  {
+    "id": 1,
+    "nombre": "Planta Juárez Norte",
+    "tipo": "planta",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 2,
+    "nombre": "Planta Juárez Sur",
+    "tipo": "planta",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 3,
+    "nombre": "Planta Bermúdez",
+    "tipo": "planta",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 4,
+    "nombre": "CEDIS Juárez",
+    "tipo": "cedis",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 5,
+    "nombre": "Parque Industrial Omega",
+    "tipo": "parque",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 6,
+    "nombre": "Parque Industrial Fuentes",
+    "tipo": "parque",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 7,
+    "nombre": "El Paso, TX",
+    "tipo": "ciudad",
+    "estado": "Texas",
+    "pais": "US"
+  },
+  {
+    "id": 8,
+    "nombre": "El Paso Distribution Center",
+    "tipo": "cedis",
+    "estado": "Texas",
+    "pais": "US"
+  },
+  {
+    "id": 9,
+    "nombre": "Santa Teresa, NM",
+    "tipo": "ciudad",
+    "estado": "New Mexico",
+    "pais": "US"
+  },
+  {
+    "id": 10,
+    "nombre": "Base CIF",
+    "tipo": "base",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 11,
+    "nombre": "Taller CIF",
+    "tipo": "taller",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 12,
+    "nombre": "DH1",
+    "tipo": "planta",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 13,
+    "nombre": "DH2",
+    "tipo": "planta",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 14,
+    "nombre": "DH3",
+    "tipo": "planta",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 15,
+    "nombre": "PATIO",
+    "tipo": "patio",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 16,
+    "nombre": "RAMPA",
+    "tipo": "rampa",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 17,
+    "nombre": "COMMSCOPE",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 18,
+    "nombre": "BOSCH",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 19,
+    "nombre": "COOPER",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 20,
+    "nombre": "SUMITOMO",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 21,
+    "nombre": "CATCHMASTER",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 22,
+    "nombre": "DURHAM",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 23,
+    "nombre": "REGAL",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 24,
+    "nombre": "AMESBURY",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 25,
+    "nombre": "FAGERDALA",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 26,
+    "nombre": "DEKKO",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 27,
+    "nombre": "BOARDMAN",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 28,
+    "nombre": "FASI",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 29,
+    "nombre": "BUILD",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 30,
+    "nombre": "CALDWELL",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 31,
+    "nombre": "ASO",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 32,
+    "nombre": "CURP GROUP",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 33,
+    "nombre": "SOLDADURA",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 34,
+    "nombre": "HOUSTON",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 35,
+    "nombre": "ECM",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 36,
+    "nombre": "NAVICO",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 37,
+    "nombre": "VENTAMATIC",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 38,
+    "nombre": "STORINGE",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 39,
+    "nombre": "TECMA",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 40,
+    "nombre": "ARK",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 41,
+    "nombre": "REIS",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 42,
+    "nombre": "ADC",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 43,
+    "nombre": "NAPS",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 44,
+    "nombre": "VERITIV",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 45,
+    "nombre": "BMP",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 46,
+    "nombre": "ASSA BOY",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 47,
+    "nombre": "AMBU",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 48,
+    "nombre": "BUILD A SING",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 49,
+    "nombre": "GRAYLING",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 50,
+    "nombre": "DEKKO DE MEXICO",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 51,
+    "nombre": "ARKLES",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 52,
+    "nombre": "TED",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 53,
+    "nombre": "WATERA",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 54,
+    "nombre": "INTERMATIC",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 55,
+    "nombre": "ASSO",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  },
+  {
+    "id": 56,
+    "nombre": "CADWELL",
+    "tipo": "cliente",
+    "estado": "Chihuahua",
+    "pais": "MX"
+  }
+]

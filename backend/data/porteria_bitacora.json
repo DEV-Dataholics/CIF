@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "fecha": "2026-05-15",
+    "hora": "01:11 a.m.",
+    "tipo_movimiento": "entrada",
+    "tractocamion_id": "1",
+    "destino_origen": "planta",
+    "sello_caja": "894562",
+    "observaciones": ".msdlkjasdlkjasd"
+  }
+]

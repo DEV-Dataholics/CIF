@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIF Logística — Pizarrón Digital</title>
+  <meta name="description" content="Dashboard en tiempo real de flota y viajes activos CIF Logística">
+  <link href="assets/css/tailwind.min.css?v=2" rel="stylesheet">
+  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style>
+    body { min-height: 100dvh; }
+    
+    .matte-grain { position: relative; }
+    .matte-grain::before {
+      content: ""; position: absolute; inset: 0; opacity: 0.03; pointer-events: none;
+      background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCxtzo5Fd4tGwvT_jg4ysGETAyo_0QJXqFxE0Vz2jCSFfdCW_xcsx8ttX4CZRiXAQ5e-8ClJGovIme_H86utYa8siODIK5ToDWQRd0J97DLwVKIRNDWTJFuuP9hcZHxl3TW0UHrsINdFeEP-GfWzg6ZsUAe9dbaTn0kGfYEn6L_suxq7ifFL2e4HJJxC6M6yMa4wOfyyyiBZMm_ILej9DcNsEEVsRhY2idiHrWisdeOIG82K0lswo1JUKVmQYcwAiapSH8q-Y8FZ4J8);
+    }
+
+    /* KPI Cards borders */
+    .kpi-border-green { border-top: 3px solid #c3cc8c; }
+    .kpi-border-red   { border-top: 3px solid #ffb4ab; }
+    .kpi-border-gray  { border-top: 3px solid #9b8e87; }
+    .kpi-border-orange{ border-top: 3px solid #D1A14E; }
+    
+    /* Dots and animations */
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot-green  { background: #c3cc8c; animation: pulse-dot 2s infinite; }
+    .dot-red    { background: #ffb4ab; }
+    .dot-gray   { background: #9b8e87; }
+    .dot-orange { background: #D1A14E; }
+    @keyframes pulse-dot { 0%,100%{opacity:1;box-shadow:0 0 4px currentColor}50%{opacity:.6;box-shadow:none} }
+    
+    .refresh-bar { height: 2px; background: #D1A14E; transition: width 30s linear; }
+    
+    /* Tables Gold UI */
+    .cif-table { width: 100%; border-collapse: collapse; }
+    .cif-table th { 
+      text-align: left; padding: 1rem; border-bottom: 1px solid rgba(79,69,63,0.3);
+      font-family: 'Inter', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9b8e87;
+    }
+    .cif-table td { padding: 1rem; border-bottom: 1px solid rgba(79,69,63,0.1); font-family: 'Manrope', sans-serif; }
+    .cif-table tbody tr:hover { background: rgba(79,69,63,0.05); }
+    
+    /* Spinners */
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(209,161,78,0.3); border-top-color: #D1A14E; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Badge Helper Classes from legacy script */
+    .badge { padding: 0.25rem 0.6rem; font-size: 0.65rem; font-weight: 700; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid transparent; display: inline-block; }
+    .badge-danger { background: rgba(255,180,171,0.1); color: #ffb4ab; border-color: rgba(255,180,171,0.2); }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+
+<div x-data="pizarron()" x-init="init()" class="min-h-screen flex flex-col">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!--  HEADER / TOP NAVIGATION                           -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <header class="bg-surface-container-lowest sticky top-0 z-50 border-b border-outline-variant/10">
+    <div class="max-w-[1400px] mx-auto px-8 py-5 flex justify-between items-center">
+      <!-- Brand -->
+      <a href="home.html" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
+        <img src="assets/LOGOCIF.png" alt="CIF Logística" style="height:5.5rem;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(209,161,78,0.2));">
+      </a>
+
+      <!-- Nav Links -->
+      <nav class="hidden lg:flex gap-6 font-label text-[10px] uppercase tracking-widest font-bold">
+        <a class="text-outline-variant hover:text-primary transition-colors" href="home.html">Inicio</a>
+        <a class="text-primary border-b border-primary pb-1" href="dashboard.html">Dashboard</a>
+        <a class="text-outline-variant hover:text-primary transition-colors hidden" href="viajes.html">Viajes</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="flota.html">Flota</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="operadores.html">Operadores</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="taller.html">Taller</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="porteria.html">Accesos</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="cobranza.html">Cobranza</a>
+        <!-- <a class="text-outline-variant hover:text-primary transition-colors" href="gamificacion.html">Metas</a> -->
+      </nav>
+
+      <!-- User -->
+      <div class="flex items-center gap-4">
+        <div class="text-right hidden sm:block">
+          <div class="text-xs font-body text-on-surface" x-text="usuario?.nombre || 'Cargando...'"></div>
+          <div class="text-[10px] font-label text-primary uppercase tracking-wider" x-text="usuario?.rol?.toUpperCase() || ''"></div>
+        </div>
+        <div class="w-10 h-10 bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
+          <i class="ph-light ph-user text-primary text-xl"></i>
+        </div>
+        <button @click="cifAPI.logout()" class="hidden sm:flex items-center gap-2 text-xs font-label uppercase tracking-wider text-outline hover:text-primary transition-colors border border-outline-variant/20 px-4 py-2">
+          <i class="ph-light ph-sign-out text-lg"></i>
+          Salir
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Barra de progreso visual para el refresh automático -->
+  <div style="height:2px;background:rgba(42,63,111,.2);">
+    <div class="refresh-bar" :style="'width:' + progressW + '%'"></div>
+  </div>
+
+  <main class="flex-1 w-full max-w-[1400px] mx-auto px-8 py-10">
+
+    <!-- Topbar info -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+      <div>
+        <span class="font-label text-primary text-[11px] uppercase tracking-[0.3em] mb-4 block">Módulo 01</span>
+        <h2 class="font-headline text-4xl font-bold tracking-tight mb-3 flex items-center gap-3">
+          <i class="ph-light ph-chart-line-up text-primary"></i> Pizarrón Digital
+        </h2>
+        <div class="flex items-center gap-3 font-label text-xs uppercase tracking-widest text-outline">
+          <span class="status-dot dot-green"></span>
+          <span>En vivo · Refresh en 30s</span>
+          <span class="mx-2 opacity-50">|</span>
+          <span x-text="'Actualizado: ' + lastUpdate"></span>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <div id="clock" class="font-mono font-bold text-xl text-primary tracking-widest"></div>
+        <button @click="cargarDatos()" class="border border-outline-variant/30 text-on-surface font-label text-[10px] font-bold uppercase tracking-widest px-6 py-3 hover:border-primary hover:text-primary transition-all flex items-center gap-2" :disabled="loading">
+          <i x-show="!loading" class="ph-bold ph-arrows-clockwise text-lg"></i>
+          <span x-show="loading" class="spinner"></span>
+          <span x-show="!loading">Actualizar</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── KPI Cards de Flota ── -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-outline-variant/20 mb-8">
+      <div class="bg-surface-container-low matte-grain p-8 kpi-border-green">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="status-dot dot-green" style="width:12px;height:12px;"></span>
+          <span class="text-[10px] font-label uppercase tracking-widest text-success">En Ruta</span>
+        </div>
+        <div class="text-5xl font-body font-bold text-success mb-2" x-text="resumen.en_ruta"></div>
+        <div class="text-xs font-label uppercase tracking-wider text-outline">Tractocamiones activos</div>
+      </div>
+      
+      <div class="bg-surface-container-low matte-grain p-8 kpi-border-red">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="status-dot dot-red" style="width:12px;height:12px;"></span>
+          <span class="text-[10px] font-label uppercase tracking-widest text-danger">En Taller</span>
+        </div>
+        <div class="text-5xl font-body font-bold text-danger mb-2" x-text="resumen.en_taller"></div>
+        <div class="text-xs font-label uppercase tracking-wider text-outline">En mantenimiento</div>
+      </div>
+
+      <div class="bg-surface-container-low matte-grain p-8 kpi-border-gray">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="status-dot dot-gray" style="width:12px;height:12px;"></span>
+          <span class="text-[10px] font-label uppercase tracking-widest text-outline">Disponibles</span>
+        </div>
+        <div class="text-5xl font-body font-bold text-outline-variant mb-2" x-text="resumen.disponibles"></div>
+        <div class="text-xs font-label uppercase tracking-wider text-outline">Listos para asignar</div>
+      </div>
+
+      <div class="bg-surface-container-low matte-grain p-8 kpi-border-orange">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="status-dot dot-orange" style="width:12px;height:12px;"></span>
+          <span class="text-[10px] font-label uppercase tracking-widest text-primary">Viajes Activos</span>
+        </div>
+        <div class="text-5xl font-body font-bold text-primary mb-2" x-text="resumen.viajes_activos"></div>
+        <div class="text-xs font-label uppercase tracking-wider text-outline">En este momento</div>
+      </div>
+    </div>
+
+    <!-- ── KPI Secundarios (Cajas, Taller, Costo) ── -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-px bg-outline-variant/20 mb-8">
+      <div class="bg-surface-container-low matte-grain p-6 flex items-center justify-between">
+        <div>
+          <div class="text-[10px] font-label uppercase tracking-widest text-outline mb-2 flex items-center gap-2">
+            <i class="ph-fill ph-package"></i> Cajas Disponibles
+          </div>
+          <div class="text-3xl font-body font-bold text-success" x-text="resumen.cajas_disponibles ?? '—'"></div>
+        </div>
+        <i class="ph-light ph-package text-5xl text-outline opacity-20"></i>
+      </div>
+
+      <div class="bg-surface-container-low matte-grain p-6 flex items-center justify-between">
+        <div>
+          <div class="text-[10px] font-label uppercase tracking-widest text-outline mb-2 flex items-center gap-2">
+            <i class="ph-fill ph-warning-circle"></i> Solicitudes Taller
+          </div>
+          <div class="text-3xl font-body font-bold text-danger" x-text="resumen.solicitudes_taller_pendientes ?? '—'"></div>
+        </div>
+        <i class="ph-light ph-wrench text-5xl text-outline opacity-20"></i>
+      </div>
+
+      <div class="bg-surface-container-low matte-grain p-6 flex items-center justify-between">
+        <div>
+          <div class="text-[10px] font-label uppercase tracking-widest text-outline mb-2 flex items-center gap-2">
+            <i class="ph-fill ph-trend-down"></i> Costo Inactividad / Día
+          </div>
+          <div class="flex items-center gap-3">
+             <div class="text-3xl font-body font-bold text-primary" x-text="resumen.en_taller ? '$' + (resumen.en_taller * constanteCostoParo).toLocaleString('es-MX') : '$0'"></div>
+             <button @click="actualizarConstante()" class="text-outline hover:text-primary transition-colors bg-surface-container-highest p-1 ml-2" title="Ajustar costo por día">
+               <i class="ph-bold ph-pencil text-sm"></i>
+             </button>
+          </div>
+        </div>
+        <i class="ph-light ph-currency-dollar text-5xl text-outline opacity-20"></i>
+      </div>
+    </div>
+
+    <!-- ── Panel inferior: Viajes en curso + Tractos en taller ── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <!-- Viajes activos -->
+      <div class="lg:col-span-2 bg-surface-container-low border border-outline-variant/20 matte-grain flex flex-col">
+        <div class="flex items-center justify-between px-8 py-6 border-b border-outline-variant/20">
+          <div class="font-headline font-bold text-xl flex items-center gap-3">
+            <i class="ph-light ph-map-trifold text-primary"></i> Viajes en Curso
+          </div>
+          <a href="viajes.html" class="border border-outline-variant/30 font-label text-[10px] uppercase tracking-widest px-4 py-2 hover:bg-surface-container-highest transition-colors">
+            Ver Todos
+          </a>
+        </div>
+        
+        <div x-show="loading" class="flex items-center justify-center py-20 flex-1">
+          <span class="spinner" style="width:32px;height:32px;"></span>
+        </div>
+        
+        <div x-show="!loading && viajes_activos.length === 0" class="flex flex-col items-center justify-center py-20 flex-1 text-center">
+          <i class="ph-light ph-check-circle text-4xl text-outline mb-4"></i>
+          <span class="font-label text-sm uppercase tracking-widest text-outline">Sin viajes activos en este momento</span>
+        </div>
+        
+        <div x-show="!loading && viajes_activos.length > 0" class="overflow-auto max-h-[450px]">
+          <table class="cif-table">
+            <thead class="sticky top-0 bg-surface-container-low z-10">
+              <tr>
+                <th>Folio</th>
+                <th>Operador</th>
+                <th>Ruta</th>
+                <th>Estatus</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="v in viajes_activos" :key="v.id">
+                <tr>
+                  <td class="font-mono text-sm text-primary" x-text="'#' + String(v.id).padStart(4,'0')"></td>
+                  <td class="font-medium text-sm text-on-surface" x-text="v.operador"></td>
+                  <td class="text-sm text-outline-variant">
+                    <span x-text="v.origen" class="text-on-surface-variant"></span>
+                    <i class="ph-bold ph-arrow-right text-primary mx-2 inline"></i>
+                    <span x-text="v.destino" class="text-on-surface-variant"></span>
+                  </td>
+                  <td x-html="badgeViaje(v.estatus)"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tractos en taller y SOS -->
+      <div class="lg:col-span-1 bg-surface-container-low border border-outline-variant/20 matte-grain flex flex-col content-start">
+        
+        <!-- Taller Header -->
+        <div class="flex items-center justify-between px-8 py-6 border-b border-outline-variant/20">
+          <div class="font-headline font-bold text-xl flex items-center gap-3">
+            <i class="ph-light ph-wrench text-danger text-2xl"></i> Taller
+          </div>
+          <a href="taller.html" class="border border-outline-variant/30 font-label text-[10px] uppercase tracking-widest px-4 py-2 hover:bg-surface-container-highest transition-colors">Ver Modulo</a>
+        </div>
+        
+        <!-- Unidades Taller -->
+        <div class="p-6 overflow-auto max-h-[250px]">
+          <div x-show="tractos_taller.length === 0" class="py-8 text-center flex flex-col items-center">
+            <i class="ph-light ph-check-circle text-3xl text-success mb-2"></i>
+            <span class="font-label text-xs uppercase tracking-widest text-outline">Sin unidades en taller</span>
+          </div>
+          <div class="space-y-4">
+            <template x-for="t in tractos_taller" :key="t.id">
+              <div class="flex items-center justify-between border border-outline-variant/20 p-4 hover:border-primary/30 transition-colors">
+                <div class="flex items-center gap-4">
+                  <div class="status-dot dot-red"></div>
+                  <div>
+                    <div class="font-body font-bold text-sm text-on-surface" x-text="t.numero_economico"></div>
+                    <div class="text-[10px] font-label uppercase tracking-wider text-outline" x-text="(t.marca ?? '') + ' ' + (t.modelo ?? '')"></div>
+                  </div>
+                </div>
+                <div class="text-xs font-mono font-bold text-primary" title="Orden Activa" x-text="t.orden_activa ?? ''"></div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- SOS Pendientes -->
+        <div class="border-t border-outline-variant/20 p-6 flex-1">
+          <div class="text-[10px] font-label uppercase tracking-widest text-danger mb-4 flex items-center gap-2">
+            <i class="ph-fill ph-warning-circle text-base"></i> SOS Pendientes
+          </div>
+          
+          <div x-show="sos_pendientes.length === 0" class="text-xs font-label uppercase tracking-widest text-outline text-center py-4">
+            Sin alertas SOS activas
+          </div>
+          <div class="space-y-3">
+            <template x-for="s in sos_pendientes" :key="s.id">
+              <div class="flex items-start gap-4 p-4 bg-danger/10 border border-danger/30">
+                <i class="ph-fill ph-warning-circle text-danger text-lg mt-0.5"></i>
+                <div class="flex-1">
+                  <div class="flex justify-between items-start mb-1">
+                    <div class="font-body font-bold text-sm text-on-surface" x-text="s.economico + ' — ' + s.operador"></div>
+                    <span class="badge badge-danger">SOS</span>
+                  </div>
+                  <div class="text-xs text-on-surface-variant leading-relaxed" x-text="s.problema.substring(0,60) + '...'"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!--  FOOTER                                             -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <footer class="border-t border-outline-variant/10 bg-surface-container-lowest mt-auto">
+    <div class="max-w-[1400px] mx-auto px-8 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <img src="assets/LOGOCIF.png" alt="CIF Logística" style="height:2rem;width:auto;object-fit:contain;opacity:0.8;">
+      </div>
+      <p class="text-[10px] text-outline font-label uppercase tracking-wider">
+        © 2026 CIF Gestión Logística · Sistema MVP v1.0
+      </p>
+    </div>
+  </footer>
+
+</div>
+
+<!-- API Script -->
+<script src="assets/js/api.js?v=3"></script>
+
+<!-- Logica Alpine.js -->
+<script>
+// Reloj en tiempo real
+function updateClock() {
+  const el = document.getElementById('clock');
+  if (el) el.textContent = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+function pizarron() {
+  return {
+    isFirstLoad: true,
+    loading: true,
+    usuario: null,
+    lastUpdate: '—',
+    progressW: 0,
+    constanteCostoParo: 4500, // Constante asignable por el usuario
+    resumen: { en_ruta:0, en_taller:0, disponibles:0, viajes_activos:0, cajas_disponibles:0, solicitudes_taller_pendientes:0 },
+    viajes_activos: [],
+    tractos_taller: [],
+    sos_pendientes: [],
+    showAuditTrail: false,
+    auditLogs: [],
+    auditFilter: '',
+
+    get auditLogsFiltrados() {
+      if (!this.auditFilter) return this.auditLogs;
+      const q = this.auditFilter.toLowerCase();
+      return this.auditLogs.filter(l => {
+        const str = `${l.user} ${l.method} ${l.action} ${l.endpoint} ${l.detail}`.toLowerCase();
+        return str.includes(q);
+      });
+    },
+
+    async init() {
+      this.usuario = cifAPI.getCurrentUser();
+      if (!this.usuario) {
+        const u = await cifAPI.me();
+        if (!u) return;
+        this.usuario = u;
+      }
+      await this.cargarDatos();
+      this.cargarAuditTrail();
+      this.isFirstLoad = false;
+      // Polling cada 30 segundos
+      setInterval(() => this.cargarDatos(), 30000);
+      // Barra de progreso visual
+      this.startProgressBar();
+    },
+
+    startProgressBar() {
+      this.progressW = 0;
+      const interval = setInterval(() => {
+        this.progressW += (100 / 300); // 30s = 300 ticks de 100ms
+        if (this.progressW >= 100) {
+          clearInterval(interval);
+          this.startProgressBar();
+        }
+      }, 100);
+    },
+
+    actualizarConstante() {
+      const nuevoValor = prompt("Ingresa el costo diario estimado por unidad inactiva (MXN):", this.constanteCostoParo);
+      if (nuevoValor !== null && !isNaN(Number(nuevoValor))) {
+        this.constanteCostoParo = Number(nuevoValor);
+        cifToast('Constante de costo actualizada a $' + this.constanteCostoParo.toLocaleString('es-MX'));
+      }
+    },
+
+    async cargarDatos() {
+      this.loading = true;
+      try {
+        // Fetch global state
+        const [trReq, cReq, vReq, solReq, ordReq] = await Promise.all([
+          cifAPI.get('/tractocamiones'),
+          cifAPI.get('/cajas'),
+          cifAPI.get('/viajes'),
+          cifAPI.get('/taller/solicitudes'),
+          cifAPI.get('/taller/ordenes')
+        ]);
+
+        const tractos = trReq?.tractos || [];
+        const cajas = cReq?.cajas || [];
+        const viajes = vReq?.viajes || (Array.isArray(vReq?.data) ? vReq.data : []);
+        const solicitudes = solReq?.solicitudes || [];
+        const ordenes = ordReq?.ordenes || [];
+
+        // 1. Calcular KPIs Resumen
+        let en_ruta = 0, en_taller = 0, disponibles = 0, cajas_disp = 0;
+        
+        tractos.forEach(t => {
+          if (t.estatus === 'en_ruta' || t.estatus === 'en_viaje' || t.estatus === 'en_cliente') en_ruta++;
+          else if (t.estatus === 'en_taller') en_taller++;
+          else disponibles++;
+        });
+
+        cajas.forEach(c => {
+          if (c.estatus === 'disponible') cajas_disp++;
+        });
+
+        const v_activos = viajes.filter(v => ['asignado', 'en_transito', 'en_aduana'].includes(v.estatus));
+        const sol_pendientes = solicitudes.filter(s => s.estatus === 'pendiente');
+
+        this.resumen = {
+          en_ruta: en_ruta,
+          en_taller: en_taller,
+          disponibles: disponibles,
+          viajes_activos: v_activos.length,
+          cajas_disponibles: cajas_disp,
+          solicitudes_taller_pendientes: sol_pendientes.length
+        };
+
+        // 2. Viajes Activos (Top 5)
+        this.viajes_activos = v_activos.slice(0, 5).map(v => {
+           let opName = v.operador || 'Sin Asignar';
+           if (v.operador_id && opName === 'Sin Asignar') {
+               // Fallback just in case
+               opName = 'Operador ' + v.operador_id;
+           }
+           return {
+             folio: v.folio || `V-${v.id}`,
+             operador: opName,
+             ruta: `${v.origen || 'Origen'} ➔ ${v.destino || 'Destino'}`,
+             estatus: v.estatus
+           };
+        });
+
+        // 3. Tractos en Taller (Ordenes Activas)
+        const ordenesAbiertas = ordenes.filter(o => o.estatus !== 'finalizada' && o.estatus !== 'terminada');
+        this.tractos_taller = ordenesAbiertas.map(o => {
+           const tr = tractos.find(tx => tx.numero_economico === o.economico) || {};
+           return {
+             economico: o.economico,
+             marca_modelo: (tr.marca || 'Unidad') + ' ' + (tr.anio || ''),
+             orden: `#${o.id.toString().substring(0,6)}`,
+             estatus: 'EN REPARACION'
+           };
+        });
+
+        // 4. Alertas SOS
+        const newSos = sol_pendientes.filter(s => s.urgencia === 'sos');
+        if (!this.isFirstLoad) {
+            const oldIds = this.sos_pendientes.map(s => s.id);
+            const hasNew = newSos.some(s => !oldIds.includes(s.id));
+            if (hasNew) {
+                cifToast('🚨 ¡NUEVA ALERTA SOS DETECTADA!', 'error');
+                new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play().catch(e => console.log('Audio logs:', e));
+            }
+        }
+        this.sos_pendientes = newSos;
+        
+        this.lastUpdate = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+      } catch (err) {
+        console.error("Error calculando dashboard global:", err);
+      }
+      this.loading = false;
+    },
+
+    badgeViaje(estatus) { 
+      // Reuse backend's styling or format for UI with specific tailwind style class if possible,
+      // Default to what API script outputs if it has a global function `badgeViaje`.
+      if(typeof badgeViaje === 'function') {
+        return badgeViaje(estatus); 
+      }
+      
+      const map = {
+        'asignado': 'bg-primary/20 text-primary border border-primary/30',
+        'en_ruta': 'bg-success/20 text-success border border-success/30',
+        'entregado': 'bg-surface-container-highest text-outline border border-outline/30',
+        'incidencia': 'bg-danger/20 text-danger border border-danger/30',
+        'cancelado': 'bg-outline-variant/20 text-outline border border-outline-variant/50'
+      };
+      const clz = map[estatus?.toLowerCase()] || map['asignado'];
+      return `<span class="inline-flex items-center px-3 py-1 text-[10px] font-label uppercase tracking-widest ${clz}">${estatus}</span>`;
+    },
+
+    cargarAuditTrail() {
+      try {
+        const raw = sessionStorage.getItem('cif_demo__audit_log');
+        if (raw) {
+          this.auditLogs = JSON.parse(raw).reverse();
+        }
+      } catch(e) { console.error('Error cargando audit trail:', e); }
+    },
+
+    limpiarAuditTrail() {
+      if (!confirm('¿Borrar todo el registro de auditoría?')) return;
+      sessionStorage.removeItem('cif_demo__audit_log');
+      this.auditLogs = [];
+      cifToast('🗑️ Audit Trail limpiado');
+    },
+  };
+}
+</script>
+</body>
+</html>

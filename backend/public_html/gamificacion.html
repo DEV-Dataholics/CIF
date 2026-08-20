@@ -1,0 +1,290 @@
+<html class="dark" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIF Logística — Gamificación & Scorecard</title>
+  <link href="assets/css/tailwind.min.css?v=2" rel="stylesheet">
+  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style>
+    body { min-height: 100dvh; }
+    .matte-grain { position: relative; }
+    .matte-grain::before {
+      content: ""; position: absolute; inset: 0; opacity: 0.03; pointer-events: none;
+      background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCxtzo5Fd4tGwvT_jg4ysGETAyo_0QJXqFxE0Vz2jCSFfdCW_xcsx8ttX4CZRiXAQ5e-8ClJGovIme_H86utYa8siODIK5ToDWQRd0J97DLwVKIRNDWTJFuuP9hcZHxl3TW0UHrsINdFeEP-GfWzg6ZsUAe9dbaTn0kGfYEn6L_suxq7ifFL2e4HJJxC6M6yMa4wOfyyyiBZMm_ILej9DcNsEEVsRhY2idiHrWisdeOIG82K0lswo1JUKVmQYcwAiapSH8q-Y8FZ4J8);
+    }
+    .cif-table { width: 100%; border-collapse: collapse; }
+    .cif-table th { 
+      text-align: left; padding: 1rem; border-bottom: 1px solid rgba(79,69,63,0.3);
+      font-family: 'Inter', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9b8e87;
+    }
+    .cif-table td { padding: 1rem; border-bottom: 1px solid rgba(79,69,63,0.1); font-family: 'Manrope', sans-serif; }
+    .cif-table tbody tr:hover { background: rgba(79,69,63,0.05); }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(209,161,78,0.3); border-top-color: #D1A14E; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .progress-bar { background: rgba(79,69,63,0.2); height: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #D1A14E; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+    
+    .rank-card { background: #1f1f20; border: 1px solid rgba(155,142,135,0.1); transition: all 0.3s ease; }
+    .rank-card:hover { border-color: #D1A14E; }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+
+<div x-data="gamifApp()" x-init="init()" class="min-h-screen flex flex-col">
+
+  <header class="bg-surface-container-lowest sticky top-0 z-50 border-b border-outline-variant/10">
+    <div class="max-w-[1400px] mx-auto px-8 py-5 flex justify-between items-center">
+      <a href="home.html" class="flex items-center gap-4 hover:opacity-90 transition-opacity">
+        <div class="w-11 h-11 border border-primary/40 flex items-center justify-center text-primary text-2xl">
+          <i class="ph-fill ph-trophy"></i>
+        </div>
+        <div class="flex flex-col">
+          <h1 class="text-xl font-headline text-primary uppercase tracking-[0.2em] leading-none font-bold">CIF</h1>
+          <span class="text-[10px] font-label uppercase tracking-[0.2em] text-outline opacity-70">Gestión Logística</span>
+        </div>
+      </a>
+
+      <nav class="hidden lg:flex gap-6 font-label text-[10px] uppercase tracking-widest font-bold">
+        <a class="text-outline-variant hover:text-primary transition-colors" href="home.html">Inicio</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="text-outline-variant hover:text-primary transition-colors hidden" href="viajes.html">Viajes</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="flota.html">Flota</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="operadores.html">Operadores</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="taller.html">Taller</a>
+        <!-- <a class="text-primary border-b border-primary pb-1" href="gamificacion.html">Metas</a> -->
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
+          <i class="ph-light ph-user text-primary text-xl"></i>
+        </div>
+        <button @click="cifAPI.logout()" class="hidden sm:flex items-center gap-2 text-[10px] font-label uppercase tracking-widest text-outline hover:text-primary transition-colors border border-outline-variant/20 px-4 py-2 font-bold">
+          <i class="ph-light ph-sign-out text-lg"></i> SALIR
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full max-w-[1400px] mx-auto px-8 py-10">
+    
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+      <div>
+        <span class="font-label text-primary text-[11px] uppercase tracking-[0.3em] mb-4 block">Módulo 06</span>
+        <h2 class="font-headline text-4xl font-bold tracking-tight mb-3 flex items-center gap-3">
+          <i class="ph-light ph-medal text-primary"></i> Gamificación & Scorecard
+        </h2>
+        <div class="font-label text-xs uppercase tracking-widest text-outline" x-text="'Semana ' + semanaActual + ' · ' + anioActual + ' · Rendimiento de Operadores'"></div>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <i class="ph-bold ph-calendar-blank absolute left-4 top-1/2 -translate-y-1/2 text-outline"></i>
+          <select x-model="filtroPeriodo" @change="cargarRanking()" class="bg-surface-container-low border border-outline-variant/30 text-[10px] font-label font-bold uppercase tracking-widest pl-12 pr-10 py-4 focus:border-primary outline-none transition-all appearance-none cursor-pointer">
+            <option value="semana">Esta semana</option>
+            <option value="mes">Este mes</option>
+            <option value="todo">Todo el tiempo</option>
+          </select>
+        </div>
+        <button @click="cargarRanking()" class="w-14 h-14 bg-surface-container-high border border-outline-variant/30 flex items-center justify-center text-primary hover:bg-primary hover:text-on-primary transition-all shadow-lg shadow-black/20">
+          <i class="ph-bold ph-arrows-clockwise text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <div x-show="loading" class="flex items-center justify-center py-20">
+        <span class="spinner" style="width:36px;height:36px;"></span>
+      </div>
+
+      <div x-show="!loading">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <!-- Ranking principal -->
+          <div class="lg:col-span-2 space-y-8">
+            <div class="bg-surface-container-low border border-outline-variant/10 matte-grain">
+              <div class="px-8 py-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-low">
+                <h3 class="font-headline font-bold text-xl flex items-center gap-3">
+                  <i class="ph-bold ph-list-numbers text-primary"></i> Tabla de Posiciones
+                </h3>
+              </div>
+              
+              <div class="overflow-x-auto">
+                <table class="cif-table">
+                  <thead>
+                    <tr>
+                      <th class="w-16 text-center">Rango</th>
+                      <th>Operador</th>
+                      <th class="text-center">Cargados</th>
+                      <th class="text-center">Puntos</th>
+                      <th class="w-40">Progreso Meta</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="(r, i) in ranking" :key="r.operador_id">
+                      <tr class="hover:bg-primary/5 transition-colors group">
+                        <td class="text-center">
+                          <div class="w-10 h-10 mx-auto flex items-center justify-center font-headline font-bold text-lg"
+                               :class="i===0 ? 'bg-primary text-on-primary' : (i===1 ? 'bg-outline-variant text-on-surface' : (i===2 ? 'bg-primary/20 text-primary' : 'text-outline/40'))"
+                               x-text="i+1"></div>
+                        </td>
+                        <td>
+                          <div class="font-bold text-on-surface group-hover:text-primary transition-colors" x-text="r.nombre"></div>
+                          <div class="font-mono text-[10px] text-outline uppercase tracking-widest mt-0.5" x-text="'ID: ' + r.numero_operador"></div>
+                        </td>
+                        <td class="text-center font-bold text-on-surface-variant font-mono" x-text="r.viajes_cargados ?? 0"></td>
+                        <td class="text-center">
+                          <span class="font-headline font-bold text-xl text-primary" x-text="r.puntos"></span>
+                          <span class="text-[10px] font-label text-outline uppercase tracking-tighter">pts</span>
+                        </td>
+                        <td class="py-4">
+                          <div class="flex flex-col gap-2">
+                             <div class="progress-bar w-full">
+                                <div class="progress-fill" :style="'width:' + Math.min((r.puntos / metaSemanal) * 100, 100) + '%'"></div>
+                             </div>
+                             <div class="text-[10px] font-label font-bold text-outline text-right uppercase tracking-widest"
+                                  x-text="Math.min(Math.round((r.puntos / metaSemanal) * 100), 100) + '% de la meta'"></div>
+                          </div>
+                        </td>
+                      </tr>
+                    </template>
+                    <tr x-show="ranking.length === 0">
+                      <td colspan="5" class="py-20 text-center">
+                         <i class="ph-light ph-users-four text-5xl text-outline/20 mb-4 block"></i>
+                         <div class="font-label text-xs text-outline uppercase tracking-widest">Sin registros de actividad en este periodo</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lateral: Líder + Reglas -->
+          <div class="space-y-8">
+            <!-- Lider de la semana -->
+            <template x-if="ranking.length > 0">
+              <div class="rank-card p-10 text-center matte-grain relative overflow-hidden group border-2">
+                <div class="absolute -right-8 -top-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all"></div>
+                
+                <div class="relative z-10 transition-transform group-hover:scale-105 duration-500">
+                  <div class="inline-flex w-24 h-24 bg-surface-container-highest border border-primary/30 items-center justify-center text-5xl text-primary mb-6 shadow-2xl shadow-primary/20">
+                     <i class="ph-fill ph-crown"></i>
+                  </div>
+                  <h4 class="font-headline font-bold text-2xl text-on-surface mb-2" x-text="ranking[0]?.nombre"></h4>
+                  <div class="font-label text-[10px] text-primary font-bold uppercase tracking-[0.3em] mb-6">Campeón del Periodo</div>
+                  
+                  <div class="flex justify-center items-baseline gap-2 mb-6">
+                    <span class="text-6xl font-headline font-bold text-primary tracking-tighter" x-text="ranking[0]?.puntos"></span>
+                    <span class="text-xs font-label text-outline uppercase font-bold tracking-widest">Puntos Totales</span>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-px bg-outline-variant/20 border border-outline-variant/20">
+                    <div class="p-4 bg-surface-container-high/50">
+                      <div class="text-xl font-bold text-on-surface" x-text="ranking[0]?.viajes_cargados ?? 0"></div>
+                      <div class="text-[9px] font-label text-outline uppercase tracking-widest">Cargados</div>
+                    </div>
+                    <div class="p-4 bg-surface-container-high/50">
+                      <div class="text-xl font-bold text-on-surface" x-text="ranking[0]?.viajes_vacios ?? 0"></div>
+                      <div class="text-[9px] font-label text-outline uppercase tracking-widest">Vacíos</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <!-- Resumen Totales -->
+            <div class="grid grid-cols-2 gap-4">
+               <div class="bg-surface-container-low border border-outline-variant/10 p-6 matte-grain">
+                 <div class="text-sm font-headline font-bold text-on-surface mb-1" x-text="totales.total_viajes ?? 0"></div>
+                 <div class="text-[9px] font-label text-outline uppercase tracking-widest">Viajes Globales</div>
+               </div>
+               <div class="bg-surface-container-low border border-outline-variant/10 p-6 matte-grain">
+                 <div class="text-sm font-headline font-bold text-primary mb-1" x-text="totales.total_puntos ?? 0"></div>
+                 <div class="text-[9px] font-label text-outline uppercase tracking-widest">Puntos Repartidos</div>
+               </div>
+            </div>
+
+            <!-- Tabla de Puntos -->
+            <div class="bg-surface-container-low border border-outline-variant/10 p-8 matte-grain">
+              <h4 class="font-headline font-bold text-sm text-primary uppercase tracking-widest mb-6 border-b border-outline-variant/20 pb-4">Política de Puntuación</h4>
+              <div class="space-y-5">
+                <div class="flex justify-between items-center group">
+                  <span class="text-[11px] font-label text-outline-variant uppercase tracking-wide group-hover:text-on-surface transition-colors">Viaje Cargado</span>
+                  <span class="font-mono text-sm font-bold text-primary">+2 PTS</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                  <span class="text-[11px] font-label text-outline-variant uppercase tracking-wide group-hover:text-on-surface transition-colors">Viaje Vacío / Rampa</span>
+                  <span class="font-mono text-sm font-bold text-outline-variant">+1 PTS</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                  <span class="text-[11px] font-label text-outline-variant uppercase tracking-wide group-hover:text-on-surface transition-colors">Lavado de Tracto</span>
+                  <span class="font-mono text-sm font-bold text-success">+5 PTS</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                  <span class="text-[11px] font-label text-outline-variant uppercase tracking-wide group-hover:text-on-surface transition-colors">Limpieza de Caja</span>
+                  <span class="font-mono text-sm font-bold text-success">+1 PTS</span>
+                </div>
+              </div>
+              <div class="mt-8 pt-6 border-t border-outline-variant/20">
+                <div class="flex items-center gap-3 text-primary">
+                  <i class="ph-bold ph-gas-can text-2xl"></i>
+                  <div>
+                    <div class="text-[10px] font-bold uppercase tracking-[0.1em]">Bono de Rendimiento</div>
+                    <div class="text-[11px] text-outline mt-0.5">$1,200 MXN / Mes</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/js/api.js?v=3"></script>
+<script>
+function gamifApp() {
+  return {
+    loading: true,
+    ranking: [],
+    totales: { total_viajes: 0, total_puntos: 0 },
+    filtroPeriodo: 'semana',
+    semanaActual: 0,
+    anioActual: new Date().getFullYear(),
+    metaSemanal: 20,
+
+    async init() {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), 0, 1);
+      this.semanaActual = Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
+      await this.cargarRanking();
+    },
+
+    async cargarRanking() {
+      this.loading = true;
+      try {
+        const data = await cifAPI.get(`/gamificacion/ranking?periodo=${this.filtroPeriodo}`);
+        if (data?.ranking) {
+          this.ranking = data.ranking;
+          this.totales = data.totales ?? this.totales;
+          if (this.ranking.length > 0) {
+            this.metaSemanal = Math.max(...this.ranking.map(r => r.puntos), 20);
+          }
+        }
+      } catch (e) {
+        console.error("Error cargando ranking:", e);
+      }
+      this.loading = false;
+    },
+  };
+}
+</script>
+</body>
+</html>
+

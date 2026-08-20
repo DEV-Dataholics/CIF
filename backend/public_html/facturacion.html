@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIF — Facturación</title>
+  <link href="assets/css/tailwind.min.css?v=2" rel="stylesheet">
+  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style>
+    body { min-height: 100dvh; background: #131314; color: #e5e2e3; }
+    .matte-grain { position: relative; }
+    .matte-grain::before {
+      content: ""; position: absolute; inset: 0; opacity: 0.03; pointer-events: none;
+      background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCxtzo5Fd4tGwvT_jg4ysGETAyo_0QJXqFxE0Vz2jCSFfdCW_xcsx8ttX4CZRiXAQ5e-8ClJGovIme_H86utYa8siODIK5ToDWQRd0J97DLwVKIRNDWTJFuuP9hcZHxl3TW0UHrsINdFeEP-GfWzg6ZsUAe9dbaTn0kGfYEn6L_suxq7ifFL2e4HJJxC6M6yMa4wOfyyyiBZMm_ILej9DcNsEEVsRhY2idiHrWisdeOIG82K0lswo1JUKVmQYcwAiapSH8q-Y8FZ4J8);
+    }
+    .cif-table { width: 100%; border-collapse: collapse; }
+    .cif-table th {
+      text-align: left; padding: 0.875rem 1rem; border-bottom: 1px solid rgba(79,69,63,0.3);
+      font-family: 'Inter', sans-serif; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9b8e87;
+    }
+    .cif-table td { padding: 0.875rem 1rem; border-bottom: 1px solid rgba(79,69,63,0.1); font-family: 'Manrope', sans-serif; font-size: 0.875rem; }
+    .cif-table tbody tr:hover { background: rgba(79,69,63,0.05); }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(209,161,78,0.3); border-top-color: #D1A14E; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .badge { padding: 0.2rem 0.55rem; font-size: 0.6rem; font-weight: 700; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .badge-danger  { background: rgba(255,180,171,0.1); color: #ffb4ab; border-color: rgba(255,180,171,0.2); }
+    .badge-warning { background: rgba(209,161,78,0.1);  color: #D1A14E; border-color: rgba(209,161,78,0.2); }
+    .badge-success { background: rgba(195,204,140,0.1); color: #c3cc8c; border-color: rgba(195,204,140,0.2); }
+    .badge-info    { background: rgba(59,130,246,0.1);  color: #3b82f6; border-color: rgba(59,130,246,0.2); }
+    .badge-muted   { background: rgba(155,142,135,0.1); color: #9b8e87; border-color: rgba(155,142,135,0.2); }
+    .badge-accent  { background: rgba(209,161,78,0.1);  color: #D1A14E; border-color: rgba(209,161,78,0.2); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1.5rem; }
+    .modal-box { background: #1f1f20; border: 1px solid rgba(79,69,63,0.4); max-width: 480px; width: 100%; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(209,161,78,0.25); }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<div x-data="factApp()" x-init="init()" class="min-h-screen flex flex-col">
+
+  <!-- HEADER / TOP NAVIGATION Gold Update -->
+  <header class="bg-surface-container-lowest sticky top-0 z-50 border-b border-outline-variant/10">
+    <div class="max-w-[1500px] mx-auto px-8 py-5 flex justify-between items-center">
+      <a href="home.html" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
+        <img src="assets/LOGOCIF.png" alt="CIF Logística" style="height:5.5rem;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(209,161,78,0.2));">
+      </a>
+
+      <nav class="hidden lg:flex gap-6 font-label text-[10px] uppercase tracking-widest font-bold">
+        <a class="text-outline-variant hover:text-primary transition-colors" href="home.html">Inicio</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="flota.html">Flota</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="operadores.html">Operadores</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="taller.html">Taller</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="porteria.html">Accesos</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="cobranza.html">Cobranza</a>
+        <a class="text-primary border-b border-primary pb-1" href="facturacion.html">Facturación</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
+          <i class="ph-light ph-user text-primary text-xl"></i>
+        </div>
+        <button @click="cifAPI.logout()" class="hidden sm:flex items-center gap-2 text-[10px] font-label uppercase tracking-widest text-outline hover:text-primary transition-colors border border-outline-variant/20 px-4 py-2 font-bold">
+          <i class="ph-light ph-sign-out text-lg"></i> SALIR
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full max-w-[1500px] mx-auto px-8 py-10">
+    <!-- Encabezado del módulo -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+      <div>
+        <span class="font-label text-primary text-[11px] uppercase tracking-[0.3em] mb-4 block">Módulo de Finanzas</span>
+        <h2 class="font-headline text-4xl font-bold tracking-tight mb-3 flex items-center gap-3">
+          <i class="ph-light ph-invoice text-primary"></i> Facturación de Viajes
+        </h2>
+        <div class="font-label text-xs uppercase tracking-widest text-outline">
+          <span x-text="pendientes + ' viajes pendientes de facturar'"></span>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button @click="soloDocumentados = !soloDocumentados; filtrar()"
+          class="font-label text-[10px] font-bold uppercase tracking-widest px-5 py-3 border transition-all"
+          :class="soloDocumentados ? 'bg-primary text-on-primary border-primary' : 'text-outline border-outline-variant/30 hover:border-primary hover:text-primary'">
+          <i class="ph-light ph-funnel"></i> Solo Pendientes
+        </button>
+        <button @click="cargarDatos()" class="font-label text-[10px] font-bold uppercase tracking-widest px-5 py-3 border border-outline-variant/30 text-outline hover:border-primary hover:text-primary transition-all">
+          <i class="ph-light ph-arrow-clockwise"></i> Actualizar
+        </button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="bg-surface-container-low border-l-4 border-warning matte-grain p-6">
+        <div class="font-label text-[9px] uppercase tracking-widest text-warning mb-3">Pendientes de Facturar</div>
+        <div class="text-3xl font-headline font-bold text-warning" x-text="pendientes"></div>
+        <div class="font-label text-[9px] text-outline mt-1 uppercase tracking-widest">viajes documentados</div>
+      </div>
+      <div class="bg-surface-container-low border-l-4 border-success matte-grain p-6">
+        <div class="font-label text-[9px] uppercase tracking-widest text-success mb-3">Facturados (histórico)</div>
+        <div class="text-3xl font-headline font-bold text-success" x-text="total - pendientes"></div>
+        <div class="font-label text-[9px] text-outline mt-1 uppercase tracking-widest">viajes cerrados</div>
+      </div>
+      <div class="bg-surface-container-low border-l-4 border-primary matte-grain p-6">
+        <div class="font-label text-[9px] uppercase tracking-widest text-primary mb-3">Ingresos Est. Pendientes</div>
+        <div class="text-2xl font-headline font-bold text-primary"
+          x-text="'$' + ingresosEstimados.toLocaleString('es-MX', {maximumFractionDigits:0})"></div>
+        <div class="font-label text-[9px] text-outline mt-1 uppercase tracking-widest">basado en precio carta porte</div>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="bg-surface-container-low border border-outline-variant/20 matte-grain">
+      <div class="px-7 py-5 border-b border-outline-variant/20">
+        <h3 class="font-headline font-bold text-lg flex items-center gap-3">
+          <i class="ph-light ph-list-bullets text-primary"></i> Viajes para Facturar
+        </h3>
+      </div>
+      <div x-show="loading" class="flex items-center justify-center py-16">
+        <span class="spinner" style="width:32px;height:32px;"></span>
+      </div>
+      <div x-show="!loading && filtrados.length === 0" class="text-center py-20 text-outline font-label uppercase tracking-widest opacity-50">
+        No hay viajes pendientes de facturar.
+      </div>
+      <div x-show="!loading && filtrados.length > 0" class="overflow-auto">
+        <table class="cif-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Tipo</th><th>Ruta</th><th>Operador</th>
+              <th>Tracto</th><th>Cliente</th><th>Precio CP</th><th>Folio</th><th>Estatus</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="v in filtrados" :key="v.id">
+              <tr class="hover:bg-white/[0.02] transition-colors">
+                <td class="font-mono text-xs font-bold text-primary" x-text="'#' + String(v.id).padStart(4,'0')"></td>
+                <td><span class="badge badge-muted" x-text="v.tipo_movimiento?.replace(/_/g,' ')"></span></td>
+                <td>
+                  <div class="text-sm font-bold text-on-surface" x-text="v.origen"></div>
+                  <div class="text-xs text-outline">&#x2192; <span x-text="v.destino"></span></div>
+                </td>
+                <td class="text-sm text-outline-variant" x-text="v.operador ?? '—'"></td>
+                <td class="font-mono text-xs text-outline" x-text="v.economico ?? '—'"></td>
+                <td class="text-sm font-bold text-on-surface" x-text="v.cliente ?? '—'"></td>
+                <td class="font-mono text-sm font-bold text-success"
+                  x-text="v.precio_cartaporte ? '$' + Number(v.precio_cartaporte).toLocaleString('es-MX') : '—'"></td>
+                <td class="font-mono text-xs text-outline" x-text="v.folio_boleta ?? '—'"></td>
+                <td x-html="badgeViaje(v.estatus)"></td>
+                <td>
+                  <button x-show="v.estatus === 'documentado'"
+                    @click="abrirFacturar(v)"
+                    class="bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-4 py-2 hover:brightness-110 transition-all">
+                    Facturar
+                  </button>
+                  <span x-show="v.estatus === 'facturado'" class="badge badge-success">✓ Facturado</span>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Facturar -->
+  <div x-show="showFacturar" class="modal-overlay" @click.self="showFacturar=false" x-transition>
+    <div class="modal-box">
+      <div class="px-7 py-5 border-b border-outline-variant/20 flex justify-between items-center">
+        <h3 class="font-headline font-bold text-base flex items-center gap-2 text-primary">
+          <i class="ph-light ph-invoice text-lg"></i> Confirmar Facturación
+        </h3>
+        <button @click="showFacturar=false" class="text-outline hover:text-primary transition-colors">
+          <i class="ph-light ph-x text-xl"></i>
+        </button>
+      </div>
+      <div class="p-7 space-y-5">
+        <div class="bg-surface border border-outline-variant/20 p-5 space-y-3">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Viaje</div>
+              <div class="font-mono font-bold text-primary text-sm"
+                x-text="'#' + String(viajeFacturar?.id ?? 0).padStart(4,'0')"></div>
+            </div>
+            <div x-show="viajeFacturar?.precio_cartaporte">
+              <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Precio CP</div>
+              <div class="font-mono font-bold text-success text-sm"
+                x-text="'$' + Number(viajeFacturar?.precio_cartaporte || 0).toLocaleString('es-MX')"></div>
+            </div>
+          </div>
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Ruta</div>
+            <div class="text-sm text-on-surface" x-text="(viajeFacturar?.origen ?? '') + ' → ' + (viajeFacturar?.destino ?? '')"></div>
+          </div>
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Cliente</div>
+            <div class="text-sm font-bold text-on-surface" x-text="viajeFacturar?.cliente ?? '—'"></div>
+          </div>
+        </div>
+        <div>
+          <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Folio de Factura (opcional)</label>
+          <input x-model="folioInput" type="text"
+            class="w-full bg-surface border border-outline-variant/40 text-primary font-mono font-bold p-3 text-sm focus:border-primary outline-none text-center tracking-widest"
+            placeholder="F-2026-001" @keyup.enter="confirmarFacturar()">
+          <div class="text-[10px] font-label text-outline mt-2 uppercase tracking-widest">Si no tienes folio aún, puedes dejarlo en blanco.</div>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button @click="showFacturar=false"
+            class="flex-1 border border-outline-variant/30 text-outline hover:border-primary hover:text-primary font-label text-[10px] font-bold uppercase tracking-widest py-3 transition-all">
+            Cancelar
+          </button>
+          <button @click="confirmarFacturar()" :disabled="facturando"
+            class="flex-1 bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest py-3 hover:brightness-110 transition-all flex items-center justify-center gap-2">
+            <span x-show="!facturando" class="flex items-center gap-2">
+              <i class="ph-light ph-check-circle"></i> Confirmar — Marcar Facturado
+            </span>
+            <span x-show="facturando" class="spinner" style="border-color:rgba(19,19,20,0.3);border-top-color:#131314"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="assets/js/api.js?v=3"></script>
+<script>
+function factApp() {
+  return {
+    loading: true, facturando: false,
+    viajes: [], filtrados: [],
+    pendientes: 0, total: 0,
+    ingresosEstimados: 0,
+    soloDocumentados: true,
+    showFacturar: false,
+    viajeFacturar: null,
+    folioInput: '',
+    usuario: null,
+
+    async init() {
+      this.usuario = cifAPI.getCurrentUser() || await cifAPI.me();
+      await this.cargarDatos();
+    },
+
+    async cargarDatos() {
+      this.loading = true;
+      const data = await cifAPI.get('/viajes/facturacion');
+      if (data?.ok) {
+        this.viajes    = data.viajes;
+        this.total     = data.total;
+        this.pendientes = data.pendientes_facturar;
+        this.calcularIngresos();
+        this.filtrar();
+      }
+      this.loading = false;
+    },
+
+    calcularIngresos() {
+      this.ingresosEstimados = this.viajes
+        .filter(v => v.estatus === 'documentado')
+        .reduce((s, v) => s + (parseFloat(v.precio_cartaporte) || 0), 0);
+    },
+
+    filtrar() {
+      this.filtrados = this.soloDocumentados
+        ? this.viajes.filter(v => v.estatus === 'documentado')
+        : [...this.viajes];
+    },
+
+    abrirFacturar(v) {
+      this.viajeFacturar = v;
+      this.folioInput    = '';
+      this.showFacturar  = true;
+    },
+
+    async confirmarFacturar() {
+      if (!this.viajeFacturar) return;
+      this.facturando = true;
+      const res = await cifAPI.put(`/viajes/${this.viajeFacturar.id}/facturar`, {
+        folio_boleta: this.folioInput || null,
+      });
+      this.facturando = false;
+      if (res?.ok) {
+        cifToast('✅ Viaje facturado correctamente');
+        this.showFacturar = false;
+        await this.cargarDatos();
+      } else {
+        cifToast(res?.error || 'Error al facturar', 'error');
+      }
+    },
+
+    badgeViaje(e) { return badgeViaje(e); },
+    fmtFecha(d)   { return fmtFecha(d); },
+  };
+}
+</script>
+</body>
+</html>

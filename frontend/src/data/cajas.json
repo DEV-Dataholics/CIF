@@ -1,0 +1,776 @@
+[
+  {
+    "id": 1,
+    "numeroCaja": "40477",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 2,
+    "numeroCaja": "459/45009",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 3,
+    "numeroCaja": "48007/4839",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 4,
+    "numeroCaja": "4802",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 5,
+    "numeroCaja": "48100",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 6,
+    "numeroCaja": "48101",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 7,
+    "numeroCaja": "48107",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 8,
+    "numeroCaja": "48108",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 9,
+    "numeroCaja": "48232",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 10,
+    "numeroCaja": "48264",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 11,
+    "numeroCaja": "48279",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 12,
+    "numeroCaja": "4828",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 13,
+    "numeroCaja": "4831",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 14,
+    "numeroCaja": "48311",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 15,
+    "numeroCaja": "48337",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 16,
+    "numeroCaja": "48339",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 17,
+    "numeroCaja": "48367",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 18,
+    "numeroCaja": "48369",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 19,
+    "numeroCaja": "48388",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 20,
+    "numeroCaja": "48394",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 21,
+    "numeroCaja": "48396",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 22,
+    "numeroCaja": "48401",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 23,
+    "numeroCaja": "48406",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 24,
+    "numeroCaja": "48407",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 25,
+    "numeroCaja": "4855",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 26,
+    "numeroCaja": "4871",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 27,
+    "numeroCaja": "4872",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 28,
+    "numeroCaja": "4875",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 29,
+    "numeroCaja": "4879",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 30,
+    "numeroCaja": "4885",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 31,
+    "numeroCaja": "4892",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 32,
+    "numeroCaja": "4896",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 33,
+    "numeroCaja": "501/45005",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 34,
+    "numeroCaja": "502/PERRITO",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 35,
+    "numeroCaja": "5301",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 36,
+    "numeroCaja": "5302",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 37,
+    "numeroCaja": "5303",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 38,
+    "numeroCaja": "5304/1163",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 39,
+    "numeroCaja": "653",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 40,
+    "numeroCaja": "801/48303",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 41,
+    "numeroCaja": "802/48289",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 42,
+    "numeroCaja": "803/48306",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 43,
+    "numeroCaja": "804/48305",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 44,
+    "numeroCaja": "805/48314",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 45,
+    "numeroCaja": "806/48234",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 46,
+    "numeroCaja": "807/48375",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 47,
+    "numeroCaja": "808/4832",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 48,
+    "numeroCaja": "809/48252",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 49,
+    "numeroCaja": "810/42102",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 50,
+    "numeroCaja": "811/48118",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 51,
+    "numeroCaja": "WWRV537800",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 52,
+    "numeroCaja": "450832",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 53,
+    "numeroCaja": "231373",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 54,
+    "numeroCaja": "231376",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 55,
+    "numeroCaja": "455420",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 56,
+    "numeroCaja": "Z4815",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 57,
+    "numeroCaja": "482706",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 58,
+    "numeroCaja": "230014",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 59,
+    "numeroCaja": "8026",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 60,
+    "numeroCaja": "AN536650",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 61,
+    "numeroCaja": "20229",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 62,
+    "numeroCaja": "533448",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 63,
+    "numeroCaja": "522536",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 64,
+    "numeroCaja": "539015",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 65,
+    "numeroCaja": "493706",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 66,
+    "numeroCaja": "522524",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 67,
+    "numeroCaja": "533930",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 68,
+    "numeroCaja": "T1270",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 69,
+    "numeroCaja": "T1184",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 70,
+    "numeroCaja": "8479",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 71,
+    "numeroCaja": "AN533336",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 72,
+    "numeroCaja": "20021",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 73,
+    "numeroCaja": "535819",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 74,
+    "numeroCaja": "522503",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 75,
+    "numeroCaja": "536812",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 76,
+    "numeroCaja": "20682",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 77,
+    "numeroCaja": "530062",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 78,
+    "numeroCaja": "8746",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 79,
+    "numeroCaja": "T856",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 80,
+    "numeroCaja": "T903",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 81,
+    "numeroCaja": "T1107",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 82,
+    "numeroCaja": "20258",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 83,
+    "numeroCaja": "T1195",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 84,
+    "numeroCaja": "536842",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 85,
+    "numeroCaja": "2305",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  },
+  {
+    "id": 86,
+    "numeroCaja": "833448",
+    "tipo": "Seca 53ft",
+    "anio": 2024,
+    "estatus": "disponible",
+    "vigenciaSCT": "2026-06-25",
+    "vigenciaMecanico": "2027-01-01"
+  }
+]

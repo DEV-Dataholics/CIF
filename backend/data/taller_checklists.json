@@ -1,0 +1,53 @@
+[
+  {
+    "id": 1,
+    "fecha_creacion": "2026-05-15T07:02:14.338Z",
+    "tractocamion_id": "1",
+    "odometro": "645231",
+    "responsable": "ASDASDASDASDASD",
+    "hora_inicio": "03:01",
+    "hora_fin": "18:05",
+    "metricas": {
+      "ac_in": "",
+      "ac_out": "",
+      "anticongelante": "",
+      "frenos": "",
+      "embrague": "",
+      "direccion": "",
+      "aire_chi": "",
+      "aire_cort": "",
+      "aire_llen": "",
+      "electrico": ""
+    },
+    "visual": {
+      "motor": {
+        "ev": 5,
+        "f": "Desgaste severo"
+      },
+      "trans": {
+        "ev": 1,
+        "f": ""
+      },
+      "susp": {
+        "ev": 1,
+        "f": ""
+      },
+      "escape": {
+        "ev": 1,
+        "f": ""
+      },
+      "comb": {
+        "ev": 5,
+        "f": "Desgaste severo"
+      },
+      "ejes": {
+        "ev": 1,
+        "f": ""
+      },
+      "varios": {
+        "ev": 1,
+        "f": ""
+      }
+    }
+  }
+]

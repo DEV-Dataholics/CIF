@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "viaje_id": 2,
+    "fecha": "2026-05-13T09:00:00Z",
+    "evento": "Inicio de ruta",
+    "comentarios": "Saliendo de bodega sin novedad."
+  }
+]

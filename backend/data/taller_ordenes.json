@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "estatus": "abierta",
+    "fecha": "2026-05-15T07:02:13.823Z",
+    "tipo": "Mantenimiento Correctivo",
+    "economico": "T-100",
+    "costo_estimado": 0
+  },
+  {
+    "id": 2,
+    "estatus": "abierta",
+    "fecha": "2026-05-15T07:30:15.354Z",
+    "economico": "T-100",
+    "tipo": "Rescate SOS / Grúa",
+    "falla_detectada": "ZXZX<ZX<Z<X",
+    "mecanico_responsable": "",
+    "costo_estimado": 0
+  }
+]

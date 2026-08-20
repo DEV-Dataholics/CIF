@@ -1,0 +1,28 @@
+{
+  "clientes": [
+    { "id": 1, "razon_social": "LIKOM LOGISTICS S.A. DE C.V." },
+    { "id": 2, "razon_social": "DANHIL INTERNACIONAL" },
+    { "id": 3, "razon_social": "BIO PAPEL S.A.B. DE C.V." },
+    { "id": 4, "razon_social": "SUMITOMO ELECTRIC WIRING" },
+    { "id": 5, "razon_social": "SMURFIT KAPPA DE MÉXICO" }
+  ],
+  "operadores": [
+    { "id": 1, "nombre_completo": "Juan Pérez López", "numero_operador": "OP-001" },
+    { "id": 3, "nombre_completo": "Roberto Sánchez Díaz", "numero_operador": "OP-003" },
+    { "id": 4, "nombre_completo": "Miguel Ángel Torres", "numero_operador": "OP-004" },
+    { "id": 5, "nombre_completo": "Fernando Ríos Castillo", "numero_operador": "OP-005" },
+    { "id": 6, "nombre_completo": "Alejandro Vega Morales", "numero_operador": "OP-006" }
+  ],
+  "tractos_disponibles": [
+    { "id": 1, "numero_economico": "T-01" },
+    { "id": 2, "numero_economico": "T-02" },
+    { "id": 3, "numero_economico": "T-03" },
+    { "id": 4, "numero_economico": "T-04" },
+    { "id": 5, "numero_economico": "T-05" }
+  ],
+  "cajas_disponibles": [
+    { "id": 1, "numero_caja": "C-101", "tipo": "seca" },
+    { "id": 2, "numero_caja": "C-102", "tipo": "refrigerada" },
+    { "id": 3, "numero_caja": "C-103", "tipo": "seca" }
+  ]
+}

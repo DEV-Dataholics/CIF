@@ -1,0 +1,4 @@
+[
+  { "id": 101, "cliente": "LIKOM", "unidad": "L-19", "monto": 15400, "estatus": "pendiente", "fecha": "2026-05-10" },
+  { "id": 102, "cliente": "DANHIL", "unidad": "L-01", "monto": 8900, "estatus": "facturado", "fecha": "2026-05-12" }
+]

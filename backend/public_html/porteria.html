@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIF Logística — Portería / Caseta</title>
+  <meta name="description" content="Módulo de control de acceso y trazabilidad de unidades en portería CIF Logística">
+  <link href="assets/css/tailwind.min.css?v=2" rel="stylesheet">
+  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style>
+    body { min-height: 100dvh; }
+    .matte-grain { position: relative; }
+    .matte-grain::before {
+      content: ""; position: absolute; inset: 0; opacity: 0.03; pointer-events: none;
+      background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCxtzo5Fd4tGwvT_jg4ysGETAyo_0QJXqFxE0Vz2jCSFfdCW_xcsx8ttX4CZRiXAQ5e-8ClJGovIme_H86utYa8siODIK5ToDWQRd0J97DLwVKIRNDWTJFuuP9hcZHxl3TW0UHrsINdFeEP-GfWzg6ZsUAe9dbaTn0kGfYEn6L_suxq7ifFL2e4HJJxC6M6yMa4wOfyyyiBZMm_ILej9DcNsEEVsRhY2idiHrWisdeOIG82K0lswo1JUKVmQYcwAiapSH8q-Y8FZ4J8);
+    }
+    .cif-table { width: 100%; border-collapse: collapse; }
+    .cif-table th {
+      text-align: left; padding: 0.875rem 1rem; border-bottom: 1px solid rgba(79,69,63,0.3);
+      font-family: 'Inter', sans-serif; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9b8e87;
+    }
+    .cif-table td { padding: 0.875rem 1rem; border-bottom: 1px solid rgba(79,69,63,0.1); font-family: 'Manrope', sans-serif; }
+    .cif-table tbody tr:hover { background: rgba(79,69,63,0.05); }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(209,161,78,0.3); border-top-color: #D1A14E; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .badge { padding: 0.2rem 0.55rem; font-size: 0.6rem; font-weight: 700; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .badge-danger  { background: rgba(255,180,171,0.1); color: #ffb4ab; border-color: rgba(255,180,171,0.2); }
+    .badge-warning { background: rgba(209,161,78,0.1);  color: #D1A14E; border-color: rgba(209,161,78,0.2); }
+    .badge-success { background: rgba(195,204,140,0.1); color: #c3cc8c; border-color: rgba(195,204,140,0.2); }
+    .badge-info    { background: rgba(147,197,253,0.1); color: #93c5fd; border-color: rgba(147,197,253,0.2); }
+    .badge-muted   { background: rgba(155,142,135,0.1); color: #9b8e87; border-color: rgba(155,142,135,0.2); }
+    .badge-orange  { background: rgba(251,146,60,0.12); color: #fb923c; border-color: rgba(251,146,60,0.25); }
+
+    /* Gráfica de horas pico */
+    .horas-bar { transition: height 0.4s ease, background 0.3s ease; }
+    .horas-bar:hover { filter: brightness(1.3); }
+
+    /* Fuzzy Search dropdown */
+    .fuzzy-dropdown {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 60;
+      background: #1b1b1c; border: 1px solid rgba(79,69,63,0.4); max-height: 200px; overflow-y: auto;
+    }
+    .fuzzy-item {
+      padding: 0.6rem 0.75rem; cursor: pointer; font-family: 'Inter', sans-serif;
+      font-size: 0.8rem; color: #d2c4bc; transition: background 0.15s;
+    }
+    .fuzzy-item:hover, .fuzzy-item.active { background: rgba(209,161,78,0.15); color: #D1A14E; }
+    .fuzzy-item .match { color: #D1A14E; font-weight: 700; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1.5rem;
+    }
+    .modal-box {
+      background: #1f1f20; border: 1px solid rgba(79,69,63,0.4);
+      max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto;
+    }
+
+    /* Input file custom */
+    .foto-label {
+      display: flex; align-items: center; gap: 0.75rem; cursor: pointer;
+      border: 1px dashed rgba(79,69,63,0.4); padding: 0.875rem;
+      transition: border-color 0.2s ease;
+    }
+    .foto-label:hover { border-color: #D1A14E; }
+    input[type="file"] { display: none; }
+
+    /* Pulse alerta */
+    @keyframes pulse-red { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+    .pulse-alert { animation: pulse-red 1.5s ease-in-out infinite; }
+
+    /* Scrollbar mínima */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(209,161,78,0.25); }
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+
+<div x-data="porteriaApp()" x-init="init()" class="min-h-screen flex flex-col">
+
+  <!-- HEADER / TOP NAVIGATION -->
+  <header class="bg-surface-container-lowest sticky top-0 z-50 border-b border-outline-variant/10">
+    <div class="max-w-[1500px] mx-auto px-8 py-5 flex justify-between items-center">
+      <a href="home.html" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
+        <img src="assets/LOGOCIF.png" alt="CIF Logística" style="height:5.5rem;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(209,161,78,0.2));">
+      </a>
+
+      <nav class="hidden lg:flex gap-6 font-label text-[10px] uppercase tracking-widest font-bold">
+        <a class="text-outline-variant hover:text-primary transition-colors" href="home.html">Inicio</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="flota.html">Flota</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="operadores.html">Operadores</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="taller.html">Taller</a>
+        <a class="text-primary border-b border-primary pb-1" href="porteria.html">Accesos</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="cobranza.html">Cobranza</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
+          <i class="ph-light ph-user text-primary text-xl"></i>
+        </div>
+        <button @click="cifAPI.logout()" class="hidden sm:flex items-center gap-2 text-[10px] font-label uppercase tracking-widest text-outline hover:text-primary transition-colors border border-outline-variant/20 px-4 py-2 font-bold">
+          <i class="ph-light ph-sign-out text-lg"></i> SALIR
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full max-w-[1500px] mx-auto px-8 py-10">
+
+    <!-- Encabezado de módulo -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+      <div>
+        <span class="font-label text-primary text-[11px] uppercase tracking-[0.3em] mb-4 block">Módulo 05</span>
+        <h2 class="font-headline text-4xl font-bold tracking-tight mb-3 flex items-center gap-3">
+          <i class="ph-light ph-door-open text-primary"></i> Control de Accesos
+        </h2>
+        <div class="font-label text-xs uppercase tracking-widest text-outline">Control de acceso · Trazabilidad de activos · Cadena de custodia</div>
+      </div>
+      <!-- KPIs rápidos -->
+      <div class="flex gap-4">
+        <div class="bg-surface-container-low border border-outline-variant/20 px-5 py-4 text-center">
+          <div class="text-2xl font-headline font-bold text-primary" x-text="bitacoraFiltrada.filter(b=>b.tipo_movimiento==='entrada').length"></div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mt-1">Entradas Hoy</div>
+        </div>
+        <div class="bg-surface-container-low border border-outline-variant/20 px-5 py-4 text-center">
+          <div class="text-2xl font-headline font-bold text-danger" x-text="bitacoraFiltrada.filter(b=>b.tipo_movimiento==='salida').length"></div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mt-1">Salidas Hoy</div>
+        </div>
+        <div class="bg-surface-container-low border border-outline-variant/20 px-5 py-4 text-center">
+          <div class="text-2xl font-headline font-bold text-warning" x-text="bitacoraFiltrada.filter(b=>b.incidencia_tecnica).length"></div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mt-1">Incidencias</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <!-- ═══ COLUMNA IZQUIERDA: Formulario ═══ -->
+      <div class="lg:col-span-1 space-y-6">
+        <div class="bg-surface-container-low border border-outline-variant/20 matte-grain">
+          <div class="px-7 py-5 border-b border-outline-variant/20">
+            <h3 class="font-headline font-bold text-lg flex items-center gap-3">
+              <i class="ph-light ph-clipboard-text text-primary"></i> Registrar Movimiento
+            </h3>
+          </div>
+          <form @submit.prevent="registrarPorteria" class="p-7 space-y-5">
+
+            <!-- Tipo -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Tipo *</label>
+                <div class="flex gap-2">
+                  <button type="button"
+                    @click="portForm.tipo_movimiento='entrada'"
+                    :class="portForm.tipo_movimiento==='entrada' ? 'bg-success/20 border-success text-success' : 'bg-surface border-outline-variant/30 text-outline'"
+                    class="flex-1 border font-label text-[10px] font-bold uppercase tracking-widest py-4 transition-all flex items-center justify-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-current"></span> Entrada
+                  </button>
+                  <button type="button"
+                    @click="portForm.tipo_movimiento='salida'"
+                    :class="portForm.tipo_movimiento==='salida' ? 'bg-danger/20 border-danger text-danger' : 'bg-surface border-outline-variant/30 text-outline'"
+                    class="flex-1 border font-label text-[10px] font-bold uppercase tracking-widest py-4 transition-all flex items-center justify-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-current"></span> Salida
+                  </button>
+                </div>
+              </div>
+              <!-- Toggle Unidad Externa -->
+              <div>
+                <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Procedencia *</label>
+                <div class="flex gap-2">
+                  <button type="button" @click="portForm.es_externa=false; portForm.empresa_externa=''; busquedaTracto=''; portForm.tractocamion_id=''"
+                    :class="!portForm.es_externa ? 'bg-primary/20 border-primary text-primary' : 'bg-surface border-outline-variant/30 text-outline'"
+                    class="flex-1 border font-label text-[10px] font-bold uppercase tracking-widest py-4 transition-all flex items-center justify-center gap-1.5">
+                    <i class="ph-bold ph-truck text-xs"></i> Propia
+                  </button>
+                  <button type="button" @click="portForm.es_externa=true; portForm.tractocamion_id=''; busquedaTracto=''"
+                    :class="portForm.es_externa ? 'bg-info/20 border-info text-info' : 'bg-surface border-outline-variant/30 text-outline'"
+                    class="flex-1 border font-label text-[10px] font-bold uppercase tracking-widest py-4 transition-all flex items-center justify-center gap-1.5">
+                    <i class="ph-bold ph-buildings text-xs"></i> Externa
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tracto: Fuzzy Search (propia) o Empresa (externa) -->
+            <div class="grid grid-cols-2 gap-4">
+              <!-- Unidad Propia: Fuzzy Search -->
+              <div x-show="!portForm.es_externa" class="relative">
+                <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Tracto (Fuzzy Search) *</label>
+                <input type="text" x-model="busquedaTracto" @input="filtrarTractosFuzzy()" @focus="showFuzzyTracto=true" @click.outside="showFuzzyTracto=false"
+                  placeholder="Escribe ej. L18 o L-18..."
+                  class="w-full bg-surface border border-outline-variant/40 text-primary font-mono font-bold p-3 focus:border-primary outline-none text-sm">
+                <div x-show="showFuzzyTracto && fuzzyTractoResults.length > 0" class="fuzzy-dropdown" x-cloak>
+                  <template x-for="t in fuzzyTractoResults" :key="t.id">
+                    <div class="fuzzy-item" @click="seleccionarTracto(t)" x-text="t.numero_economico + ' — ' + (t.estatus || 'disponible')"></div>
+                  </template>
+                </div>
+                <div x-show="portForm.tractocamion_id" class="mt-1 text-[10px] font-label text-success uppercase tracking-widest">✓ <span x-text="tractoSeleccionadoLabel"></span></div>
+              </div>
+              <!-- Unidad Externa: Empresa -->
+              <div x-show="portForm.es_externa">
+                <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Empresa Externa *</label>
+                <select x-model="portForm.empresa_externa"
+                  class="w-full bg-surface border border-outline-variant/40 text-info font-mono font-bold p-3 focus:border-primary outline-none text-sm">
+                  <option value="">— SELECCIONAR EMPRESA —</option>
+                  <option value="OTI">OTI</option>
+                  <option value="Mofer">Mofer</option>
+                  <option value="Enriquez">Enriquez</option>
+                </select>
+              </div>
+              <!-- Placa Externa -->
+              <div x-show="portForm.es_externa">
+                <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Placa / ID Unidad *</label>
+                <input x-model="portForm.placa_externa" type="text"
+                  class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono font-bold p-3 focus:border-primary outline-none text-sm"
+                  placeholder="Ej. ABC-123-XY">
+              </div>
+            </div>
+
+            <!-- Operador con búsqueda predictiva -->
+            <div class="relative">
+              <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">
+                Operador <span x-show="!portForm.es_externa">*</span>
+              </label>
+              <template x-if="!portForm.es_externa">
+                <div>
+                  <input type="text" x-model="busquedaOperador" @input="filtrarOperadores()" @focus="showFuzzyOp=true" @click.outside="showFuzzyOp=false"
+                    placeholder="Buscar por nombre o número..."
+                    class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-body text-sm focus:border-primary outline-none">
+                  <div x-show="showFuzzyOp && fuzzyOpResults.length > 0" class="fuzzy-dropdown" x-cloak>
+                    <template x-for="op in fuzzyOpResults" :key="op.id">
+                      <div class="fuzzy-item" @click="seleccionarOperador(op)" x-text="op.nombre_completo + ' (' + op.numero_operador + ')'"></div>
+                    </template>
+                  </div>
+                  <div x-show="portForm.operador_id" class="mt-1 text-[10px] font-label text-success uppercase tracking-widest">✓ <span x-text="portForm.operador_nombre"></span></div>
+                </div>
+              </template>
+              <template x-if="portForm.es_externa">
+                <input type="text" x-model="portForm.operador_nombre"
+                  placeholder="Nombre del operador externo"
+                  class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-body text-sm focus:border-primary outline-none">
+              </template>
+            </div>
+
+            <!-- Caja / Remolque -->
+            <div>
+              <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Caja / Remolque</label>
+              <input x-model="portForm.caja_id" type="text" list="cajas-list"
+                class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-body text-sm focus:border-primary outline-none"
+                placeholder="Número de caja (ej. C-045)">
+              <datalist id="cajas-list">
+                <template x-for="c in catCajas.slice(0,50)" :key="c.id">
+                  <option :value="c.numero_caja" x-text="c.numero_caja"></option>
+                </template>
+              </datalist>
+            </div>
+
+            <!-- Estado de Caja + Sello -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Estado Caja *</label>
+                <select x-model="portForm.estado_caja"
+                  class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 focus:border-primary outline-none text-sm font-body" required>
+                  <option value="">— ESTADO —</option>
+                  <option value="vacio">Vacío</option>
+                  <option value="cargado">Cargado</option>
+                  <option value="botando">Botando</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Núm. Sello</label>
+                <input x-model="portForm.numero_sello" type="number"
+                  class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-mono font-bold text-sm focus:border-primary outline-none"
+                  placeholder="000000">
+              </div>
+            </div>
+
+            <!-- Origen / Destino (catálogo) -->
+            <div>
+              <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Origen / Destino *</label>
+              <select x-model="portForm.destino_origen_id"
+                class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 focus:border-primary outline-none text-sm font-body" required>
+                <option value="">— SELECCIONAR LUGAR —</option>
+                <template x-for="grp in destinosAgrupados" :key="grp.tipo">
+                  <optgroup :label="grp.tipo.toUpperCase()">
+                    <template x-for="d in grp.items" :key="d.id">
+                      <option :value="d.id" x-text="d.nombre"></option>
+                    </template>
+                  </optgroup>
+                </template>
+              </select>
+            </div>
+
+            <!-- Notas / Incidencias -->
+            <div>
+              <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Notas de Incidencia</label>
+              <textarea x-model="portForm.observaciones"
+                class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-body text-sm focus:border-primary outline-none resize-none" rows="3"
+                placeholder="Fuga de aire, ponchadura, gotera..."></textarea>
+              <div x-show="(portForm.observaciones || '').trim().length > 0" x-cloak
+                class="mt-2 flex items-center gap-2 text-warning font-label text-[10px] uppercase tracking-widest">
+                <i class="ph-fill ph-warning-circle text-sm"></i>
+                Se generará pre-orden en Taller automáticamente
+              </div>
+            </div>
+
+            <!-- Evidencia fotográfica -->
+            <div>
+              <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Evidencia Fotográfica</label>
+              <label class="foto-label" :for="'foto-input'">
+                <i class="ph-light ph-camera text-primary text-xl flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                  <div x-show="!portForm.foto_preview" class="font-label text-[10px] uppercase tracking-widest text-outline">
+                    Toca para capturar imagen de daños
+                  </div>
+                  <div x-show="portForm.foto_preview" class="font-label text-[10px] uppercase tracking-widest text-success">
+                    ✓ Foto adjuntada
+                  </div>
+                </div>
+                <img x-show="portForm.foto_preview" :src="portForm.foto_preview"
+                  class="w-12 h-12 object-cover border border-outline-variant/30 flex-shrink-0">
+              </label>
+              <input id="foto-input" type="file" accept="image/*" capture="environment"
+                @change="capturarFoto($event)">
+            </div>
+
+            <!-- Errores de Consistencia (Bloqueantes) -->
+            <div x-show="errorTractoMov || errorCajaMov" x-cloak
+              class="p-4 bg-error-container/20 border border-error/30 text-error flex flex-col gap-2">
+              <div class="flex items-start gap-2.5">
+                <i class="ph-fill ph-warning-circle text-lg mt-0.5 flex-shrink-0"></i>
+                <div class="text-xs font-body leading-relaxed">
+                  <div class="font-bold uppercase tracking-wider text-[10px] mb-1">Conflicto de Consistencia</div>
+                  <template x-if="errorTractoMov">
+                    <p x-text="errorTractoMov"></p>
+                  </template>
+                  <template x-if="errorCajaMov">
+                    <p class="mt-1" x-text="errorCajaMov"></p>
+                  </template>
+                </div>
+              </div>
+            </div>
+
+            <!-- Advertencia Sin Viaje Activo (Autorizable) -->
+            <div x-show="portForm.tipo_movimiento === 'salida' && alertaSinViaje && !errorTractoMov && !errorCajaMov" x-cloak
+              class="p-4 bg-warning/10 border border-warning/30 text-warning flex flex-col gap-3">
+              <div class="flex items-start gap-2.5">
+                <i class="ph-fill ph-warning text-lg mt-0.5 flex-shrink-0"></i>
+                <div class="text-xs font-body leading-relaxed flex-1">
+                  <div class="font-bold uppercase tracking-wider text-[10px] mb-1">Sin Viaje Activo Asignado</div>
+                  <p>Esta unidad no se encuentra asignada a un viaje activo en Tránsito en el sistema de Tráfico.</p>
+                </div>
+              </div>
+              <label class="flex items-center gap-2.5 pt-2 border-t border-warning/20 cursor-pointer select-none">
+                <input type="checkbox" x-model="autorizarSalidaExcepcional"
+                  class="rounded bg-surface border-warning/40 text-primary focus:ring-primary w-4 h-4">
+                <span class="font-label text-[10px] uppercase tracking-widest font-bold text-on-surface">Autorizar Salida Excepcional</span>
+              </label>
+            </div>
+
+            <!-- Confirmación de Viaje Activo (Exitoso) -->
+            <div x-show="portForm.tipo_movimiento === 'salida' && viajeActivoAsignado && !errorTractoMov && !errorCajaMov" x-cloak
+              class="p-4 bg-success/15 border border-success/30 text-success flex items-start gap-2.5">
+              <i class="ph-fill ph-check-circle text-lg mt-0.5 flex-shrink-0"></i>
+              <div class="text-xs font-body leading-relaxed">
+                <div class="font-bold uppercase tracking-wider text-[10px] mb-1">Viaje Activo Confirmado</div>
+                <p>Asignado al Folio: <span class="font-mono font-bold" x-text="viajeActivoAsignado?.folio"></span> (Cliente: <span class="font-bold" x-text="viajeActivoAsignado?.cliente"></span>, Destino: <span x-text="viajeActivoAsignado?.destino"></span>)</p>
+              </div>
+            </div>
+
+            <!-- Botón Submit -->
+            <button type="submit"
+              class="w-full bg-primary text-on-primary font-label text-xs font-bold uppercase tracking-widest py-4 hover:brightness-110 transition-all flex items-center justify-center gap-2"
+              :class="(errorTractoMov || errorCajaMov || (portForm.tipo_movimiento === 'salida' && alertaSinViaje && !autorizarSalidaExcepcional)) ? 'opacity-40 cursor-not-allowed' : ''"
+              :disabled="guardandoPort || errorTractoMov || errorCajaMov || (portForm.tipo_movimiento === 'salida' && alertaSinViaje && !autorizarSalidaExcepcional)">
+              <span x-show="!guardandoPort" class="flex items-center gap-2">
+                <i class="ph-light ph-check-circle text-lg"></i> Confirmar Registro
+              </span>
+              <span x-show="guardandoPort" class="spinner border-on-primary" style="border-top-color:transparent"></span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ═══ COLUMNA DERECHA: Bitácora + Horas Pico ═══ -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Bitácora de accesos -->
+        <div class="bg-surface-container-low border border-outline-variant/20 matte-grain">
+          <div class="px-7 py-5 border-b border-outline-variant/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h3 class="font-headline font-bold text-lg flex items-center gap-3">
+              <i class="ph-light ph-calendar text-primary"></i> Historial de Accesos
+            </h3>
+            <div class="flex items-center gap-3 flex-wrap">
+              <span class="text-[10px] font-label uppercase tracking-widest text-outline">Fecha:</span>
+              <input type="date" x-model="filtroFechaPorteria"
+                class="bg-surface border border-outline-variant/30 text-[10px] font-label font-bold uppercase tracking-widest px-4 py-2 focus:border-primary outline-none text-primary">
+              <button @click="exportarExcel()"
+                class="flex items-center gap-2 bg-surface border border-outline-variant/30 hover:border-primary text-[10px] font-label font-bold uppercase tracking-widest px-4 py-2 text-outline hover:text-primary transition-all">
+                <i class="ph-light ph-microsoft-excel-logo"></i> Excel
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-auto max-h-[480px]">
+            <table class="cif-table">
+              <thead>
+                <tr>
+                  <th>Hora</th>
+                  <th>Tipo</th>
+                  <th>Tracto</th>
+                  <th>Caja</th>
+                  <th>Estado</th>
+                  <th>Trayecto</th>
+                  <th>Sello</th>
+                  <th>Incid.</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="b in bitacoraFiltrada" :key="b.id">
+                  <tr class="hover:bg-white/[0.02] transition-colors">
+                    <td class="font-mono text-xs font-bold text-primary" x-text="b.hora"></td>
+                    <td>
+                      <span :class="b.tipo_movimiento === 'entrada' ? 'badge-success' : 'badge-danger'" class="badge">
+                        <span :class="b.tipo_movimiento === 'entrada' ? 'bg-success' : 'bg-danger'" class="w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
+                        <span x-text="b.tipo_movimiento"></span>
+                      </span>
+                    </td>
+                    <td class="font-bold text-sm text-on-surface font-mono" x-text="b.economico ?? '—'"></td>
+                    <td class="font-mono text-xs text-outline" x-text="b.caja_id || '—'"></td>
+                    <td>
+                      <span x-show="b.estado_caja" :class="{
+                        'badge-success': b.estado_caja === 'vacio',
+                        'badge-warning': b.estado_caja === 'cargado',
+                        'badge-orange':  b.estado_caja === 'botando'
+                      }" class="badge" x-text="b.estado_caja || ''"></span>
+                    </td>
+                    <td class="text-sm text-outline-variant max-w-[180px] truncate" :title="b.destino_origen" x-text="b.destino_origen ?? 'Sin especificar'"></td>
+                    <td class="font-mono text-xs text-outline" x-text="b.numero_sello || b.sello_caja || '—'"></td>
+                    <td>
+                      <span x-show="b.incidencia_tecnica" class="badge badge-danger pulse-alert">
+                        <i class="ph-fill ph-warning-circle text-xs"></i> SOS
+                      </span>
+                    </td>
+                    <td>
+                      <button @click="verDetalle(b)"
+                        class="w-8 h-8 flex items-center justify-center text-outline hover:text-primary transition-colors border border-outline-variant/20 hover:border-primary/40">
+                        <i class="ph-light ph-eye text-base"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </template>
+                <template x-if="bitacoraFiltrada.length === 0">
+                  <tr>
+                    <td colspan="9" class="text-center py-20 text-outline font-label uppercase tracking-widest opacity-50">Sin movimientos registrados para esta fecha</td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Análisis de Afluencia (Horas Pico) -->
+        <div class="bg-surface-container-low border border-outline-variant/20 matte-grain">
+          <div class="px-7 py-5 border-b border-outline-variant/20 flex justify-between items-center">
+            <h3 class="font-headline font-bold text-base flex items-center gap-3">
+              <i class="ph-light ph-chart-bar text-primary"></i> Análisis de Afluencia — Horas Pico
+            </h3>
+            <span class="font-label text-[9px] uppercase tracking-widest text-outline">Movimientos por hora del día seleccionado</span>
+          </div>
+          <div class="p-7">
+            <div class="flex items-end gap-1 h-28">
+              <template x-for="h in horasPico" :key="h.hora">
+                <div class="flex flex-col items-center gap-1 flex-1 cursor-default group" :title="`${h.hora}:00 — ${h.total} movimientos`">
+                  <div class="w-full relative flex flex-col items-center justify-end" style="height: 88px;">
+                    <!-- Tooltip -->
+                    <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-surface-container-highest text-primary font-mono text-[10px] font-bold px-1.5 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10" x-text="h.total + ' mov.'"></div>
+                    <div class="horas-bar w-full rounded-sm"
+                      :style="`height: ${h.total > 0 ? Math.max((h.total / maxHoraPico) * 88, 4) : 0}px; background: ${h.total === 0 ? 'rgba(79,69,63,0.15)' : h.total >= maxHoraPico * 0.66 ? '#ffb4ab' : h.total >= maxHoraPico * 0.33 ? '#D1A14E' : '#c3cc8c'};`">
+                    </div>
+                  </div>
+                  <div class="font-mono text-[9px] text-outline" x-text="h.hora.toString().padStart(2,'0')"></div>
+                  <div class="font-label text-[9px] font-bold" :class="h.total > 0 ? 'text-primary' : 'text-outline/30'" x-text="h.total || ''"></div>
+                </div>
+              </template>
+            </div>
+            <div class="mt-4 flex items-center gap-6">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-sm" style="background:#ffb4ab"></div>
+                <span class="font-label text-[9px] uppercase tracking-widest text-outline">Alta (Hora Pico)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-sm" style="background:#D1A14E"></div>
+                <span class="font-label text-[9px] uppercase tracking-widest text-outline">Media</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-sm" style="background:#c3cc8c"></div>
+                <span class="font-label text-[9px] uppercase tracking-widest text-outline">Baja</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<!-- ═══ MODAL DE DETALLE (Ojito) ═══ -->
+<div x-show="modalDetalle" x-transition class="modal-overlay" @click.self="modalDetalle=false" x-cloak style="display: none;">
+  <div class="modal-box" x-show="modalDetalle && registroDetalle" x-cloak style="display: none;">
+    <div class="px-7 py-5 border-b border-outline-variant/20 flex justify-between items-center">
+      <h3 class="font-headline font-bold text-base flex items-center gap-2">
+        <i class="ph-light ph-eye text-primary"></i> Detalle del Registro
+      </h3>
+      <button @click="modalDetalle=false" class="text-outline hover:text-primary transition-colors">
+        <i class="ph-light ph-x text-xl"></i>
+      </button>
+    </div>
+    <div class="p-7 space-y-4" x-show="registroDetalle">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Fecha y Hora</div>
+          <div class="font-mono text-sm font-bold text-primary" x-text="(registroDetalle?.fecha || '') + ' ' + (registroDetalle?.hora || '')"></div>
+        </div>
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Tipo</div>
+          <span :class="registroDetalle?.tipo_movimiento === 'entrada' ? 'badge-success' : 'badge-danger'" class="badge" x-text="registroDetalle?.tipo_movimiento || ''"></span>
+        </div>
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Tracto (Econ.)</div>
+          <div class="font-mono text-sm font-bold text-on-surface" x-text="registroDetalle?.economico || '—'"></div>
+        </div>
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Caja / Remolque</div>
+          <div class="font-mono text-sm text-on-surface" x-text="registroDetalle?.caja_id || '—'"></div>
+        </div>
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Estado de Caja</div>
+          <span :class="{
+            'badge-success': registroDetalle?.estado_caja === 'vacio',
+            'badge-warning': registroDetalle?.estado_caja === 'cargado',
+            'badge-orange':  registroDetalle?.estado_caja === 'botando'
+          }" class="badge" x-text="registroDetalle?.estado_caja || '—'"></span>
+        </div>
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Número de Sello</div>
+          <div class="font-mono text-sm font-bold text-on-surface" x-text="registroDetalle?.numero_sello || registroDetalle?.sello_caja || '—'"></div>
+        </div>
+      </div>
+      <div>
+        <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Origen / Destino</div>
+        <div class="text-sm text-on-surface" x-text="registroDetalle?.destino_origen || '—'"></div>
+      </div>
+      <div x-show="registroDetalle?.observaciones">
+        <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Notas / Incidencias</div>
+        <div class="bg-surface border border-warning/20 p-4 text-sm text-warning" x-text="registroDetalle?.observaciones"></div>
+      </div>
+      <div x-show="registroDetalle?.foto_preview || registroDetalle?.foto_url">
+        <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-2">Evidencia Fotográfica</div>
+        <img :src="registroDetalle?.foto_preview || registroDetalle?.foto_url" class="max-h-48 w-auto border border-outline-variant/20">
+      </div>
+      <div class="pt-4 border-t border-outline-variant/20">
+        <div x-show="registroDetalle?.incidencia_tecnica" class="flex items-center gap-3 bg-danger/10 border border-danger/20 p-4">
+          <i class="ph-fill ph-warning-circle text-danger text-xl flex-shrink-0"></i>
+          <div>
+            <div class="font-label text-[10px] uppercase tracking-widest text-danger font-bold">Incidencia Técnica Detectada</div>
+            <div class="font-body text-xs text-outline mt-0.5">Pre-orden de servicio generada automáticamente en Taller</div>
+          </div>
+        </div>
+        <div x-show="!registroDetalle?.incidencia_tecnica" class="font-label text-[9px] uppercase tracking-widest text-outline opacity-50 text-center py-2">
+          Sin incidencias registradas
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/api.js?v=3"></script>
+<script>
+function porteriaApp() {
+  return {
+    loading: true,
+    guardandoPort: false,
+    bitacora: [],
+    catTractos: [],
+    catCajas: [],
+    catDestinos: [],
+    catOperadores: [],
+    filtroFechaPorteria: new Date().toISOString().split('T')[0],
+    portForm: {
+      tipo_movimiento: 'entrada',
+      tractocamion_id: '',
+      caja_id: '',
+      estado_caja: '',
+      numero_sello: '',
+      destino_origen_id: '',
+      observaciones: '',
+      foto_preview: '',
+      es_externa: false,
+      empresa_externa: '',
+      placa_externa: '',
+      operador_id: '',
+      operador_nombre: ''
+    },
+    modalDetalle: false,
+    registroDetalle: null,
+
+    // Fuzzy Search state
+    busquedaTracto: '',
+    showFuzzyTracto: false,
+    fuzzyTractoResults: [],
+    tractoSeleccionadoLabel: '',
+    busquedaOperador: '',
+    showFuzzyOp: false,
+    fuzzyOpResults: [],
+
+    // Variables de validación de viaje para salida
+    alertaSinViaje: false,
+    viajeActivoAsignado: null,
+    autorizarSalidaExcepcional: false,
+
+    // ── Computed ──────────────────────────────────────────────
+    get bitacoraFiltrada() {
+      return this.bitacora.filter(b => {
+        const d = b.fecha || new Date().toISOString().split('T')[0];
+        return d === this.filtroFechaPorteria;
+      }).sort((a, b) => b.hora?.localeCompare(a.hora));
+    },
+
+    get destinosAgrupados() {
+      const grupos = {};
+      this.catDestinos.forEach(d => {
+        if (!grupos[d.tipo]) grupos[d.tipo] = [];
+        grupos[d.tipo].push(d);
+      });
+      return Object.entries(grupos).map(([tipo, items]) => ({ tipo, items }));
+    },
+
+    get horasPico() {
+      const horas = Array.from({ length: 24 }, (_, i) => ({ hora: i, total: 0 }));
+      this.bitacoraFiltrada.forEach(b => {
+        if (!b.hora) return;
+        let h = parseInt(b.hora.split(':')[0]);
+        if (isNaN(h)) return;
+        if (b.hora.toLowerCase().includes('p.m.') || b.hora.toLowerCase().includes('pm')) {
+          if (h !== 12) h += 12;
+        } else if (b.hora.toLowerCase().includes('a.m.') || b.hora.toLowerCase().includes('am')) {
+          if (h === 12) h = 0;
+        }
+        if (h >= 0 && h < 24) horas[h].total++;
+      });
+      return horas;
+    },
+
+    get maxHoraPico() {
+      return Math.max(1, ...this.horasPico.map(h => h.total));
+    },
+
+    // Candado de Consistencia en Tiempo Real - Tracto
+    get errorTractoMov() {
+      if (!this.portForm.tractocamion_id) return null;
+      const mov = this.obtenerUbicacionActual(this.portForm.tractocamion_id, 'tracto');
+      if (!mov) return null;
+      
+      if (this.portForm.tipo_movimiento === 'entrada' && mov === 'entrada') {
+        return '🚫 Conflicto: Este tracto ya se encuentra DENTRO (Base/Taller).';
+      }
+      if (this.portForm.tipo_movimiento === 'salida' && mov === 'salida') {
+        return '🚫 Conflicto: Este tracto ya se encuentra FUERA (En Ruta/Cliente).';
+      }
+      return null;
+    },
+
+    // Candado de Consistencia en Tiempo Real - Caja
+    get errorCajaMov() {
+      if (!this.portForm.caja_id) return null;
+      const cajaObj = this.catCajas.find(c => c.numero_caja === this.portForm.caja_id);
+      if (!cajaObj) return null;
+      
+      const mov = this.obtenerUbicacionActual(cajaObj.id, 'caja');
+      if (!mov) return null;
+      
+      if (this.portForm.tipo_movimiento === 'entrada' && mov === 'entrada') {
+        return '🚫 Conflicto: Esta caja ya se encuentra DENTRO (Base/Taller).';
+      }
+      if (this.portForm.tipo_movimiento === 'salida' && mov === 'salida') {
+        return '🚫 Conflicto: Esta caja ya se encuentra FUERA (En Ruta/Cliente).';
+      }
+      return null;
+    },
+
+    // ── Init ──────────────────────────────────────────────────
+    async init() {
+      await Promise.all([
+        this.cargarBitacora(),
+        this.cargarCatalogos()
+      ]);
+      this.loading = false;
+      
+      // Registrar observadores reactivos para la validación de viaje activo en salida
+      this.$watch('portForm.tractocamion_id', () => this.verificarViajeParaSalida());
+      this.$watch('portForm.caja_id', () => this.verificarViajeParaSalida());
+      this.$watch('portForm.tipo_movimiento', () => this.verificarViajeParaSalida());
+      
+      setInterval(() => this.cargarBitacora(), 30000);
+    },
+
+    // ── Fuzzy Search Helpers ──────────────────────────────────
+    _norm(s) { return (s || '').replace(/[\-\s\.]/g, '').toUpperCase(); },
+
+    filtrarTractosFuzzy() {
+      const q = this._norm(this.busquedaTracto);
+      if (!q) { this.fuzzyTractoResults = this.catTractos.slice(0, 15); return; }
+      this.fuzzyTractoResults = this.catTractos.filter(t =>
+        this._norm(t.numero_economico).includes(q) || this._norm(t.placas).includes(q)
+      ).slice(0, 15);
+      this.showFuzzyTracto = true;
+    },
+
+    seleccionarTracto(t) {
+      this.portForm.tractocamion_id = t.id;
+      this.busquedaTracto = t.numero_economico;
+      this.tractoSeleccionadoLabel = t.numero_economico;
+      this.showFuzzyTracto = false;
+    },
+
+    filtrarOperadores() {
+      const q = this._norm(this.busquedaOperador);
+      if (!q) { this.fuzzyOpResults = this.catOperadores.filter(o => o.activo !== false).slice(0, 10); return; }
+      this.fuzzyOpResults = this.catOperadores.filter(o =>
+        (o.activo !== false) && (this._norm(o.nombre_completo).includes(q) || this._norm(o.numero_operador).includes(q))
+      ).slice(0, 10);
+      this.showFuzzyOp = true;
+    },
+
+    seleccionarOperador(op) {
+      this.portForm.operador_id = op.id;
+      this.portForm.operador_nombre = op.nombre_completo;
+      this.busquedaOperador = op.nombre_completo;
+      this.showFuzzyOp = false;
+    },
+
+    async cargarBitacora() {
+      const d = await cifAPI.get('/porteria/bitacora');
+      if (d?.registros) this.bitacora = d.registros;
+      else if (Array.isArray(d?.data)) this.bitacora = d.data;
+    },
+
+    async cargarCatalogos() {
+      const [tractos, cajas, destinos, operadores] = await Promise.all([
+        cifAPI.get('/tractocamiones'),
+        cifAPI.get('/cajas'),
+        cifAPI.get('/destinos_catalogos'),
+        cifAPI.get('/operadores')
+      ]);
+      if (tractos?.data) this.catTractos = tractos.data;
+      if (cajas?.data)   this.catCajas   = cajas.data;
+      if (destinos?.destinos) this.catDestinos = destinos.destinos;
+      if (operadores?.data) this.catOperadores = operadores.data;
+    },
+
+    // ── Herramientas de Ubicación Histórica ───────────────────────
+    obtenerUbicacionActual(id, tipo = 'tracto') {
+      if (!id) return null;
+      
+      // 1 FUENTE DE VERDAD: El estado vivo del catálogo (Flota), ignorando la bitácora
+      if (tipo === 'tracto') {
+        const t = this.catTractos.find(x => x.id == id);
+        if (!t) return null;
+        return (t.estatus === 'en_ruta' || t.estatus === 'en_viaje' || t.estatus === 'en_cliente') ? 'salida' : 'entrada';
+      } else {
+        const c = this.catCajas.find(x => x.id == id || x.numero_caja === id);
+        if (!c) return null;
+        return (c.estatus === 'en_ruta' || c.estatus === 'en_viaje' || c.estatus === 'en_cliente') ? 'salida' : 'entrada';
+      }
+    },
+
+    // Asíncronamente validar viaje asignado en el sistema
+    async validarViajeActivo(tractoId, cajaId) {
+      try {
+        const resp = await cifAPI.get('/viajes');
+        const viajes = resp?.data || resp?.viajes || [];
+        
+        const viajeActivo = viajes.find(v => {
+          const esActivo = v.estatus === 'asignado' || v.estatus === 'en_transito';
+          const coincideTracto = tractoId && v.tractocamion_id == tractoId;
+          const coincideCaja = cajaId && v.caja_id == cajaId;
+          return esActivo && (coincideTracto || coincideCaja);
+        });
+        return viajeActivo || null;
+      } catch (e) {
+        console.error("Error validando viaje activo", e);
+        return null;
+      }
+    },
+
+    async verificarViajeParaSalida() {
+      this.alertaSinViaje = false;
+      this.viajeActivoAsignado = null;
+      
+      if (this.portForm.tipo_movimiento !== 'salida' || !this.portForm.tractocamion_id) {
+        return;
+      }
+      
+      const cajaObj = this.catCajas.find(c => c.numero_caja === this.portForm.caja_id);
+      const cajaId = cajaObj ? cajaObj.id : null;
+      
+      const viaje = await this.validarViajeActivo(this.portForm.tractocamion_id, cajaId);
+      if (viaje) {
+        this.viajeActivoAsignado = viaje;
+      } else {
+        this.alertaSinViaje = true;
+      }
+    },
+
+    // ── Captura de foto ───────────────────────────────────────
+    capturarFoto(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.portForm.foto_preview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+
+    // ── Registro ──────────────────────────────────────────────
+    async registrarPorteria() {
+      if (!this.portForm.tractocamion_id) {
+        cifToast('Selecciona el tracto', 'error'); return;
+      }
+      if (!this.portForm.destino_origen_id) {
+        cifToast('Selecciona el origen/destino', 'error'); return;
+      }
+      if (!this.portForm.estado_caja) {
+        cifToast('Indica el estado de la caja', 'error'); return;
+      }
+
+      // Validaciones finales de candados
+      if (this.errorTractoMov || this.errorCajaMov) {
+        cifToast('Conflicto de consistencia en el estado del activo.', 'error');
+        return;
+      }
+
+      if (this.portForm.tipo_movimiento === 'salida' && this.alertaSinViaje && !this.autorizarSalidaExcepcional) {
+        cifToast('⚠️ Bloqueado: Se requiere un viaje asignado o autorización excepcional.', 'error');
+        return;
+      }
+
+      this.guardandoPort = true;
+      const now   = new Date();
+      const tracto = this.catTractos.find(t => t.id == this.portForm.tractocamion_id);
+      const cajaObj = this.catCajas.find(c => c.numero_caja === this.portForm.caja_id);
+      const dest   = this.catDestinos.find(d => d.id == this.portForm.destino_origen_id);
+      const hayIncidencia = this.portForm.observaciones.trim().length > 0;
+
+      const payload = {
+        ...this.portForm,
+        hora: now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        fecha: now.toISOString().split('T')[0],
+        economico: tracto ? tracto.numero_economico : '—',
+        destino_origen: dest ? dest.nombre : '—',
+        incidencia_tecnica: hayIncidencia,
+      };
+
+      const res = await cifAPI.post('/porteria/bitacora', payload);
+
+      if (res?.ok) {
+        // --- CANDADO CRUZADO: Sincronizar automáticamente en Flota ---
+        const esEntrada = this.portForm.tipo_movimiento === 'entrada';
+        
+        // 1. Sincronizar Estatus de Tractocamión
+        let statusTracto = esEntrada ? (hayIncidencia ? 'en_taller' : 'disponible') : 'en_ruta';
+        let ubicacionTracto = esEntrada ? (hayIncidencia ? 'Taller' : 'Base') : 'En Ruta';
+        await cifAPI.put(`/tractocamiones/${this.portForm.tractocamion_id}`, {
+          estatus: statusTracto,
+          ubicacion_actual: ubicacionTracto
+        });
+
+        // 2. Sincronizar Estatus de Caja (si se ingresó alguna)
+        if (cajaObj) {
+          let statusCaja = esEntrada ? 'disponible' : 'en_viaje';
+          let ubicacionCaja = esEntrada ? 'Base' : 'En Ruta';
+          
+          if (!esEntrada && dest && dest.tipo === 'cliente') {
+            statusCaja = 'en_cliente';
+            ubicacionCaja = 'Cliente';
+          }
+          
+          await cifAPI.put(`/cajas/${cajaObj.id}`, {
+            estatus: statusCaja,
+            ubicacion_actual: ubicacionCaja,
+            cliente_nombre: (!esEntrada && dest && dest.tipo === 'cliente') ? dest.nombre : (esEntrada ? '' : cajaObj.cliente_nombre)
+          });
+        }
+
+        // Trigger automático a Taller si hay incidencia
+        if (hayIncidencia) {
+          await cifAPI.post('/taller/solicitudes', {
+            tractocamion_id: this.portForm.tractocamion_id,
+            economico: tracto ? tracto.numero_economico : '—',
+            problema: this.portForm.observaciones,
+            urgencia: 'alta',
+            puede_operar: false,
+            fuente: 'porteria',
+            fecha: now.toISOString().split('T')[0],
+            hora: payload.hora,
+            estatus: 'pendiente'
+          });
+          cifToast('⚠️ Incidencia detectada — Sincronizado a Taller y Flota', 'warning');
+        } else {
+          cifToast('✓ Movimiento registrado y sincronizado en Flota con éxito');
+        }
+
+        // Resetear Formulario
+        this.portForm = {
+          tipo_movimiento: 'entrada', tractocamion_id: '', caja_id: '',
+          estado_caja: '', numero_sello: '', destino_origen_id: '',
+          observaciones: '', foto_preview: '',
+          es_externa: false, empresa_externa: '', placa_externa: '',
+          operador_id: '', operador_nombre: ''
+        };
+        this.busquedaTracto = '';
+        this.tractoSeleccionadoLabel = '';
+        this.busquedaOperador = '';
+        this.autorizarSalidaExcepcional = false;
+        this.alertaSinViaje = false;
+        this.viajeActivoAsignado = null;
+        
+        await this.cargarBitacora();
+        await this.cargarCatalogos(); // Recargar catálogos locales para reflejar el cambio inmediato
+      } else {
+        cifToast(res?.error || 'Error al registrar', 'error');
+      }
+      this.guardandoPort = false;
+    },
+
+    // ── Detalle (Ojito) ───────────────────────────────────────
+    verDetalle(registro) {
+      this.registroDetalle = registro;
+      this.modalDetalle = true;
+    },
+
+    // ── Exportar Excel ────────────────────────────────────────
+    exportarExcel() {
+      if (!window.XLSX) { cifToast('Librería XLSX no disponible', 'error'); return; }
+      const datos = this.bitacoraFiltrada.map(b => ({
+        'Fecha':       b.fecha || '',
+        'Hora':        b.hora || '',
+        'Tipo':        b.tipo_movimiento || '',
+        'Tracto':      b.economico || '',
+        'Caja':        b.caja_id || '',
+        'Estado Caja': b.estado_caja || '',
+        'Origen/Destino': b.destino_origen || '',
+        'Sello':       b.numero_sello || b.sello_caja || '',
+        'Incidencia':  b.incidencia_tecnica ? 'SÍ' : 'NO',
+        'Notas':       b.observaciones || ''
+      }));
+      const ws = XLSX.utils.json_to_sheet(datos);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Bitácora Portería');
+      XLSX.writeFile(wb, `CIF_Porteria_${this.filtroFechaPorteria}.xlsx`);
+      cifToast('📊 Excel generado correctamente');
+    }
+  };
+}
+</script>
+</body>
+</html>

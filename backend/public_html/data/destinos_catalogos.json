@@ -1,0 +1,22 @@
+{
+  "destinos": [
+    { "id": 1, "nombre": "Planta Licom", "tipo": "cliente", "ciudad": "Cd. Juárez" },
+    { "id": 2, "nombre": "Planta Foxconn", "tipo": "cliente", "ciudad": "Cd. Juárez" },
+    { "id": 3, "nombre": "Planta Biopapel", "tipo": "cliente", "ciudad": "Cd. Juárez" },
+    { "id": 4, "nombre": "Planta Sumitomo", "tipo": "cliente", "ciudad": "Cd. Juárez" },
+    { "id": 5, "nombre": "Planta DANGIL", "tipo": "cliente", "ciudad": "Cd. Juárez" },
+    { "id": 6, "nombre": "Puente Comercio Mundial (Zaragoza)", "tipo": "cruce", "ciudad": "Cd. Juárez" },
+    { "id": 7, "nombre": "Puente Lerdo / Paso del Norte", "tipo": "cruce", "ciudad": "Cd. Juárez" },
+    { "id": 8, "nombre": "Bridge of the Americas", "tipo": "cruce", "ciudad": "El Paso TX" },
+    { "id": 9, "nombre": "Ysleta - Zaragoza Bridge", "tipo": "cruce", "ciudad": "El Paso TX" },
+    { "id": 10, "nombre": "Base CIF — Patio Juárez", "tipo": "base", "ciudad": "Cd. Juárez" },
+    { "id": 11, "nombre": "Taller CIF", "tipo": "taller", "ciudad": "Cd. Juárez" },
+    { "id": 12, "nombre": "Rampa / Anden de Descarga", "tipo": "operacion", "ciudad": "Cd. Juárez" },
+    { "id": 13, "nombre": "Almacén Interplanta", "tipo": "operacion", "ciudad": "Cd. Juárez" },
+    { "id": 14, "nombre": "Gasolinera Ruta Norte", "tipo": "servicio", "ciudad": "Cd. Juárez" },
+    { "id": 15, "nombre": "Aduana Exterior", "tipo": "cruce", "ciudad": "Cd. Juárez" },
+    { "id": 16, "nombre": "Monterrey (Foránea)", "tipo": "foraneo", "ciudad": "Monterrey" },
+    { "id": 17, "nombre": "CDMX (Foránea)", "tipo": "foraneo", "ciudad": "CDMX" },
+    { "id": 18, "nombre": "Guadalajara (Foránea)", "tipo": "foraneo", "ciudad": "Guadalajara" }
+  ]
+}

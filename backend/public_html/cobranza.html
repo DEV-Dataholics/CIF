@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIF Logística — Cobranza y Morosidad</title>
+  <meta name="description" content="Módulo de cuentas por cobrar, dashboard de morosidad y control de pagos CIF Logística">
+  <link href="assets/css/tailwind.min.css?v=2" rel="stylesheet">
+  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style>
+    [x-cloak] { display: none !important; }
+    body { min-height: 100dvh; }
+    .matte-grain { position: relative; }
+    .matte-grain::before {
+      content: ""; position: absolute; inset: 0; opacity: 0.03; pointer-events: none;
+      background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCxtzo5Fd4tGwvT_jg4ysGETAyo_0QJXqFxE0Vz2jCSFfdCW_xcsx8ttX4CZRiXAQ5e-8ClJGovIme_H86utYa8siODIK5ToDWQRd0J97DLwVKIRNDWTJFuuP9hcZHxl3TW0UHrsINdFeEP-GfWzg6ZsUAe9dbaTn0kGfYEn6L_suxq7ifFL2e4HJJxC6M6yMa4wOfyyyiBZMm_ILej9DcNsEEVsRhY2idiHrWisdeOIG82K0lswo1JUKVmQYcwAiapSH8q-Y8FZ4J8);
+    }
+    .cif-table { width: 100%; border-collapse: collapse; }
+    .cif-table th {
+      text-align: left; padding: 0.875rem 1rem; border-bottom: 1px solid rgba(79,69,63,0.3);
+      font-family: 'Inter', sans-serif; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9b8e87;
+    }
+    .cif-table td { padding: 0.875rem 1rem; border-bottom: 1px solid rgba(79,69,63,0.1); font-family: 'Manrope', sans-serif; }
+    .cif-table tbody tr:hover { background: rgba(79,69,63,0.05); }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(209,161,78,0.3); border-top-color: #D1A14E; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .badge { padding: 0.2rem 0.55rem; font-size: 0.6rem; font-weight: 700; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .badge-danger  { background: rgba(255,180,171,0.1); color: #ffb4ab; border-color: rgba(255,180,171,0.2); }
+    .badge-warning { background: rgba(209,161,78,0.1);  color: #D1A14E; border-color: rgba(209,161,78,0.2); }
+    .badge-success { background: rgba(195,204,140,0.1); color: #c3cc8c; border-color: rgba(195,204,140,0.2); }
+    .badge-info    { background: rgba(147,197,253,0.1); color: #93c5fd; border-color: rgba(147,197,253,0.2); }
+    .badge-muted   { background: rgba(155,142,135,0.1); color: #9b8e87; border-color: rgba(155,142,135,0.2); }
+
+    /* Semáforo */
+    .semaforo-verde  { border-left: 4px solid #c3cc8c; }
+    .semaforo-amarillo { border-left: 4px solid #D1A14E; }
+    .semaforo-rojo   { border-left: 4px solid #ffb4ab; }
+
+    @keyframes pulse-danger { 0%,100% { box-shadow: 0 0 0 0 rgba(255,180,171,0.3); } 50% { box-shadow: 0 0 0 8px rgba(255,180,171,0); } }
+    .pulsing-danger { animation: pulse-danger 2s ease-in-out infinite; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1.5rem;
+    }
+    .modal-box { background: #1f1f20; border: 1px solid rgba(79,69,63,0.4); max-width: 800px; width: 100%; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(209,161,78,0.25); }
+
+    /* Drag and Drop zone */
+    .dnd-zone { border: 2px dashed rgba(79,69,63,0.4); transition: all 0.2s; }
+    .dnd-zone.dragover { border-color: #D1A14E; background: rgba(209,161,78,0.05); }
+    .dnd-progress { height: 4px; background: rgba(209,161,78,0.15); overflow: hidden; }
+    .dnd-progress-bar { height: 100%; background: #D1A14E; transition: width 0.3s ease; }
+
+    /* Accordion */
+    .accordion-header { cursor: pointer; transition: background 0.2s; }
+    .accordion-header:hover { background: rgba(209,161,78,0.05); }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+
+<div x-data="cobranzaApp()" x-init="init()" class="min-h-screen flex flex-col">
+
+  <!-- HEADER / TOP NAVIGATION -->
+  <header class="bg-surface-container-lowest sticky top-0 z-50 border-b border-outline-variant/10">
+    <div class="max-w-[1500px] mx-auto px-8 py-5 flex justify-between items-center">
+      <a href="home.html" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
+        <img src="assets/LOGOCIF.png" alt="CIF Logística" style="height:5.5rem;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(209,161,78,0.2));">
+      </a>
+
+      <nav class="hidden lg:flex gap-6 font-label text-[10px] uppercase tracking-widest font-bold">
+        <a class="text-outline-variant hover:text-primary transition-colors" href="home.html">Inicio</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="flota.html">Flota</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="operadores.html">Operadores</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="taller.html">Taller</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="porteria.html">Accesos</a>
+        <a class="text-primary border-b border-primary pb-1" href="cobranza.html">Cobranza</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
+          <i class="ph-light ph-user text-primary text-xl"></i>
+        </div>
+        <button @click="cifAPI.logout()" class="hidden sm:flex items-center gap-2 text-[10px] font-label uppercase tracking-widest text-outline hover:text-primary transition-colors border border-outline-variant/20 px-4 py-2 font-bold">
+          <i class="ph-light ph-sign-out text-lg"></i> SALIR
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full max-w-[1500px] mx-auto px-8 py-10">
+
+    <!-- Encabezado -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+      <div>
+        <span class="font-label text-primary text-[11px] uppercase tracking-[0.3em] mb-4 block">Módulo 06</span>
+        <h2 class="font-headline text-4xl font-bold tracking-tight mb-3 flex items-center gap-3">
+          <i class="ph-light ph-currency-circle-dollar text-primary"></i> Cobranza y C×C
+        </h2>
+        <div class="font-label text-xs uppercase tracking-widest text-outline">Control de cuentas por cobrar · Rastreo de morosidad · Semáforo de antigüedad</div>
+      </div>
+      <!-- Carga XML: Drag and Drop Zone -->
+      <div class="flex gap-3 items-center">
+        <div class="relative">
+          <div class="dnd-zone px-6 py-4 flex items-center gap-3 cursor-pointer"
+            :class="isDragOver ? 'dragover' : ''"
+            @dragover.prevent="isDragOver=true" @dragleave="isDragOver=false"
+            @drop.prevent="handleDrop($event)" @click="$refs.xmlInput.click()">
+            <i class="ph-light ph-file-xml text-primary text-2xl"></i>
+            <div>
+              <div class="font-label text-[10px] font-bold uppercase tracking-widest text-primary">Cargar XML(s)</div>
+              <div class="font-label text-[9px] text-outline uppercase tracking-widest">Arrastra o haz clic · Múltiples archivos</div>
+            </div>
+            <input type="file" accept=".xml" multiple class="hidden" x-ref="xmlInput" @change="handleFileSelect($event)">
+          </div>
+          <!-- Progress Bar -->
+          <div x-show="batchProcessing" class="dnd-progress mt-1" x-cloak>
+            <div class="dnd-progress-bar" :style="'width:' + batchProgress + '%'"></div>
+          </div>
+          <div x-show="batchProcessing" class="font-label text-[9px] text-primary uppercase tracking-widest mt-1" x-text="'Procesando ' + batchCurrent + '/' + batchTotal + ' archivos...'" x-cloak></div>
+        </div>
+        <button @click="configVisible = !configVisible" class="flex items-center gap-2 border border-outline-variant/30 text-outline hover:border-primary hover:text-primary font-label text-[10px] font-bold uppercase tracking-widest px-4 py-3 transition-all"
+          :class="configVisible ? 'border-primary text-primary' : ''">
+          <i class="ph-light ph-gear text-lg"></i>
+        </button>
+        <button @click="init()" class="flex items-center gap-2 border border-outline-variant/30 text-outline hover:border-primary hover:text-primary font-label text-[10px] font-bold uppercase tracking-widest px-5 py-3 transition-all">
+          <i class="ph-light ph-arrow-clockwise"></i> Actualizar
+        </button>
+      </div>
+    </div>
+
+    <!-- Panel de Configuración -->
+    <div x-show="configVisible" x-transition class="mb-8 bg-surface-container-low border border-primary/30 p-6">
+      <div class="flex items-center gap-2 mb-5">
+        <i class="ph-light ph-gear text-primary text-lg"></i>
+        <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Configuración de Cobranza</h4>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <label class="block font-label text-[9px] uppercase tracking-widest text-outline font-bold mb-2">Días de Crédito (Vencimiento)</label>
+          <input type="number" x-model.number="diasCredito" min="1" max="365"
+            class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-mono text-sm focus:border-primary outline-none">
+          <p class="text-[9px] text-outline mt-1">Días después de emisión para calcular vencimiento</p>
+        </div>
+        <div>
+          <label class="block font-label text-[9px] uppercase tracking-widest text-outline font-bold mb-2">Umbral Semáforo Amarillo (días)</label>
+          <input type="number" x-model.number="umbralAmarillo" min="1" max="365"
+            class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-mono text-sm focus:border-primary outline-none">
+          <p class="text-[9px] text-outline mt-1">A partir de cuántos días se marca como "Atención"</p>
+        </div>
+        <div>
+          <label class="block font-label text-[9px] uppercase tracking-widest text-outline font-bold mb-2">Umbral Semáforo Rojo (días)</label>
+          <input type="number" x-model.number="umbralRojo" min="1" max="365"
+            class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-mono text-sm focus:border-primary outline-none">
+          <p class="text-[9px] text-outline mt-1">A partir de cuántos días se marca como "Morosa Crítica"</p>
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end">
+        <button @click="guardarConfig()" class="bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-8 py-3 hover:brightness-110 transition-all flex items-center gap-2">
+          <i class="ph-light ph-floppy-disk text-lg"></i> Guardar Configuración
+        </button>
+      </div>
+    </div>
+
+    <!-- Alerta crítica dinámica -->
+    <div x-show="facturas.filter(f=>f.dias_antiguedad > umbralRojo && f.estatus === 'pendiente').length > 0"
+      class="mb-8 bg-danger/10 border border-danger/30 p-5 flex items-center gap-4 pulsing-danger">
+      <i class="ph-fill ph-warning-circle text-danger text-3xl flex-shrink-0"></i>
+      <div>
+        <div class="font-label text-[11px] uppercase tracking-widest text-danger font-bold mb-1">
+          ⚠️ Alerta Crítica de Morosidad
+        </div>
+        <div class="font-body text-sm text-on-surface">
+          Existen <strong x-text="facturas.filter(f=>f.dias_antiguedad > umbralRojo && f.estatus === 'pendiente').length"></strong>
+          facturas con más de <strong x-text="umbralRojo"></strong> días de antigüedad.
+          Monto en riesgo:
+          <strong class="text-danger" x-text="'$' + facturas.filter(f=>f.dias_antiguedad > umbralRojo && f.estatus === 'pendiente').reduce((s,f)=>s+f.monto,0).toLocaleString('es-MX', {maximumFractionDigits:0}) + ' MXN'"></strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs Semáforo (dinámico) -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+      <div class="bg-surface-container-low border border-outline-variant/20 matte-grain p-6">
+        <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-3">Total Por Cobrar</div>
+        <div class="text-2xl font-headline font-bold text-primary"
+          x-text="'$' + facturas.filter(f=>f.estatus==='pendiente').reduce((s,f)=>s+f.monto,0).toLocaleString('es-MX',{maximumFractionDigits:0})"></div>
+        <div class="font-label text-[9px] text-outline mt-1 uppercase tracking-widest"
+          x-text="facturas.filter(f=>f.estatus==='pendiente').length + ' facturas pendientes'"></div>
+      </div>
+
+      <div class="bg-surface-container-low border-l-4 border-success semaforo-verde matte-grain p-6">
+        <div class="font-label text-[9px] uppercase tracking-widest text-success mb-3 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-success"></span> <span x-text="'0–' + (umbralAmarillo - 1) + ' Días'"></span>
+        </div>
+        <div class="text-2xl font-headline font-bold text-success"
+          x-text="facturas.filter(f=>f.dias_antiguedad < umbralAmarillo && f.estatus==='pendiente').length"></div>
+        <div class="font-label text-[9px] text-outline mt-1 uppercase tracking-widest">facturas vigentes</div>
+        <div class="text-xs font-mono font-bold text-success/70 mt-1"
+          x-text="'$' + facturas.filter(f=>f.dias_antiguedad < umbralAmarillo && f.estatus==='pendiente').reduce((s,f)=>s+f.monto,0).toLocaleString('es-MX',{maximumFractionDigits:0})"></div>
+      </div>
+
+      <div class="bg-surface-container-low border-l-4 border-warning semaforo-amarillo matte-grain p-6">
+        <div class="font-label text-[9px] uppercase tracking-widest text-warning mb-3 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-warning"></span> <span x-text="umbralAmarillo + '–' + umbralRojo + ' Días'"></span>
+        </div>
+        <div class="text-2xl font-headline font-bold text-warning"
+          x-text="facturas.filter(f=>f.dias_antiguedad >= umbralAmarillo && f.dias_antiguedad <= umbralRojo && f.estatus==='pendiente').length"></div>
+        <div class="font-label text-[9px] text-outline mt-1 uppercase tracking-widest">próximas a vencer</div>
+        <div class="text-xs font-mono font-bold text-warning/70 mt-1"
+          x-text="'$' + facturas.filter(f=>f.dias_antiguedad >= umbralAmarillo && f.dias_antiguedad <= umbralRojo && f.estatus==='pendiente').reduce((s,f)=>s+f.monto,0).toLocaleString('es-MX',{maximumFractionDigits:0})"></div>
+      </div>
+
+      <div class="bg-surface-container-low border-l-4 border-danger semaforo-rojo matte-grain p-6">
+        <div class="font-label text-[9px] uppercase tracking-widest text-danger mb-3 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-danger"></span> <span x-text="'+' + umbralRojo + ' Días'"></span>
+        </div>
+        <div class="text-2xl font-headline font-bold text-danger"
+          x-text="facturas.filter(f=>f.dias_antiguedad > umbralRojo && f.estatus==='pendiente').length"></div>
+        <div class="font-label text-[9px] text-outline mt-1 uppercase tracking-widest">morosas críticas</div>
+        <div class="text-xs font-mono font-bold text-danger/70 mt-1"
+          x-text="'$' + facturas.filter(f=>f.dias_antiguedad > umbralRojo && f.estatus==='pendiente').reduce((s,f)=>s+f.monto,0).toLocaleString('es-MX',{maximumFractionDigits:0})"></div>
+      </div>
+    </div>
+
+    <!-- Tabla de Facturas -->
+    <div class="bg-surface-container-low border border-outline-variant/20 matte-grain">
+      <div class="px-7 py-5 border-b border-outline-variant/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h3 class="font-headline font-bold text-lg flex items-center gap-3">
+          <i class="ph-light ph-invoice text-primary"></i> Libro de Cuentas por Cobrar
+        </h3>
+        <div class="flex items-center gap-3">
+          <!-- Vista Toggle -->
+          <div class="flex gap-1 border border-outline-variant/20 p-0.5">
+            <button @click="vistaCobranza='tabla'" :class="vistaCobranza==='tabla' ? 'bg-surface-container-highest text-primary' : 'text-outline'" class="font-label text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 transition-all"><i class="ph-bold ph-table"></i></button>
+            <button @click="vistaCobranza='cliente'" :class="vistaCobranza==='cliente' ? 'bg-surface-container-highest text-primary' : 'text-outline'" class="font-label text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 transition-all"><i class="ph-bold ph-users-three"></i> Clientes</button>
+          </div>
+          <!-- Búsqueda de Cliente -->
+          <input x-show="vistaCobranza==='cliente'" x-model="busquedaCliente" type="text" placeholder="Buscar cliente..."
+            class="bg-surface border border-outline-variant/30 text-sm font-label px-3 py-1.5 focus:border-primary outline-none text-primary w-48" x-cloak>
+          <span class="font-label text-[9px] uppercase tracking-widest text-outline">Filtrar:</span>
+          <div class="flex gap-1">
+            <button @click="filtro='todas'"
+              :class="filtro==='todas' ? 'bg-surface-container-highest text-primary border-primary' : 'text-outline border-outline-variant/30'"
+              class="font-label text-[9px] uppercase tracking-widest font-bold border px-3 py-1.5 transition-all">Todas</button>
+            <button @click="filtro='pendiente'"
+              :class="filtro==='pendiente' ? 'bg-surface-container-highest text-warning border-warning' : 'text-outline border-outline-variant/30'"
+              class="font-label text-[9px] uppercase tracking-widest font-bold border px-3 py-1.5 transition-all">Pendientes</button>
+            <button @click="filtro='pagada'"
+              :class="filtro==='pagada' ? 'bg-surface-container-highest text-success border-success' : 'text-outline border-outline-variant/30'"
+              class="font-label text-[9px] uppercase tracking-widest font-bold border px-3 py-1.5 transition-all">Pagadas</button>
+            <button @click="filtro='critica'"
+              :class="filtro==='critica' ? 'bg-surface-container-highest text-danger border-danger' : 'text-outline border-outline-variant/30'"
+              class="font-label text-[9px] uppercase tracking-widest font-bold border px-3 py-1.5 transition-all">+60d Críticas</button>
+          </div>
+        </div>
+      </div>
+
+      <div x-show="loading" class="flex items-center justify-center py-20">
+        <span class="spinner" style="width:32px;height:32px;"></span>
+      </div>
+
+      <div x-show="!loading" class="overflow-auto">
+
+        <!-- Vista Acordeón por Cliente -->
+        <template x-if="vistaCobranza === 'cliente'">
+          <div class="divide-y divide-outline-variant/10">
+            <template x-for="grupo in clientesAgrupados" :key="grupo.cliente">
+              <div>
+                <div class="accordion-header flex items-center justify-between px-7 py-4" @click="grupo.open = !grupo.open">
+                  <div class="flex items-center gap-4">
+                    <i class="ph-bold" :class="grupo.open ? 'ph-caret-down text-primary' : 'ph-caret-right text-outline'"></i>
+                    <div class="w-3 h-3 rounded-full flex-shrink-0"
+                      :class="grupo.maxDias > umbralRojo ? 'bg-danger pulsing-danger' : grupo.maxDias >= umbralAmarillo ? 'bg-warning' : 'bg-success'"></div>
+                    <div>
+                      <div class="font-bold text-sm text-on-surface" x-text="grupo.cliente"></div>
+                      <div class="font-label text-[9px] text-outline uppercase tracking-widest" x-text="grupo.facturas.length + ' facturas'"></div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-6">
+                    <div class="text-right">
+                      <div class="font-mono text-sm font-bold text-primary" x-text="'$' + Number(grupo.saldoPendiente).toLocaleString('es-MX',{maximumFractionDigits:0})"></div>
+                      <div class="font-label text-[9px] text-outline uppercase tracking-widest">Saldo pendiente</div>
+                    </div>
+                  </div>
+                </div>
+                <div x-show="grupo.open" x-transition class="border-t border-outline-variant/10">
+                  <table class="cif-table">
+                    <thead>
+                      <tr><th>Folio</th><th>Concepto</th><th>Monto</th><th>Emisión</th><th>Vencimiento</th><th>Atraso</th><th>Estatus</th><th class="text-center">Acción</th></tr>
+                    </thead>
+                    <tbody>
+                      <template x-for="f in grupo.facturas" :key="f.id">
+                        <tr class="hover:bg-white/[0.02] transition-colors">
+                          <td class="font-mono text-xs font-bold text-primary" x-text="f.folio"></td>
+                          <td class="text-xs text-outline-variant max-w-[200px] truncate" x-text="f.concepto"></td>
+                          <td class="font-mono text-sm font-bold text-success" x-text="'$' + Number(f.monto).toLocaleString('es-MX',{minimumFractionDigits:0})"></td>
+                          <td class="font-mono text-xs text-outline" x-text="f.fecha_emision"></td>
+                          <td class="font-mono text-xs" x-text="f.fecha_vencimiento || '—'"></td>
+                          <td><span class="font-mono text-sm font-bold" :class="f.dias_antiguedad > umbralRojo ? 'text-danger' : f.dias_antiguedad >= umbralAmarillo ? 'text-warning' : 'text-success'" x-text="f.dias_antiguedad + 'd'"></span></td>
+                          <td><span class="badge" :class="f.estatus==='pagada' ? 'badge-success' : 'badge-warning'" x-text="f.estatus==='pagada' ? '✓ Pagada' : 'Vigente'"></span></td>
+                          <td class="text-center">
+                            <button x-show="f.estatus==='pendiente'" @click="abrirPagarModal(f)" class="bg-success/10 border border-success/40 text-success hover:bg-success hover:text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-4 py-2 transition-all"><i class="ph-light ph-check-circle"></i> Pagada</button>
+                          </td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </template>
+            <template x-if="clientesAgrupados.length === 0">
+              <div class="text-center py-20 text-outline font-label uppercase tracking-widest opacity-50">Sin facturas que mostrar</div>
+            </template>
+          </div>
+        </template>
+
+        <!-- Vista Tabla Plana (original) -->
+        <template x-if="vistaCobranza === 'tabla'">
+        <table class="cif-table">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Cliente</th>
+              <th>Concepto</th>
+              <th>Monto</th>
+              <th>Emisión</th>
+              <th>Vencimiento</th>
+              <th>Atraso</th>
+              <th>Semáforo</th>
+              <th>Estatus</th>
+              <th class="text-center">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="f in facturasFiltradas" :key="f.id">
+              <tr class="hover:bg-white/[0.02] transition-colors" :class="f.dias_antiguedad > umbralRojo && f.estatus==='pendiente' ? 'border-l border-danger/30' : ''">
+                <td class="font-mono text-xs font-bold text-primary" x-text="f.folio"></td>
+                <td class="text-sm font-bold text-on-surface max-w-[160px] truncate" :title="f.cliente" x-text="f.cliente"></td>
+                <td class="text-xs text-outline-variant max-w-[200px] truncate" :title="f.concepto" x-text="f.concepto"></td>
+                <td class="font-mono text-sm font-bold text-success whitespace-nowrap"
+                  x-text="'$' + Number(f.monto).toLocaleString('es-MX',{minimumFractionDigits:0})"></td>
+                <td class="font-mono text-xs text-outline" x-text="f.fecha_emision"></td>
+                <td class="font-mono text-xs" :class="f.fecha_vencimiento && new Date(f.fecha_vencimiento) < new Date() && f.estatus==='pendiente' ? 'text-danger font-bold' : 'text-outline'" x-text="f.fecha_vencimiento || '—'"></td>
+                <td>
+                  <span class="font-mono text-sm font-bold"
+                    :class="f.dias_antiguedad > umbralRojo ? 'text-danger' : f.dias_antiguedad >= umbralAmarillo ? 'text-warning' : 'text-success'"
+                    x-text="f.dias_antiguedad + 'd'"></span>
+                </td>
+                <td>
+                  <div class="w-3 h-3 rounded-full"
+                    :class="f.estatus==='pagada' ? 'bg-outline/50' : f.dias_antiguedad > umbralRojo ? 'bg-danger pulsing-danger' : f.dias_antiguedad >= umbralAmarillo ? 'bg-warning' : 'bg-success'"
+                    :title="f.estatus==='pagada' ? 'Pagada' : f.dias_antiguedad > umbralRojo ? 'Crítico' : f.dias_antiguedad >= umbralAmarillo ? 'Atención' : 'Al corriente'">
+                  </div>
+                </td>
+                <td>
+                  <span class="badge"
+                    :class="f.estatus==='pagada' ? 'badge-success' : f.dias_antiguedad > umbralRojo ? 'badge-danger' : f.dias_antiguedad >= umbralAmarillo ? 'badge-warning' : 'badge-info'"
+                    x-text="f.estatus === 'pagada' ? '✓ Pagada' : f.dias_antiguedad > umbralRojo ? '⚠ Morosa' : 'Vigente'">
+                  </span>
+                </td>
+                <td class="text-center">
+                  <button x-show="f.estatus === 'pendiente'"
+                    @click="abrirPagarModal(f)"
+                    class="bg-success/10 border border-success/40 text-success hover:bg-success hover:text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-4 py-2 transition-all">
+                    <i class="ph-light ph-check-circle"></i> Pagada
+                  </button>
+                  <span x-show="f.estatus === 'pagada'"
+                    class="font-label text-[9px] uppercase tracking-widest text-outline opacity-60"
+                    x-text="'Cobrado ' + (f.fecha_pago || '')">
+                  </span>
+                </td>
+              </tr>
+            </template>
+            <template x-if="facturasFiltradas.length === 0">
+              <tr>
+                <td colspan="10" class="text-center py-20 text-outline font-label uppercase tracking-widest opacity-50">
+                  Sin facturas que mostrar con el filtro seleccionado
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        </template>
+      </div>
+    </div>
+
+  </main>
+
+<!-- Modal Confirmar Pago -->
+<div x-cloak x-show="modalPago" x-transition class="modal-overlay" @click.self="modalPago=false">
+  <div class="modal-box">
+    <div class="px-7 py-5 border-b border-outline-variant/20 flex justify-between items-center">
+      <h3 class="font-headline font-bold text-base flex items-center gap-2 text-success">
+        <i class="ph-light ph-check-circle text-lg"></i> Confirmar Pago Recibido
+      </h3>
+      <button @click="modalPago=false" class="text-outline hover:text-primary transition-colors">
+        <i class="ph-light ph-x text-xl"></i>
+      </button>
+    </div>
+    <div class="p-7 space-y-5" x-show="facturaSeleccionada">
+      <div class="bg-surface border border-outline-variant/20 p-5 space-y-3">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Folio</div>
+            <div class="font-mono font-bold text-primary text-sm" x-text="facturaSeleccionada?.folio"></div>
+          </div>
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Monto</div>
+            <div class="font-mono font-bold text-success text-sm"
+              x-text="'$' + Number(facturaSeleccionada?.monto || 0).toLocaleString('es-MX',{minimumFractionDigits:0}) + ' MXN'"></div>
+          </div>
+        </div>
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Cliente</div>
+          <div class="text-sm text-on-surface font-bold" x-text="facturaSeleccionada?.cliente"></div>
+        </div>
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Concepto</div>
+          <div class="text-xs text-outline-variant" x-text="facturaSeleccionada?.concepto"></div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Fecha de Pago *</label>
+        <input type="date" x-model="fechaPago"
+          class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-mono text-sm focus:border-primary outline-none">
+      </div>
+      <div>
+        <label class="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Referencia / Nota (Opcional)</label>
+        <input type="text" x-model="notaPago"
+          class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-body text-sm focus:border-primary outline-none"
+          placeholder="Ej: Transferencia SPEI, Folio complemento de pago...">
+      </div>
+
+      <div class="bg-success/10 border border-success/20 p-4 text-xs font-body text-on-surface">
+        <strong class="text-success">Atención:</strong> Esta acción marcará la factura como pagada. Es el único cambio de estado permitido. No puede deshacerse desde esta pantalla.
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <button @click="modalPago=false"
+          class="flex-1 border border-outline-variant/30 text-outline hover:border-primary hover:text-primary font-label text-[10px] font-bold uppercase tracking-widest py-3 transition-all">
+          Cancelar
+        </button>
+        <button @click="confirmarPago()" :disabled="guardandoPago"
+          class="flex-1 bg-success text-on-primary font-label text-[10px] font-bold uppercase tracking-widest py-3 hover:brightness-110 transition-all flex items-center justify-center gap-2">
+          <span x-show="!guardandoPago" class="flex items-center gap-2">
+            <i class="ph-light ph-check-circle text-lg"></i> Confirmar — Marcar Pagada
+          </span>
+          <span x-show="guardandoPago" class="spinner" style="border-color:rgba(19,19,20,0.3);border-top-color:#131314"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal carga XML -->
+<div x-cloak x-show="xmlModalVisible" x-transition class="modal-overlay" @click.self="xmlModalVisible=false">
+  <div class="modal-box">
+    <div class="px-7 py-5 border-b border-outline-variant/20 flex justify-between items-center">
+      <h3 class="font-headline font-bold text-base flex items-center gap-2 text-primary">
+        <i class="ph-light ph-file-xml text-lg"></i> XML Procesado
+      </h3>
+      <button @click="xmlModalVisible=false" class="text-outline hover:text-primary">
+        <i class="ph-light ph-x text-xl"></i>
+      </button>
+    </div>
+    <div class="p-7 space-y-5" x-show="xmlDatos">
+      <div class="bg-success/10 border border-success/20 p-4 flex items-center gap-3 mb-2">
+        <i class="ph-fill ph-check-circle text-success text-xl flex-shrink-0"></i>
+        <span class="font-body text-sm text-on-surface">Datos extraídos correctamente del CFDI</span>
+      </div>
+      <div class="bg-surface border border-outline-variant/20 p-5 space-y-4">
+
+        <!-- Fila 1: Fecha, Total, SubTotal, Moneda -->
+        <div class="grid grid-cols-4 gap-4">
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Fecha Emisión</div>
+            <div class="font-mono font-bold text-primary text-sm" x-text="xmlDatos ? xmlDatos.fecha : '—'"></div>
+          </div>
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Total</div>
+            <div class="font-mono font-bold text-success text-sm"
+              x-text="xmlDatos && xmlDatos.total ? '$' + Number(xmlDatos.total).toLocaleString('es-MX',{minimumFractionDigits:2}) : '—'"></div>
+          </div>
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">SubTotal</div>
+            <div class="font-mono text-xs text-on-surface"
+              x-text="xmlDatos && xmlDatos.subtotal ? '$' + Number(xmlDatos.subtotal).toLocaleString('es-MX',{minimumFractionDigits:2}) : '—'"></div>
+          </div>
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Moneda</div>
+            <div class="font-mono text-xs text-on-surface" x-text="xmlDatos ? xmlDatos.moneda : '—'"></div>
+          </div>
+        </div>
+
+        <!-- Fila 2: Forma/Método de Pago, Serie-Folio, Vencimiento -->
+        <div class="grid grid-cols-4 gap-4">
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Forma de Pago</div>
+            <div class="font-mono text-xs text-on-surface" x-text="xmlDatos ? (xmlDatos.forma_pago || '—') : '—'"></div>
+          </div>
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Método de Pago</div>
+            <div class="font-mono text-xs text-on-surface" x-text="xmlDatos ? (xmlDatos.metodo_pago || '—') : '—'"></div>
+          </div>
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Serie / Folio</div>
+            <div class="font-mono text-xs text-on-surface" x-text="xmlDatos ? ((xmlDatos.serie || '') + ' ' + (xmlDatos.folio_fiscal || '—')).trim() : '—'"></div>
+          </div>
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Fecha Vencimiento</div>
+            <div class="font-mono font-bold text-warning text-sm" x-text="xmlDatos ? (xmlDatos.fecha_vencimiento || '—') : '—'"></div>
+          </div>
+        </div>
+
+        <div class="h-px bg-outline-variant/20"></div>
+
+        <!-- Fila 3: Emisor -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Emisor</div>
+            <div class="text-sm text-on-surface font-bold" x-text="xmlDatos ? (xmlDatos.nombre_emisor || '—') : '—'"></div>
+            <div class="font-mono text-[10px] text-outline" x-text="xmlDatos ? ('RFC: ' + (xmlDatos.rfc_emisor || '—')) : ''"></div>
+          </div>
+          <div>
+            <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Receptor</div>
+            <div class="text-sm text-on-surface font-bold" x-text="xmlDatos ? (xmlDatos.nombre_receptor || '—') : '—'"></div>
+            <div class="font-mono text-[10px] text-outline" x-text="xmlDatos ? ('RFC: ' + (xmlDatos.rfc_receptor || '—')) : ''"></div>
+          </div>
+        </div>
+
+        <!-- Fila 4: Uso CFDI -->
+        <div x-show="xmlDatos && xmlDatos.uso_cfdi">
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Uso CFDI</div>
+          <div class="font-mono text-xs text-on-surface" x-text="xmlDatos ? (xmlDatos.uso_cfdi || '') : ''"></div>
+        </div>
+
+        <div class="h-px bg-outline-variant/20"></div>
+
+        <!-- Fila 5: Conceptos -->
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Conceptos</div>
+          <template x-if="xmlDatos && xmlDatos.conceptos">
+            <template x-for="(c, i) in xmlDatos.conceptos" :key="i">
+              <div class="text-xs text-on-surface-variant py-1 border-b border-outline-variant/10 last:border-0" x-text="c"></div>
+            </template>
+          </template>
+        </div>
+
+        <!-- UUID -->
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">UUID (Folio Fiscal)</div>
+          <div class="font-mono text-[10px] text-primary break-all" x-text="xmlDatos ? xmlDatos.uuid : '—'"></div>
+        </div>
+      </div>
+      <button @click="registrarDesdeXML()"
+        class="w-full bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest py-4 hover:brightness-110 transition-all flex items-center justify-center gap-2">
+        <i class="ph-light ph-plus-circle text-lg"></i> Agregar al Rastreo de Cobranza
+      </button>
+    </div>
+  </div>
+</div>
+
+</div> <!-- Cierre de x-data cobranzaApp -->
+
+<script src="assets/js/api.js?v=3"></script>
+<script>
+function cobranzaApp() {
+  return {
+    loading: true,
+    facturas: [],
+    filtro: 'todas',
+    modalPago: false,
+    facturaSeleccionada: null,
+    fechaPago: new Date().toISOString().split('T')[0],
+    notaPago: '',
+    guardandoPago: false,
+    xmlModalVisible: false,
+    xmlDatos: null,
+    vistaCobranza: 'tabla',
+    busquedaCliente: '',
+    isDragOver: false,
+    batchProcessing: false,
+    batchTotal: 0,
+    batchCurrent: 0,
+    batchProgress: 0,
+
+    // ── Configuración editable ──────────────────────────────
+    configVisible: false,
+    diasCredito: 30,        // Días de crédito por defecto
+    umbralAmarillo: 31,     // Inicio semáforo amarillo
+    umbralRojo: 60,         // Inicio semáforo rojo
+
+    // ── Computed ──────────────────────────────────────────────
+    get facturasFiltradas() {
+      // Recalcular días de atraso (desde vencimiento, NO desde emisión)
+      const hoy = new Date();
+      this.facturas.forEach(f => {
+        if (f.fecha_vencimiento) {
+          const venc = new Date(f.fecha_vencimiento);
+          f.dias_antiguedad = Math.max(0, Math.floor((hoy - venc) / (1000 * 60 * 60 * 24)));
+        } else if (f.fecha_emision) {
+          // Fallback: si no tiene vencimiento, calcular desde emisión + diasCredito
+          const venc = new Date(f.fecha_emision);
+          venc.setDate(venc.getDate() + this.diasCredito);
+          f.dias_antiguedad = Math.max(0, Math.floor((hoy - venc) / (1000 * 60 * 60 * 24)));
+        }
+      });
+
+      if (this.filtro === 'pendiente') return this.facturas.filter(f => f.estatus === 'pendiente');
+      if (this.filtro === 'pagada')    return this.facturas.filter(f => f.estatus === 'pagada');
+      if (this.filtro === 'critica')   return this.facturas.filter(f => f.dias_antiguedad > this.umbralRojo && f.estatus === 'pendiente');
+      return [...this.facturas].sort((a, b) => {
+        if (a.estatus !== b.estatus) return a.estatus === 'pendiente' ? -1 : 1;
+        return (b.dias_antiguedad || 0) - (a.dias_antiguedad || 0);
+      });
+    },
+
+    get clientesAgrupados() {
+      const q = (this.busquedaCliente || '').toUpperCase();
+      const grupos = {};
+      this.facturasFiltradas.forEach(f => {
+        const cliente = f.cliente || 'Sin Cliente';
+        if (q && !cliente.toUpperCase().includes(q)) return;
+        if (!grupos[cliente]) grupos[cliente] = { cliente, facturas: [], saldoPendiente: 0, maxDias: 0, open: false };
+        grupos[cliente].facturas.push(f);
+        if (f.estatus === 'pendiente') grupos[cliente].saldoPendiente += (f.monto || 0);
+        if ((f.dias_antiguedad || 0) > grupos[cliente].maxDias) grupos[cliente].maxDias = f.dias_antiguedad || 0;
+      });
+      return Object.values(grupos).sort((a, b) => b.saldoPendiente - a.saldoPendiente);
+    },
+
+    // ── Init ──────────────────────────────────────────────────
+    async init() {
+      this.loading = true;
+      // Cargar configuración guardada
+      try {
+        const cfg = JSON.parse(localStorage.getItem('cif_cobranza_config'));
+        if (cfg) {
+          this.diasCredito = cfg.diasCredito || 30;
+          this.umbralAmarillo = cfg.umbralAmarillo || 31;
+          this.umbralRojo = cfg.umbralRojo || 60;
+        }
+      } catch(e) {}
+
+      const d = await cifAPI.get('/cobranza');
+      if (d && d.facturas) this.facturas = d.facturas;
+      else if (d && Array.isArray(d.data)) this.facturas = d.data;
+
+      // Recalcular campos faltantes en facturas existentes
+      const hoy = new Date();
+      this.facturas.forEach(f => {
+        // Si no tiene fecha_vencimiento, calcularla
+        if (!f.fecha_vencimiento && f.fecha_emision) {
+          const emision = new Date(f.fecha_emision);
+          emision.setDate(emision.getDate() + this.diasCredito);
+          f.fecha_vencimiento = emision.toISOString().split('T')[0];
+        }
+        // Recalcular días de atraso desde vencimiento
+        if (f.fecha_vencimiento) {
+          const venc = new Date(f.fecha_vencimiento);
+          f.dias_antiguedad = Math.max(0, Math.floor((hoy - venc) / (1000 * 60 * 60 * 24)));
+        }
+      });
+
+      this.loading = false;
+    },
+
+    guardarConfig() {
+      localStorage.setItem('cif_cobranza_config', JSON.stringify({
+        diasCredito: this.diasCredito,
+        umbralAmarillo: this.umbralAmarillo,
+        umbralRojo: this.umbralRojo
+      }));
+      this.configVisible = false;
+      cifToast('⚙️ Configuración de cobranza guardada');
+    },
+
+    // ── Modal Pago ────────────────────────────────────────────
+    abrirPagarModal(factura) {
+      this.facturaSeleccionada = factura;
+      this.fechaPago = new Date().toISOString().split('T')[0];
+      this.notaPago = '';
+      this.modalPago = true;
+    },
+
+    async confirmarPago() {
+      if (!this.facturaSeleccionada) return;
+      this.guardandoPago = true;
+      await cifAPI.put('/cobranza/' + this.facturaSeleccionada.id + '/pagar', {
+        id: this.facturaSeleccionada.id,
+        estatus: 'pagada',
+        fecha_pago: this.fechaPago,
+        notas: this.notaPago || 'Pago confirmado'
+      });
+
+      const idx = this.facturas.findIndex(f => f.id === this.facturaSeleccionada.id);
+      if (idx !== -1) {
+        this.facturas[idx] = {
+          ...this.facturas[idx],
+          estatus: 'pagada',
+          fecha_pago: this.fechaPago,
+          notas: this.notaPago || 'Pago confirmado'
+        };
+        this.facturas = [...this.facturas];
+      }
+
+      cifToast('✅ Factura marcada como pagada');
+      this.guardandoPago = false;
+      this.modalPago = false;
+    },
+
+    // ── Carga de XML (extracción completa CFDI 3.3 / 4.0) ───
+    cargarXML(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parser = new DOMParser();
+          const doc    = parser.parseFromString(e.target.result, 'text/xml');
+
+          // Buscar nodo Comprobante con o sin namespace
+          const comp = doc.querySelector('Comprobante') ||
+                       doc.getElementsByTagNameNS('http://www.sat.gob.mx/cfd/4', 'Comprobante')[0] ||
+                       doc.getElementsByTagNameNS('http://www.sat.gob.mx/cfd/3', 'Comprobante')[0];
+
+          const timbre = doc.querySelector('TimbreFiscalDigital') ||
+                         doc.getElementsByTagNameNS('http://www.sat.gob.mx/TimbreFiscalDigital', 'TimbreFiscalDigital')[0];
+
+          const emisor   = doc.querySelector('Emisor');
+          const receptor = doc.querySelector('Receptor');
+
+          // Buscar nodos de Conceptos
+          const conceptos = doc.querySelectorAll('Concepto');
+          let descripcionConceptos = [];
+          conceptos.forEach(c => {
+            const desc = c.getAttribute('Descripcion') || c.getAttribute('descripcion') || '';
+            if (desc) descripcionConceptos.push(desc);
+          });
+
+          let parseado = {};
+
+          if (!comp) {
+            // Demo fallback
+            const fechaHoy = new Date().toISOString().split('T')[0];
+            const venc = new Date();
+            venc.setDate(venc.getDate() + this.diasCredito);
+            parseado = {
+              fecha: fechaHoy,
+              total: (Math.random() * 150000 + 20000).toFixed(2),
+              subtotal: (Math.random() * 130000 + 18000).toFixed(2),
+              moneda: 'MXN',
+              forma_pago: '03 - Transferencia electrónica',
+              metodo_pago: 'PUE',
+              serie: 'F',
+              folio_fiscal: 'DEMO-' + Date.now().toString().slice(-6),
+              rfc_emisor: 'CIF850101AAA',
+              nombre_emisor: 'CIF Logística S.A. de C.V.',
+              rfc_receptor: 'XYZ960101BBB',
+              nombre_receptor: 'Cliente Demo',
+              uso_cfdi: 'G03 - Gastos en general',
+              uuid: 'DEMO-' + Date.now().toString(),
+              conceptos: ['Servicio de transporte de carga (Demo)'],
+              fecha_vencimiento: venc.toISOString().split('T')[0]
+            };
+          } else {
+            const getAttr = (el, ...names) => {
+              if (!el) return '';
+              for (const n of names) {
+                const v = el.getAttribute(n);
+                if (v) return v;
+              }
+              return '';
+            };
+
+            const fechaRaw = getAttr(comp, 'Fecha', 'fecha');
+            const fechaEmision = fechaRaw ? fechaRaw.substring(0, 10) : '';
+            const venc = new Date(fechaEmision || Date.now());
+            venc.setDate(venc.getDate() + this.diasCredito);
+
+            parseado = {
+              fecha: fechaEmision,
+              total: getAttr(comp, 'Total', 'total') || '0',
+              subtotal: getAttr(comp, 'SubTotal', 'subtotal') || '0',
+              descuento: getAttr(comp, 'Descuento', 'descuento') || '0',
+              moneda: getAttr(comp, 'Moneda', 'moneda') || 'MXN',
+              tipo_cambio: getAttr(comp, 'TipoCambio', 'tipoCambio') || '',
+              forma_pago: getAttr(comp, 'FormaPago', 'formaPago') || '',
+              metodo_pago: getAttr(comp, 'MetodoPago', 'metodoPago') || '',
+              serie: getAttr(comp, 'Serie', 'serie') || '',
+              folio_fiscal: getAttr(comp, 'Folio', 'folio') || '',
+              tipo_comprobante: getAttr(comp, 'TipoDeComprobante', 'tipoDeComprobante') || '',
+              lugar_expedicion: getAttr(comp, 'LugarExpedicion', 'lugarExpedicion') || '',
+              rfc_emisor: getAttr(emisor, 'Rfc', 'rfc'),
+              nombre_emisor: getAttr(emisor, 'Nombre', 'nombre'),
+              regimen_emisor: getAttr(emisor, 'RegimenFiscal', 'regimenFiscal'),
+              rfc_receptor: getAttr(receptor, 'Rfc', 'rfc'),
+              nombre_receptor: getAttr(receptor, 'Nombre', 'nombre'),
+              uso_cfdi: getAttr(receptor, 'UsoCFDI', 'usoCFDI'),
+              domicilio_receptor: getAttr(receptor, 'DomicilioFiscalReceptor', 'domicilioFiscalReceptor'),
+              regimen_receptor: getAttr(receptor, 'RegimenFiscalReceptor', 'regimenFiscalReceptor'),
+              uuid: timbre ? (getAttr(timbre, 'UUID') || 'SIN-UUID') : ('GEN-' + Date.now()),
+              fecha_timbrado: timbre ? getAttr(timbre, 'FechaTimbrado') : '',
+              conceptos: descripcionConceptos.length > 0 ? descripcionConceptos : ['Sin descripción'],
+              fecha_vencimiento: venc.toISOString().split('T')[0]
+            };
+          }
+          
+          this.xmlDatos = parseado;
+          this.xmlModalVisible = true;
+          
+        } catch (err) {
+          cifToast('Error al parsear el XML. Verifica el archivo.', 'error');
+          console.error(err);
+        }
+      };
+      reader.readAsText(file, 'UTF-8');
+      event.target.value = '';
+    },
+
+    // ── Drag and Drop Multi-XML ───────────────────────────
+    handleDrop(event) {
+      this.isDragOver = false;
+      const files = Array.from(event.dataTransfer.files).filter(f => f.name.endsWith('.xml'));
+      if (files.length === 0) return cifToast('No se encontraron archivos XML', 'error');
+      this.processBatchXML(files);
+    },
+    handleFileSelect(event) {
+      const files = Array.from(event.target.files).filter(f => f.name.endsWith('.xml'));
+      if (files.length === 0) return;
+      if (files.length === 1) {
+        // Single file: show preview modal
+        this.cargarXML(event);
+        return;
+      }
+      this.processBatchXML(files);
+      event.target.value = '';
+    },
+    async processBatchXML(files) {
+      this.batchProcessing = true;
+      this.batchTotal = files.length;
+      this.batchCurrent = 0;
+      this.batchProgress = 0;
+      let exitosos = 0, errores = 0;
+
+      for (const file of files) {
+        this.batchCurrent++;
+        this.batchProgress = Math.round((this.batchCurrent / this.batchTotal) * 100);
+        try {
+          const text = await file.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(text, 'text/xml');
+          const comp = doc.querySelector('Comprobante') ||
+            doc.getElementsByTagNameNS('http://www.sat.gob.mx/cfd/4', 'Comprobante')[0] ||
+            doc.getElementsByTagNameNS('http://www.sat.gob.mx/cfd/3', 'Comprobante')[0];
+          const timbre = doc.querySelector('TimbreFiscalDigital') ||
+            doc.getElementsByTagNameNS('http://www.sat.gob.mx/TimbreFiscalDigital', 'TimbreFiscalDigital')[0];
+          const emisor = doc.querySelector('Emisor');
+          const receptor = doc.querySelector('Receptor');
+          const getAttr = (el, ...names) => { if (!el) return ''; for (const n of names) { const v = el.getAttribute(n); if (v) return v; } return ''; };
+
+          const fechaRaw = comp ? getAttr(comp, 'Fecha', 'fecha') : '';
+          const fechaEmision = fechaRaw ? fechaRaw.substring(0, 10) : new Date().toISOString().split('T')[0];
+          const venc = new Date(fechaEmision || Date.now());
+          venc.setDate(venc.getDate() + this.diasCredito);
+
+          const conceptos = doc.querySelectorAll('Concepto');
+          let desc = [];
+          conceptos.forEach(c => { const d = c.getAttribute('Descripcion') || c.getAttribute('descripcion'); if (d) desc.push(d); });
+
+          const nueva = {
+            id: Date.now() + this.batchCurrent,
+            folio: (comp ? getAttr(comp, 'Serie', 'serie') + '-' : 'F-') + (comp ? getAttr(comp, 'Folio', 'folio') : file.name),
+            uuid: timbre ? getAttr(timbre, 'UUID') : 'GEN-' + Date.now(),
+            cliente: receptor ? (getAttr(receptor, 'Nombre', 'nombre') || getAttr(receptor, 'Rfc', 'rfc')) : 'Sin Receptor',
+            concepto: desc.length > 0 ? desc.join(' | ') : 'Factura via XML',
+            monto: parseFloat(comp ? getAttr(comp, 'Total', 'total') : '0') || 0,
+            subtotal: parseFloat(comp ? getAttr(comp, 'SubTotal', 'subtotal') : '0') || 0,
+            moneda: comp ? (getAttr(comp, 'Moneda', 'moneda') || 'MXN') : 'MXN',
+            rfc_emisor: emisor ? getAttr(emisor, 'Rfc', 'rfc') : '',
+            rfc_receptor: receptor ? getAttr(receptor, 'Rfc', 'rfc') : '',
+            nombre_emisor: emisor ? getAttr(emisor, 'Nombre', 'nombre') : '',
+            fecha_emision: fechaEmision,
+            fecha_vencimiento: venc.toISOString().split('T')[0],
+            estatus: 'pendiente', dias_antiguedad: 0, notas: ''
+          };
+          await cifAPI.post('/cobranza', nueva);
+          this.facturas = [nueva, ...this.facturas];
+          exitosos++;
+        } catch (err) {
+          console.error('Error procesando ' + file.name, err);
+          errores++;
+        }
+        // Small delay for visual feedback
+        await new Promise(r => setTimeout(r, 100));
+      }
+
+      this.batchProcessing = false;
+      cifToast(`✅ ${exitosos} factura(s) importadas${errores > 0 ? `, ${errores} con error` : ''}`);
+    },
+
+    async registrarDesdeXML() {
+      if (!this.xmlDatos) return;
+      const d = this.xmlDatos;
+      const nueva = {
+        id: Date.now(),
+        folio: (d.serie ? d.serie + '-' : 'F-') + (d.folio_fiscal || Date.now().toString().slice(-5)),
+        uuid: d.uuid || 'N/D',
+        cliente: d.nombre_receptor || d.rfc_receptor || 'Cliente (del XML)',
+        concepto: d.conceptos ? d.conceptos.join(' | ') : 'Factura importada via XML SAT',
+        monto: parseFloat(d.total) || 0,
+        subtotal: parseFloat(d.subtotal) || 0,
+        moneda: d.moneda || 'MXN',
+        forma_pago: d.forma_pago || '',
+        metodo_pago: d.metodo_pago || '',
+        rfc_emisor: d.rfc_emisor || '',
+        rfc_receptor: d.rfc_receptor || '',
+        nombre_emisor: d.nombre_emisor || '',
+        fecha_emision: d.fecha || new Date().toISOString().split('T')[0],
+        fecha_vencimiento: d.fecha_vencimiento || '',
+        estatus: 'pendiente',
+        dias_antiguedad: 0,
+        notas: ''
+      };
+      
+      await cifAPI.post('/cobranza', nueva);
+      
+      this.facturas = [nueva, ...this.facturas];
+      this.xmlModalVisible = false;
+      this.xmlDatos = null;
+      cifToast('📄 Factura agregada al rastreo de cobranza');
+    }
+  };
+}
+</script>
+</body>
+</html>

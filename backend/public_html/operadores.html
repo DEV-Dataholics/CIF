@@ -1,0 +1,623 @@
+<html class="dark" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIF Logística — Directorio de Operadores</title>
+  <link href="assets/css/tailwind.min.css?v=2" rel="stylesheet">
+  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style>
+    body { min-height: 100dvh; }
+    .matte-grain { position: relative; }
+    .matte-grain::before {
+      content: ""; position: absolute; inset: 0; opacity: 0.03; pointer-events: none;
+      background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCxtzo5Fd4tGwvT_jg4ysGETAyo_0QJXqFxE0Vz2jCSFfdCW_xcsx8ttX4CZRiXAQ5e-8ClJGovIme_H86utYa8siODIK5ToDWQRd0J97DLwVKIRNDWTJFuuP9hcZHxl3TW0UHrsINdFeEP-GfWzg6ZsUAe9dbaTn0kGfYEn6L_suxq7ifFL2e4HJJxC6M6yMa4wOfyyyiBZMm_ILej9DcNsEEVsRhY2idiHrWisdeOIG82K0lswo1JUKVmQYcwAiapSH8q-Y8FZ4J8);
+    }
+    .cif-table { width: 100%; border-collapse: collapse; }
+    .cif-table th { 
+      text-align: left; padding: 1rem; border-bottom: 1px solid rgba(79,69,63,0.3);
+      font-family: 'Inter', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9b8e87;
+    }
+    .cif-table td { padding: 1rem; border-bottom: 1px solid rgba(79,69,63,0.1); font-family: 'Manrope', sans-serif; }
+    .cif-table tbody tr:hover { background: rgba(79,69,63,0.05); }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(209,161,78,0.3); border-top-color: #D1A14E; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .badge { padding: 0.25rem 0.6rem; font-size: 0.7rem; font-weight: 700; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid transparent; display: inline-block; }
+    .badge-success { background: rgba(195,204,140,0.1); color: #c3cc8c; border-color: rgba(195,204,140,0.2); }
+    .badge-danger { background: rgba(255,180,171,0.1); color: #ffb4ab; border-color: rgba(255,180,171,0.2); }
+    .badge-info { background: rgba(59,130,246,0.1); color: #3b82f6; border-color: rgba(59,130,246,0.2); }
+    .badge-muted { background: rgba(155,142,135,0.1); color: #9b8e87; border-color: rgba(155,142,135,0.2); }
+    .badge-accent { background: rgba(209,161,78,0.1); color: #D1A14E; border-color: rgba(209,161,78,0.2); }
+    
+    .op-avatar { width: 52px; height: 52px; background: #1b1b1c; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; border: 1px solid rgba(155,142,135,0.2); color: #D1A14E; }
+    .op-card { background: #1b1b1c; border: 1px solid rgba(155,142,135,0.2); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .op-card:hover { border-color: #D1A14E; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); transform: translateY(-4px); }
+    .lic-badge { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .6rem; font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Inter', sans-serif; }
+    .lic-ok  { background: rgba(195,204,140,0.1); color: #c3cc8c; }
+    .lic-no  { background: rgba(255,180,171,0.1); color: #ffb4ab; }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+
+<div x-data="opApp()" x-init="init()" class="min-h-screen flex flex-col">
+
+  <header class="bg-surface-container-lowest sticky top-0 z-50 border-b border-outline-variant/10">
+    <div class="max-w-[1400px] mx-auto px-8 py-5 flex justify-between items-center">
+      <a href="home.html" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
+        <img src="assets/LOGOCIF.png" alt="CIF Logística" style="height:5.5rem;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(209,161,78,0.2));">
+      </a>
+
+      <nav class="hidden lg:flex gap-6 font-label text-[10px] uppercase tracking-widest font-bold">
+        <a class="text-outline-variant hover:text-primary transition-colors" href="home.html">Inicio</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="text-outline-variant hover:text-primary transition-colors hidden" href="viajes.html">Viajes</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="flota.html">Flota</a>
+        <a class="text-primary border-b border-primary pb-1" href="operadores.html">Operadores</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="taller.html">Taller</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="porteria.html">Accesos</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="cobranza.html">Cobranza</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
+          <i class="ph-light ph-user text-primary text-xl"></i>
+        </div>
+        <button @click="cifAPI.logout()" class="hidden sm:flex items-center gap-2 text-[10px] font-label uppercase tracking-widest text-outline hover:text-primary transition-colors border border-outline-variant/20 px-4 py-2 font-bold">
+          <i class="ph-light ph-sign-out text-lg"></i> SALIR
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full max-w-[1400px] mx-auto px-8 py-10">
+    
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+      <div>
+        <span class="font-label text-primary text-[11px] uppercase tracking-[0.3em] mb-4 block">Módulo 04</span>
+        <h2 class="font-headline text-4xl font-bold tracking-tight mb-3 flex items-center gap-3">
+          <i class="ph-light ph-identification-card text-primary"></i> Directorio de Operadores
+        </h2>
+        <div class="font-label text-xs uppercase tracking-widest text-outline" x-text="operadores.length + ' operadores registrados bajo contrato'"></div>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
+          <div class="flex gap-1 bg-surface-container-low border border-outline-variant/20 p-1">
+            <button @click="filtroEstatus='todos'" :class="filtroEstatus==='todos' ? 'bg-surface-container-highest text-primary' : 'text-outline'" class="font-label text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 transition-all">Todos</button>
+            <button @click="filtroEstatus='activo'" :class="filtroEstatus==='activo' ? 'bg-surface-container-highest text-success' : 'text-outline'" class="font-label text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 transition-all">Activos</button>
+            <button @click="filtroEstatus='inactivo'" :class="filtroEstatus==='inactivo' ? 'bg-surface-container-highest text-danger' : 'text-outline'" class="font-label text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 transition-all">Inactivos</button>
+          </div>
+          <div class="relative">
+            <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-outline"></i>
+            <input x-model="busqueda" @input="filtrar()" type="text" placeholder="BUSCAR OPERADOR..." class="bg-surface-container-low border border-outline-variant/30 text-[10px] font-label font-bold uppercase tracking-widest pl-12 pr-6 py-4 focus:border-primary outline-none transition-all w-56">
+          </div>
+          <button @click="abrirNuevo()" class="bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-8 py-4 hover:brightness-110 transition-all flex items-center gap-2">
+            <i class="ph-bold ph-user-plus"></i> NUEVO
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8">
+
+      <div x-show="loading" class="flex items-center justify-center py-20">
+        <span class="spinner" style="width:36px;height:36px;"></span>
+      </div>
+
+      <div x-show="!loading && filtrados.length === 0" class="text-center py-20 border border-outline-variant/10 matte-grain bg-surface-container-low">
+        <div class="text-6xl mb-6 opacity-20">
+          <i class="ph-light ph-user-circle-plus"></i>
+        </div>
+        <div class="font-label text-xs uppercase tracking-[0.2em] text-outline">No se encontraron operadores que coincidan con la búsqueda.</div>
+      </div>
+
+      <!-- Grid de tarjetas -->
+      <div x-show="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <template x-for="op in filtrados" :key="op.id">
+          <div class="op-card relative flex flex-col h-full matte-grain">
+            <!-- Estatus Badge Absoluto -->
+            <div class="absolute top-4 right-4">
+               <span class="badge" :class="(op.estatus || (op.activo ? 'activo':'inactivo')) === 'activo' ? 'badge-success' : 'badge-danger'"
+                x-text="(op.estatus || (op.activo ? 'ACTIVO':'INACTIVO')).toUpperCase()"></span>
+            </div>
+
+            <!-- Cabecera -->
+            <div class="p-8 pb-4 flex gap-6 items-start">
+              <div class="op-avatar">
+                 <i class="ph-bold ph-user"></i>
+              </div>
+              <div class="flex-1 min-width-0">
+                <div class="font-headline font-bold text-xl text-on-surface leading-tight mb-2" x-text="op.nombre_completo"></div>
+                <div class="font-mono text-[10px] text-primary font-bold tracking-widest uppercase" x-text="op.numero_operador"></div>
+                <div class="text-[10px] font-label font-bold uppercase tracking-widest text-outline mt-3 flex items-center gap-2">
+                  <i class="ph-fill ph-phone text-primary"></i> <span x-text="op.telefono || 'SIN TELÉFONO'"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Datos de licencias -->
+            <div class="px-8 py-6 space-y-4 flex-1">
+              <div class="flex items-center justify-between border-b border-outline-variant/10 pb-3">
+                 <div class="flex flex-col">
+                   <span class="text-[10px] font-label uppercase tracking-widest text-outline">Tracto Asignado</span>
+                   <span class="font-mono text-sm font-bold text-primary" x-text="op.tracto_numero_economico ?? '—'"></span>
+                 </div>
+                 <div class="flex flex-col text-right">
+                   <span class="text-[10px] font-label uppercase tracking-widest text-outline">Ingreso</span>
+                   <span class="text-xs font-bold text-on-surface" x-text="fmtFechaSolo(op.fecha_ingreso) || '—'"></span>
+                 </div>
+              </div>
+
+              <div class="space-y-2">
+                <!-- Licencia MX -->
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-outline uppercase tracking-tighter font-bold">Lic. MX</span>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-[10px]" :class="vencColor(op.licencia_mx_vencimiento)" x-text="op.licencia_mx || '—'"></span>
+                    <span class="lic-badge" :class="vencClass(op.licencia_mx_vencimiento)"
+                      x-text="vencLabel(op.licencia_mx_vencimiento)"></span>
+                  </div>
+                </div>
+                <!-- Licencia USA -->
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-outline uppercase tracking-tighter font-bold">Lic. USA / CDL</span>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-[10px]" :class="vencColor(op.licencia_usa_vencimiento)" x-text="op.licencia_usa || 'N/A'"></span>
+                    <span x-show="op.licencia_usa" class="lic-badge" :class="vencClass(op.licencia_usa_vencimiento)"
+                      x-text="vencLabel(op.licencia_usa_vencimiento)"></span>
+                  </div>
+                </div>
+                <!-- Visa -->
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-outline uppercase tracking-tighter font-bold">Visa</span>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-[10px]" :class="vencColor(op.visa_vencimiento)" x-text="op.visa_vencimiento || 'N/A'"></span>
+                    <span x-show="op.visa_vencimiento" class="lic-badge" :class="vencClass(op.visa_vencimiento)"
+                      x-text="vencLabel(op.visa_vencimiento)"></span>
+                  </div>
+                </div>
+                <!-- Póliza de Seguro -->
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-outline uppercase tracking-tighter font-bold">Póliza Seguro</span>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-[10px]" :class="vencColor(op.poliza_seguro_vencimiento)" x-text="op.poliza_seguro || 'N/A'"></span>
+                    <span x-show="op.poliza_seguro_vencimiento" class="lic-badge" :class="vencClass(op.poliza_seguro_vencimiento)"
+                      x-text="vencLabel(op.poliza_seguro_vencimiento)"></span>
+                  </div>
+                </div>
+                <!-- Permisos Especiales -->
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-outline uppercase tracking-tighter font-bold">Permiso Esp.</span>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-[10px]" :class="vencColor(op.permiso_especial_vencimiento)" x-text="op.permiso_especial || 'N/A'"></span>
+                    <span x-show="op.permiso_especial_vencimiento" class="lic-badge" :class="vencClass(op.permiso_especial_vencimiento)"
+                      x-text="vencLabel(op.permiso_especial_vencimiento)"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Badge PRÓXIMO A VENCER -->
+              <div x-show="tieneDocProximoVencer(op)" class="mt-3 bg-warning/10 border border-warning/30 px-3 py-2 flex items-center gap-2">
+                <i class="ph-fill ph-clock-countdown text-warning"></i>
+                <span class="font-label text-[9px] uppercase tracking-widest text-warning font-bold">PRÓXIMO A VENCER (≤60 días)</span>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-8 py-6 border-t border-outline-variant/20 flex justify-end bg-surface-container-low">
+              <button @click="verDetalleOp(op)" class="text-[10px] font-label font-bold uppercase tracking-widest text-primary hover:text-white transition-colors flex items-center gap-2">
+                 PERFIL COMPLETO <i class="ph-bold ph-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </template>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Modal nuevo operador -->
+  <div x-show="showNuevo" class="fixed inset-0 z-[100] flex items-center justify-center bg-surface/90 backdrop-blur-sm p-4" @click.self="showNuevo=false" x-transition>
+    <div class="bg-surface-container-low border border-outline-variant/30 w-full max-w-2xl matte-grain shadow-2xl">
+      <div class="px-8 py-6 border-b border-outline-variant/20">
+        <h3 class="font-headline font-bold text-xl text-primary flex items-center gap-3">
+          <i class="ph-bold ph-user-plus"></i> Alta de Operador
+        </h3>
+      </div>
+      <form @submit.prevent="guardarOperador" class="p-8 space-y-6">
+          <div class="grid grid-cols-2 gap-6">
+          <div class="col-span-2">
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Nombre Completo *</label>
+            <input x-model="formOp.nombre_completo" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-4 focus:border-primary outline-none" required placeholder="p.ej. Juan Pérez G.">
+          </div>
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Nº Operador (Nómina) *</label>
+            <input x-model="formOp.numero_operador" type="text" class="w-full bg-surface border border-outline-variant/40 text-primary font-mono font-bold p-4 focus:border-primary outline-none uppercase" required placeholder="OP-000">
+          </div>
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">WhatsApp / Teléfono</label>
+            <input x-model="formOp.telefono" type="tel" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-4 focus:border-primary outline-none" placeholder="656...">
+          </div>
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Licencia MX *</label>
+            <input x-model="formOp.licencia_mx" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-4 focus:border-primary outline-none" required>
+          </div>
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Vencimiento MX</label>
+            <input x-model="formOp.licencia_mx_vencimiento" type="date" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-4 focus:border-primary outline-none">
+          </div>
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Póliza de Seguro</label>
+            <input x-model="formOp.poliza_seguro" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-4 focus:border-primary outline-none" placeholder="Núm. Póliza">
+          </div>
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Venc. Póliza</label>
+            <input x-model="formOp.poliza_seguro_vencimiento" type="date" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-4 focus:border-primary outline-none">
+          </div>
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Permiso Especial</label>
+            <input x-model="formOp.permiso_especial" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-4 focus:border-primary outline-none" placeholder="Tipo de permiso">
+          </div>
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Venc. Permiso</label>
+            <input x-model="formOp.permiso_especial_vencimiento" type="date" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-4 focus:border-primary outline-none">
+          </div>
+        </div>
+
+        <div class="bg-primary/5 border border-primary/20 p-6 space-y-2">
+           <div class="text-[10px] font-label font-bold text-primary uppercase tracking-widest flex items-center gap-2">
+             <i class="ph-fill ph-key"></i> Auto-Generación de Cuenta
+           </div>
+           <p class="text-[11px] text-outline leading-relaxed font-label">Se creará un acceso para la App móvil con el email <strong class="text-primary">[ID]@cif.mx</strong> y clave temporal <strong class="text-primary">cif2026</strong>.</p>
+        </div>
+
+        <div class="flex gap-4 pt-4">
+          <button type="button" @click="showNuevo=false" class="flex-1 border border-outline-variant/40 text-outline font-label text-[10px] font-bold uppercase tracking-widest py-4 hover:brightness-125 transition-all">Descartar</button>
+          <button type="submit" class="flex-1 bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest py-4 hover:brightness-110 transition-all flex justify-center items-center gap-2" :disabled="guardando">
+            <span x-show="!guardando">Completar Registro</span>
+            <span x-show="guardando" class="spinner border-on-primary" style="border-top-color:transparent"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal detalle operador (Lectura / Edición) -->
+  <div x-show="showDetalle" class="fixed inset-0 z-[100] flex items-center justify-center bg-surface/90 backdrop-blur-sm p-4" @click.self="showDetalle=false; editandoPerfil=false" x-transition>
+    <div class="bg-surface-container-low border border-outline-variant/30 w-full max-w-2xl matte-grain shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div class="px-8 py-8 bg-surface-container border-b border-outline-variant/20 flex gap-6 items-center flex-shrink-0">
+        <div class="w-20 h-20 bg-surface-container-highest border border-primary/30 flex items-center justify-center text-3xl text-primary">
+           <i class="ph-light ph-user-focus"></i>
+        </div>
+        <div class="flex-1">
+          <template x-if="!editandoPerfil">
+            <div>
+              <h3 class="font-headline font-bold text-2xl text-on-surface mb-1" x-text="opActivo?.nombre_completo"></h3>
+              <div class="font-mono text-xs text-primary font-bold tracking-widest" x-text="opActivo?.numero_operador"></div>
+            </div>
+          </template>
+          <template x-if="editandoPerfil">
+            <div class="space-y-2">
+              <input x-model="formEdit.nombre_completo" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface text-lg font-headline font-bold p-2 focus:border-primary outline-none" placeholder="Nombre completo">
+              <input x-model="formEdit.numero_operador" type="text" class="w-full bg-surface border border-outline-variant/40 text-primary font-mono font-bold text-xs p-2 focus:border-primary outline-none uppercase" placeholder="OP-000">
+            </div>
+          </template>
+        </div>
+        <div class="flex-shrink-0">
+          <button x-show="!editandoPerfil" @click="iniciarEdicionPerfil()" class="border border-primary text-primary hover:bg-primary hover:text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-4 py-2 transition-all flex items-center gap-2">
+            <i class="ph-bold ph-pencil-simple"></i> Editar
+          </button>
+        </div>
+      </div>
+
+      <div class="p-8 space-y-6 overflow-y-auto flex-1">
+        <!-- MODO LECTURA -->
+        <template x-if="!editandoPerfil">
+          <div class="grid grid-cols-2 gap-6">
+             <div class="space-y-1">
+               <div class="text-[10px] font-label uppercase tracking-widest text-outline font-bold">Teléfono</div>
+               <div class="text-sm font-bold text-on-surface" x-text="opActivo?.telefono ?? '—'"></div>
+             </div>
+             <div class="space-y-1 text-right">
+               <div class="text-[10px] font-label uppercase tracking-widest text-outline font-bold">Unidad Asignada</div>
+               <div class="text-sm font-bold text-primary font-mono" x-text="opActivo?.tracto_numero_economico ?? '—'"></div>
+             </div>
+             <div class="space-y-1">
+               <div class="text-[10px] font-label uppercase tracking-widest text-outline font-bold">Fecha Ingreso</div>
+               <div class="text-sm font-bold text-on-surface" x-text="fmtFechaSolo(opActivo?.fecha_ingreso) || '—'"></div>
+             </div>
+             <div class="space-y-1 text-right">
+               <div class="text-[10px] font-label uppercase tracking-widest text-outline font-bold">Estatus</div>
+               <span class="badge" :class="opActivo?.activo ? 'badge-success' : 'badge-danger'" x-text="opActivo?.activo ? 'ALTA OPERATIVA' : 'BAJA / SUSPENDIDO'"></span>
+             </div>
+
+             <div class="col-span-2 border-t border-outline-variant/10 pt-4"></div>
+
+             <div class="space-y-1">
+               <div class="text-[10px] font-label uppercase tracking-widest text-outline font-bold">Licencia Federal MX</div>
+               <div class="text-sm font-bold text-on-surface uppercase" x-text="opActivo?.licencia_mx ?? '—'"></div>
+               <div class="text-xs" :class="vencColor(opActivo?.licencia_mx_vencimiento)" x-text="'Vence: ' + (opActivo?.licencia_mx_vencimiento || 'N/D')"></div>
+             </div>
+             <div class="space-y-1 text-right">
+               <div class="text-[10px] font-label uppercase tracking-widest text-outline font-bold">Licencia USA / CDL</div>
+               <div class="text-sm font-bold text-on-surface uppercase" x-text="opActivo?.licencia_usa || 'N/A'"></div>
+               <div class="text-xs" :class="vencColor(opActivo?.licencia_usa_vencimiento)" x-text="'Vence: ' + (opActivo?.licencia_usa_vencimiento || 'N/D')"></div>
+             </div>
+             <div class="space-y-1">
+               <div class="text-[10px] font-label uppercase tracking-widest text-outline font-bold">Visa</div>
+               <div class="text-xs" :class="vencColor(opActivo?.visa_vencimiento)" x-text="'Vence: ' + (opActivo?.visa_vencimiento || 'N/D')"></div>
+             </div>
+             <div class="space-y-1 text-right">
+               <div class="text-[10px] font-label uppercase tracking-widest text-outline font-bold">Póliza de Seguro</div>
+               <div class="text-sm font-bold text-on-surface" x-text="opActivo?.poliza_seguro || 'N/A'"></div>
+               <div class="text-xs" :class="vencColor(opActivo?.poliza_seguro_vencimiento)" x-text="'Vence: ' + (opActivo?.poliza_seguro_vencimiento || 'N/D')"></div>
+             </div>
+             <div class="space-y-1">
+               <div class="text-[10px] font-label uppercase tracking-widest text-outline font-bold">Permiso Especial</div>
+               <div class="text-sm font-bold text-on-surface" x-text="opActivo?.permiso_especial || 'N/A'"></div>
+               <div class="text-xs" :class="vencColor(opActivo?.permiso_especial_vencimiento)" x-text="'Vence: ' + (opActivo?.permiso_especial_vencimiento || 'N/D')"></div>
+             </div>
+          </div>
+        </template>
+
+        <!-- MODO EDICIÓN -->
+        <template x-if="editandoPerfil">
+          <div class="grid grid-cols-2 gap-5">
+            <div>
+              <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-1">Teléfono / WhatsApp</label>
+              <input x-model="formEdit.telefono" type="tel" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 focus:border-primary outline-none" placeholder="656...">
+            </div>
+            <div>
+              <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-1">Fecha Ingreso</label>
+              <input x-model="formEdit.fecha_ingreso" type="date" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 focus:border-primary outline-none">
+            </div>
+
+            <div class="col-span-2 border-t border-outline-variant/10 pt-3">
+              <div class="text-[10px] font-label uppercase tracking-widest text-primary font-bold mb-3 flex items-center gap-2">
+                <i class="ph-bold ph-identification-card"></i> Licencias
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-1">Licencia MX</label>
+              <input x-model="formEdit.licencia_mx" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-3 focus:border-primary outline-none">
+            </div>
+            <div>
+              <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-1">Venc. MX</label>
+              <input x-model="formEdit.licencia_mx_vencimiento" type="date" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 focus:border-primary outline-none">
+            </div>
+            <div>
+              <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-1">Licencia USA / CDL</label>
+              <input x-model="formEdit.licencia_usa" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-3 focus:border-primary outline-none">
+            </div>
+            <div>
+              <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-1">Venc. USA</label>
+              <input x-model="formEdit.licencia_usa_vencimiento" type="date" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 focus:border-primary outline-none">
+            </div>
+            <div>
+              <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-1">Visa Vencimiento</label>
+              <input x-model="formEdit.visa_vencimiento" type="date" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 focus:border-primary outline-none">
+            </div>
+
+            <div class="col-span-2 border-t border-outline-variant/10 pt-3">
+              <div class="text-[10px] font-label uppercase tracking-widest text-primary font-bold mb-3 flex items-center gap-2">
+                <i class="ph-bold ph-shield-check"></i> Póliza y Permisos
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-1">Póliza de Seguro</label>
+              <input x-model="formEdit.poliza_seguro" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-3 focus:border-primary outline-none" placeholder="Núm. Póliza">
+            </div>
+            <div>
+              <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-1">Venc. Póliza</label>
+              <input x-model="formEdit.poliza_seguro_vencimiento" type="date" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 focus:border-primary outline-none">
+            </div>
+            <div>
+              <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-1">Permiso Especial</label>
+              <input x-model="formEdit.permiso_especial" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-3 focus:border-primary outline-none" placeholder="Tipo de permiso">
+            </div>
+            <div>
+              <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-1">Venc. Permiso</label>
+              <input x-model="formEdit.permiso_especial_vencimiento" type="date" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 focus:border-primary outline-none">
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <div class="px-8 py-5 border-t border-outline-variant/20 flex justify-between items-center flex-shrink-0 bg-surface-container-low">
+        <!-- Modo Lectura -->
+        <template x-if="!editandoPerfil">
+          <div class="flex justify-between items-center w-full">
+            <button @click="toggleEstatusOp(opActivo)" class="text-[10px] font-label font-bold uppercase tracking-widest transition-colors flex items-center gap-2" :class="opActivo?.activo ? 'text-danger hover:text-white' : 'text-success hover:text-white'">
+              <i class="ph-bold" :class="opActivo?.activo ? 'ph-user-minus' : 'ph-user-check'"></i>
+              <span x-text="opActivo?.activo ? 'Dar de Baja / Suspender' : 'Reactivar Operador'"></span>
+            </button>
+            <button @click="showDetalle=false" class="text-[10px] font-label font-bold uppercase tracking-widest text-outline hover:text-white transition-colors">Cerrar Perfil</button>
+          </div>
+        </template>
+        <!-- Modo Edición -->
+        <template x-if="editandoPerfil">
+          <div class="flex gap-3 w-full">
+            <button @click="editandoPerfil=false" class="flex-1 border border-outline-variant/40 text-outline hover:text-white font-label text-[10px] font-bold uppercase tracking-widest py-3 transition-all">
+              Cancelar
+            </button>
+            <button @click="guardarEdicionPerfil()" :disabled="guardando" class="flex-1 bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest py-3 hover:brightness-110 transition-all flex items-center justify-center gap-2">
+              <span x-show="!guardando" class="flex items-center gap-2"><i class="ph-bold ph-floppy-disk"></i> Guardar Cambios</span>
+              <span x-show="guardando" class="spinner" style="border-color:rgba(19,19,20,0.3);border-top-color:#131314"></span>
+            </button>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+<script src="assets/js/api.js?v=3"></script>
+<script>
+function opApp() {
+  return {
+    loading: true,
+    operadores: [], filtrados: [],
+    busqueda: '',
+    filtroEstatus: 'todos',
+    usuario: null,
+    showDetalle: false, showNuevo: false,
+    editandoPerfil: false,
+    opActivo: null, guardando: false,
+    formOp: {},
+    formEdit: {},
+
+    async init() {
+      this.usuario = cifAPI.getCurrentUser() || await cifAPI.me();
+      const resp = await cifAPI.get('/operadores');
+      if (resp?.operadores) {
+        this.operadores = resp.operadores;
+        this.filtrar();
+      }
+      this.loading = false;
+    },
+
+    filtrar() {
+      const q = this.busqueda.toLowerCase();
+      let base = [...this.operadores];
+      if (this.filtroEstatus === 'activo')   base = base.filter(op => (op.estatus || (op.activo ? 'activo':'inactivo')) === 'activo');
+      if (this.filtroEstatus === 'inactivo') base = base.filter(op => (op.estatus || (op.activo ? 'activo':'inactivo')) === 'inactivo');
+      this.filtrados = q
+        ? base.filter(op =>
+            op.nombre_completo?.toLowerCase().includes(q) ||
+            op.numero_operador?.toLowerCase().includes(q) ||
+            op.tracto_numero_economico?.toLowerCase().includes(q)
+          )
+        : base;
+    },
+
+    abrirNuevo() {
+      this.formOp = { nombre_completo:'', numero_operador:'', telefono:'', licencia_mx:'', licencia_mx_vencimiento:'', licencia_usa:'', licencia_usa_vencimiento:'', fecha_ingreso: new Date().toISOString().slice(0,10), poliza_seguro:'', poliza_seguro_vencimiento:'', permiso_especial:'', permiso_especial_vencimiento:'' };
+      this.showNuevo = true;
+    },
+
+    async guardarOperador() {
+      this.guardando = true;
+      const res = await cifAPI.post('/operadores', this.formOp);
+      this.guardando = false;
+      if (res?.ok) {
+        cifToast(`✅ Operador creado. Email: ${res.email} / Pass: ${res.password_inicial}`);
+        this.showNuevo = false;
+        await this.init();
+      } else {
+        cifToast(res?.error || 'Error al guardar operador', 'error');
+      }
+    },
+
+    verDetalleOp(op) {
+      this.opActivo   = op;
+      this.editandoPerfil = false;
+      this.showDetalle = true;
+    },
+
+    iniciarEdicionPerfil() {
+      this.formEdit = {
+        nombre_completo: this.opActivo.nombre_completo || '',
+        numero_operador: this.opActivo.numero_operador || '',
+        telefono: this.opActivo.telefono || '',
+        fecha_ingreso: this.opActivo.fecha_ingreso || '',
+        licencia_mx: this.opActivo.licencia_mx || '',
+        licencia_mx_vencimiento: this.opActivo.licencia_mx_vencimiento || '',
+        licencia_usa: this.opActivo.licencia_usa || '',
+        licencia_usa_vencimiento: this.opActivo.licencia_usa_vencimiento || '',
+        visa_vencimiento: this.opActivo.visa_vencimiento || '',
+        poliza_seguro: this.opActivo.poliza_seguro || '',
+        poliza_seguro_vencimiento: this.opActivo.poliza_seguro_vencimiento || '',
+        permiso_especial: this.opActivo.permiso_especial || '',
+        permiso_especial_vencimiento: this.opActivo.permiso_especial_vencimiento || ''
+      };
+      this.editandoPerfil = true;
+    },
+
+    async guardarEdicionPerfil() {
+      if (!this.opActivo) return;
+      this.guardando = true;
+      const res = await cifAPI.put(`/operadores/${this.opActivo.id}`, this.formEdit);
+      this.guardando = false;
+      if (res?.ok) {
+        // Actualizar el operador en el array local
+        Object.assign(this.opActivo, this.formEdit);
+        // Refrescar la lista filtrada
+        const idx = this.operadores.findIndex(o => o.id === this.opActivo.id);
+        if (idx !== -1) Object.assign(this.operadores[idx], this.formEdit);
+        this.filtrar();
+        this.editandoPerfil = false;
+        cifToast('✅ Perfil del operador actualizado correctamente');
+      } else {
+        cifToast(res?.error || 'Error al actualizar perfil', 'error');
+      }
+    },
+
+    async toggleEstatusOp(op) {
+      if(!confirm(`¿Estás seguro de ${op.activo ? 'suspender/dar de baja' : 'reactivar'} al operador ${op.nombre_completo}?`)) return;
+      
+      const payload = { activo: !op.activo };
+      const res = await cifAPI.put(`/operadores/${op.id}`, payload);
+      if(res?.ok) {
+        op.activo = !op.activo;
+        cifToast(`Operador ${op.activo ? 'reactivado' : 'suspendido'} exitosamente`);
+      } else {
+        cifToast('Error al actualizar estatus', 'error');
+      }
+    },
+
+    // ── Semáforo de vencimiento ─────────────────────────────
+    diasHastaVencimiento(fechaStr) {
+      if (!fechaStr) return null;
+      const hoy  = new Date(); hoy.setHours(0,0,0,0);
+      const venc = new Date(fechaStr); venc.setHours(0,0,0,0);
+      return Math.floor((venc - hoy) / (1000 * 60 * 60 * 24));
+    },
+    vencColor(fechaStr) {
+      const d = this.diasHastaVencimiento(fechaStr);
+      if (d === null)  return 'text-outline';
+      if (d < 0)       return 'text-danger font-bold';
+      if (d <= 30)     return 'text-warning font-bold';
+      return 'text-success';
+    },
+    vencClass(fechaStr) {
+      const d = this.diasHastaVencimiento(fechaStr);
+      if (d === null) return 'lic-no';
+      if (d < 0)      return 'lic-no';    // vencida
+      if (d <= 60)    return '';           // warning: próximo a vencer
+      return 'lic-ok';
+    },
+    vencLabel(fechaStr) {
+      const d = this.diasHastaVencimiento(fechaStr);
+      if (d === null) return 'N/D';
+      if (d < 0)      return '⚠ VENCIDA';
+      if (d <= 60)    return `⚠ ${d}d`;
+      return 'OK';
+    },
+
+    tieneDocProximoVencer(op) {
+      const fechas = [op.licencia_mx_vencimiento, op.licencia_usa_vencimiento, op.visa_vencimiento, op.poliza_seguro_vencimiento, op.permiso_especial_vencimiento];
+      return fechas.some(f => {
+        const d = this.diasHastaVencimiento(f);
+        return d !== null && d >= 0 && d <= 60;
+      });
+    },
+
+    fmtFechaSolo(d) { 
+      if (!d) return '';
+      try { 
+        if (typeof window.fmtFechaSolo === 'function') return window.fmtFechaSolo(d);
+        const fecha = new Date(d);
+        return fecha.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+      } catch (e) { return d; }
+    },
+  };
+}
+</script>
+</body>
+</html>

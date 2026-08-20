@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CIF — App Operador</title>
+  <meta name="description" content="Interfaz móvil del operador CIF - registra viajes y solicita apoyo">
+  
+  <link href="assets/css/tailwind.min.css?v=2" rel="stylesheet">
+  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Google Fonts: Inter & Manrope para el Gold Update -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;600;800&family=Noto+Serif:wght@400;700&display=swap" rel="stylesheet">
+  
+  
+
+  <style>
+    /* PWA Mobile Adjustments - Gold Update */
+    body {
+      background-color: var(--cif-dark);
+      color: var(--cif-text);
+      font-family: 'Inter', sans-serif;
+      padding-bottom: 80px; /* Espacio para el Bottom Nav */
+    }
+
+    /* Ocultar barra scroll en movil */
+    ::-webkit-scrollbar { display: none; }
+    
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background-color: var(--cif-darker);
+      border-top: 1px solid var(--cif-border);
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
+      z-index: 50;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      color: var(--cif-muted);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: all 0.2s ease;
+      background: transparent;
+      border: none;
+      width: 100%;
+      padding: 0.5rem;
+    }
+
+    .nav-item i { font-size: 1.5rem; transition: all 0.2s ease; }
+    
+    .nav-item.active {
+      color: var(--cif-primary);
+    }
+    .nav-item.active i {
+      transform: translateY(-2px);
+      text-shadow: 0 0 10px rgba(209, 161, 78, 0.4);
+    }
+
+    /* Mobile Cards */
+    .mobile-card {
+      background-color: var(--cif-card);
+      border: 1px solid var(--cif-border);
+      border-radius: 0px; /* Gold update uses square corners */
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--cif-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--cif-darker);
+      border: 1px solid var(--cif-border);
+      color: var(--cif-text);
+      border-radius: 0px;
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .form-input:focus { border-color: var(--cif-primary); outline: none; }
+
+    /* Upload Zone */
+    .upload-zone {
+      border: 1px dashed var(--cif-border);
+      background: rgba(255,255,255,0.02);
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .upload-zone:active { background: rgba(209, 161, 78, 0.1); border-color: var(--cif-primary); }
+    .upload-zone.has-file { border-color: var(--cif-success); border-style: solid; background: rgba(16,185,129,0.05); }
+
+    /* Custom Buttons Mobile */
+    .btn-mobile {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      border: none;
+      transition: all 0.2s;
+      letter-spacing: 0.05em;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .btn-mobile:active { transform: scale(0.98); }
+    
+    .loader {
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+  </style>
+</head>
+<body x-data="operadorApp()" x-init="init()" class="bg-surface-container-lowest">
+
+  <!-- Main Top Bar -->
+  <header class="sticky top-0 z-40 bg-surface-container-lowest border-b border-white/5 px-4 py-3 matte-grain">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="text-primary text-2xl"><i class="ph-fill ph-truck"></i></div>
+        <div>
+          <div class="font-headline text-lg text-white leading-none tracking-tight">App Operador</div>
+          <div class="text-[0.65rem] text-muted tracking-widest uppercase font-bold">CIF Logística</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-right">
+          <div class="text-sm font-bold text-white" x-text="usuario?.nombre || 'Operador'"></div>
+          <div class="text-xs text-primary font-mono bg-primary/10 px-2 py-0.5 mt-1 inline-block" x-text="'OP #' + (usuario?.numero_operador ?? '—')"></div>
+        </div>
+        <button @click="cifAPI.logout()" class="w-8 h-8 flex items-center justify-center bg-surface-dark border border-white/10 rounded-sm text-muted hover:text-primary transition-colors">
+          <i class="ph-bold ph-sign-out text-lg"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="p-4 max-w-md mx-auto">
+
+    <!-- ── Tab: Mis Viajes ── -->
+    <div x-show="tab === 'viajes'" x-transition.opacity>
+      <h2 class="font-headline text-xl mb-4 text-white flex items-center gap-2">
+        <i class="ph ph-map-pin-line text-primary"></i> Mis Viajes
+      </h2>
+      
+      <div x-show="loading" class="flex flex-col items-center justify-center py-12 text-muted">
+        <div class="loader text-primary mb-3 mx-auto" style="width:32px; height:32px; border-width: 3px;"></div>
+        Cargando asignaciones...
+      </div>
+      
+      <div x-show="!loading && misViajes.length === 0" class="flex flex-col items-center justify-center py-20 text-muted opacity-50">
+        <i class="ph-light ph-map-trifold text-7xl mb-4"></i>
+        <p class="font-bold tracking-wider">AÚN NO HAY VIAJES</p>
+      </div>
+
+      <template x-for="v in misViajes" :key="v.id">
+        <div class="mobile-card">
+          <!-- Status & Origin/Dest -->
+          <div class="flex justify-between items-start mb-4">
+            <span class="badge text-[0.65rem]" :class="estatusBadge(v.estatus)" x-text="v.estatus.replace('_',' ')"></span>
+            <div class="text-xs font-mono text-muted" x-text="'#'+v.id"></div>
+          </div>
+
+          <div class="flex items-center gap-3 mb-4">
+            <div class="flex flex-col items-center">
+              <div class="w-3 h-3 rounded-full bg-primary mb-1"></div>
+              <div class="w-0.5 h-6 bg-white/10"></div>
+              <div class="w-3 h-3 border-2 border-primary rounded-full mt-1"></div>
+            </div>
+            <div class="flex flex-col gap-3 font-headline text-lg leading-tight w-full truncate">
+              <div x-text="v.origen" class="truncate"></div>
+              <div x-text="v.destino" class="truncate"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 p-3 bg-surface-container-lowest border border-white/5 text-xs text-muted font-bold tracking-wide uppercase mb-4">
+            <div>
+              <div class="text-[#656566] text-[0.60rem]">Tracto</div>
+              <div class="text-white mt-0.5" x-text="v.numero_economico ?? 'Sin Asignar'"></div>
+            </div>
+            <div>
+              <div class="text-[#656566] text-[0.60rem]">Caja / Sello</div>
+              <div class="text-white mt-0.5" x-text="v.numero_caja ?? 'Sin Caja'"></div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-col gap-2">
+            <button x-show="v.estatus === 'asignado'" @click="iniciarViaje(v)"
+              class="btn-mobile bg-primary text-surface-dark" :disabled="loadingAction">
+              <i class="ph-bold ph-play"></i> INICIAR VIAJE
+            </button>
+            <button x-show="['en_transito','en_aduana'].includes(v.estatus)" @click="abrirFinalizacion(v)"
+              class="btn-mobile bg-surface-container-lowest border border-primary text-primary">
+              <i class="ph-bold ph-camera"></i> FINALIZAR CON FOTO
+            </button>
+            
+            <div x-show="v.estatus === 'entregado'" class="bg-success/10 border border-success/20 text-success p-3 text-center text-sm font-bold flex items-center justify-center gap-2">
+              <i class="ph-fill ph-check-circle text-lg"></i> DOCUMENTADO
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- ── Tab: Registrar Movimiento ── -->
+    <div x-show="tab === 'registrar'" style="display:none;" x-transition.opacity>
+      <h2 class="font-headline text-xl mb-4 text-white flex items-center gap-2">
+        <i class="ph ph-file-plus text-primary"></i> Registrar Libre
+      </h2>
+
+      <div class="mobile-card">
+        <form @submit.prevent="registrarMovimiento" class="flex flex-col gap-4">
+          <div>
+            <label class="form-label">Tipo de Movimiento</label>
+            <select x-model="regForm.tipo" class="form-input" required>
+              <option value="">Selecciona el movimiento...</option>
+              <option value="local_cargado">Local Cargado (+2 pts)</option>
+              <option value="local_vacio">Local Vacío (+1 pt)</option>
+              <option value="exportacion">Exportación (+2 pts)</option>
+              <option value="importacion">Importación (+2 pts)</option>
+              <option value="rampa">Rampa (+1 pt)</option>
+              <option value="recoleccion">Recolección (+2 pts)</option>
+              <option value="reparto">Reparto (+1 pt)</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Origen</label>
+            <input x-model="regForm.origen" type="text" class="form-input" placeholder="Ej. Planta XYZ" required>
+          </div>
+          <div>
+            <label class="form-label">Destino</label>
+            <input x-model="regForm.destino" type="text" class="form-input" placeholder="Ej. Laredo TX" required>
+          </div>
+          
+          <div>
+            <label class="form-label">Foto del Voucher / Boleta <span class="text-danger">*</span></label>
+            <label class="upload-zone flex flex-col justify-center items-center" :class="regForm.foto && 'has-file'">
+              <input type="file" accept="image/*" capture="environment" class="hidden" @change="onFoto($event)">
+              <div x-show="!regForm.foto">
+                <i class="ph-light ph-camera-plus text-4xl mb-2 text-muted"></i>
+                <div class="font-bold text-sm text-white tracking-wide">TOCA PARA TOMAR FOTO</div>
+              </div>
+              <div x-show="regForm.foto" class="text-success flex flex-col items-center">
+                <i class="ph-fill ph-check-circle text-4xl mb-2"></i>
+                <div class="font-mono text-xs font-bold" x-text="regForm.fotoNombre"></div>
+              </div>
+            </label>
+          </div>
+
+          <div>
+            <label class="form-label">Notas (Opcional)</label>
+            <textarea x-model="regForm.notas" class="form-input" rows="2" placeholder="Folio corto o algún detalle extra..."></textarea>
+          </div>
+
+          <button type="submit" class="btn-mobile bg-primary text-surface-dark mt-2" :disabled="!regForm.foto || guardando">
+            <span x-show="!guardando" class="flex items-center gap-2"><i class="ph-bold ph-paper-plane-tilt"></i> ENVIAR REGISTRO</span>
+            <span x-show="guardando" class="flex items-center gap-2"><span class="loader border-surface-dark"></span> ENVIANDO...</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── Tab: Ranking & Puntos ── -->
+    <div x-show="tab === 'puntos'" style="display:none;" x-transition.opacity>
+      <h2 class="font-headline text-xl mb-4 text-white flex items-center gap-2">
+        <i class="ph ph-trophy text-primary"></i> Mis Puntos
+      </h2>
+
+      <!-- Scorecard VIP -->
+      <div class="mobile-card matte-grain relative overflow-hidden" style="border-color: rgba(209,161,78,0.3);">
+        <div class="absolute -right-4 -top-4 opacity-10">
+          <i class="ph-fill ph-medal text-[9rem] text-primary"></i>
+        </div>
+        <div class="relative z-10">
+          <div class="text-[0.65rem] font-bold text-primary tracking-widest uppercase mb-1">SCORE SEMANAL</div>
+          <div class="font-headline text-6xl text-white" x-text="scorecard.puntos_semana ?? 0"></div>
+          
+          <div class="flex gap-4 mt-6">
+            <div>
+              <div class="text-[0.6rem] text-muted font-bold uppercase tracking-widest">Global Rank</div>
+              <div class="text-lg font-bold text-white flex items-center gap-1">
+                <i class="ph-fill ph-ranking text-primary"></i> <span x-text="'#' + (scorecard.posicion ?? '—')"></span>
+              </div>
+            </div>
+            <div>
+              <div class="text-[0.6rem] text-muted font-bold uppercase tracking-widest">Viajes Realizados</div>
+              <div class="text-lg font-mono text-white" x-text="(scorecard.viajes_cargados ?? 0) + (scorecard.viajes_vacios ?? 0)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="font-bold text-sm text-muted uppercase tracking-widest mb-3 px-2">Top 10 Nacional</div>
+      <div class="mobile-card !p-0 overflow-hidden divide-y divide-white/5">
+        <div x-show="ranking.length === 0" class="text-center py-6 text-sm text-muted">Cargando...</div>
+        <template x-for="(r, i) in ranking" :key="r.operador_id">
+          <div class="p-4 flex items-center gap-4">
+            <!-- Position -->
+            <div class="w-8 text-center">
+              <template x-if="i === 0"><i class="ph-fill ph-crown text-2xl text-warning"></i></template>
+              <template x-if="i === 1"><i class="ph-fill ph-medal text-xl text-[#94a3b8]"></i></template>
+              <template x-if="i === 2"><i class="ph-fill ph-medal text-xl text-[#cd7c32]"></i></template>
+              <template x-if="i > 2"><span class="font-headline text-lg text-muted" x-text="i+1"></span></template>
+            </div>
+            <div class="flex-1">
+              <div class="font-bold text-white text-sm" x-text="r.nombre"></div>
+              <div class="text-xs text-muted" x-text="r.viajes + ' viajes entregados'"></div>
+            </div>
+            <div class="font-bold text-primary font-mono text-lg" x-text="r.puntos"></div>
+          </div>
+        </template>
+      </div>
+
+    </div>
+
+    <!-- ── Tab: SOS (MODO EXCLUSIVO) ── -->
+    <div x-transition.opacity>
+      
+      <div class="mobile-card border-danger/40 bg-danger/5 mb-4 text-center matte-grain">
+        <i class="ph-fill ph-warning-circle text-4xl text-danger mb-2"></i>
+        <h2 class="font-headline text-xl text-danger mb-1">Panel de Emergencia</h2>
+        <p class="text-xs text-white/70">Selecciona el nivel de urgencia. Al enviar, el personal de Taller y Logística recibirá un ping de emergencia en tiempo real.</p>
+      </div>
+
+      <div class="mobile-card">
+        <form @submit.prevent="enviarSOS" class="flex flex-col gap-5">
+          <div>
+            <label class="form-label">Detalle del Problema *</label>
+            <textarea x-model="sosForm.problema" class="form-input" rows="4" required
+              placeholder="Ej. Falla en transmisión, ponchadura llanta tracto delantera, falla en frenos..."></textarea>
+          </div>
+
+          <!-- 3 Botones de Criticidad Grandes -->
+          <div>
+            <label class="form-label mb-3">Nivel de Urgencia *</label>
+            <div class="flex flex-col gap-3">
+              <button type="button" @click="sosForm.urgencia='media'"
+                :class="sosForm.urgencia==='media' ? 'ring-2 ring-warning border-warning scale-[1.02]' : 'border-white/10 opacity-70'"
+                class="w-full border bg-warning/10 text-warning p-5 flex items-center gap-4 transition-all duration-200" style="min-height:80px;">
+                <i class="ph-fill ph-warning text-4xl flex-shrink-0"></i>
+                <div class="text-left flex-1">
+                  <div class="font-bold text-base tracking-wide uppercase">Atención</div>
+                  <div class="text-xs text-white/60 mt-0.5">Falla operable — La unidad puede desplazarse</div>
+                </div>
+              </button>
+              <button type="button" @click="sosForm.urgencia='alta'"
+                :class="sosForm.urgencia==='alta' ? 'ring-2 ring-orange-400 border-orange-400 scale-[1.02]' : 'border-white/10 opacity-70'"
+                class="w-full border bg-orange-500/10 text-orange-400 p-5 flex items-center gap-4 transition-all duration-200" style="min-height:80px;">
+                <i class="ph-fill ph-fire text-4xl flex-shrink-0"></i>
+                <div class="text-left flex-1">
+                  <div class="font-bold text-base tracking-wide uppercase">Peligro Inminente</div>
+                  <div class="text-xs text-white/60 mt-0.5">Requiere auxilio vial preventivo inmediato</div>
+                </div>
+              </button>
+              <button type="button" @click="sosForm.urgencia='sos'"
+                :class="sosForm.urgencia==='sos' ? 'ring-2 ring-red-500 border-red-500 scale-[1.02]' : 'border-white/10 opacity-70'"
+                class="w-full border bg-red-500/10 text-red-400 p-5 flex items-center gap-4 transition-all duration-200" style="min-height:80px;">
+                <i class="ph-fill ph-siren text-4xl flex-shrink-0 animate-pulse"></i>
+                <div class="text-left flex-1">
+                  <div class="font-bold text-base tracking-wide uppercase">CRÍTICO — Rescate</div>
+                  <div class="text-xs text-white/60 mt-0.5">Unidad detenida — Solicitar grúa inmediatamente</div>
+                </div>
+              </button>
+            </div>
+          </div>
+          
+          <label class="flex items-start gap-3 p-4 border border-white/10 bg-black/30 cursor-pointer">
+            <input type="checkbox" x-model="sosForm.puede_operar" class="mt-1 w-5 h-5 accent-primary bg-surface-dark border-white/20">
+            <div>
+              <div class="font-bold text-sm text-white">Todavía puedo conducir</div>
+              <div class="text-xs text-muted mt-1">Marca esta casilla si el tracto aún enciende y puede moverse hasta la base.</div>
+            </div>
+          </label>
+
+          <button type="submit" class="w-full bg-danger text-white font-bold text-base uppercase tracking-widest shadow-[0_0_20px_rgba(239,68,68,0.3)] flex items-center justify-center gap-3 transition-all" style="min-height:64px; padding: 1.25rem;" :disabled="enviandoSOS || !sosForm.problema">
+            <span x-show="!enviandoSOS" class="flex items-center gap-3"><i class="ph-bold ph-siren text-2xl"></i> EMITIR ALERTA SOS</span>
+            <span x-show="enviandoSOS" class="flex items-center gap-2"><span class="loader border-white"></span> CONECTANDO...</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bottom Navigation: Solo SOS -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" style="pointer-events:none;">
+      <i class="ph-fill ph-siren text-danger text-3xl animate-pulse"></i>
+      <span class="text-danger font-bold">MODO SOS</span>
+    </div>
+  </nav>
+
+  <!-- Modal Finalizar Viaje -->
+  <div x-show="showFinalModal" style="display:none;" class="fixed inset-0 bg-black/90 z-[100] flex flex-col justify-end">
+    <!-- Click backdrop to close -->
+    <div class="absolute inset-0" @click="showFinalModal = false"></div>
+    
+    <div class="relative bg-surface-card w-full border-t border-white/10 p-5 pb-8 matte-grain rounded-t-xl" x-transition.translate>
+      <div class="w-12 h-1 bg-white/20 mx-auto rounded-full mb-6"></div>
+      
+      <h3 class="font-headline text-xl text-white flex items-center gap-2 mb-2">
+        <i class="ph-fill ph-camera text-primary"></i> Subir Boleta
+      </h3>
+      <p class="text-xs text-muted font-bold tracking-wide uppercase mb-5">El documento es obligatorio para liquidar el viaje.</p>
+
+      <label class="upload-zone mb-5 flex flex-col justify-center items-center h-40" :class="finFoto && 'has-file'">
+        <input type="file" accept="image/*" capture="environment" class="hidden" @change="onFinFoto($event)">
+        <div x-show="!finFoto">
+          <i class="ph-light ph-camera-plus text-4xl mb-2 text-muted"></i>
+          <div class="font-bold text-sm">ENFOCAR DOCUMENTO</div>
+        </div>
+        <div x-show="finFoto" class="text-success text-center">
+          <i class="ph-fill ph-check-circle text-4xl mb-2"></i>
+          <div class="font-mono text-xs font-bold px-4 truncate w-full max-w-[300px]" x-text="finFotoNombre"></div>
+        </div>
+      </label>
+
+      <div class="flex gap-3">
+        <button @click="showFinalModal = false" class="btn-mobile bg-surface-dark border border-white/20 text-white w-1/3">
+          CANCELAR
+        </button>
+        <button @click="confirmarEntrega" :disabled="!finFoto || enviandoFoto" class="btn-mobile bg-primary text-surface-dark flex-1">
+          <span x-show="!enviandoFoto">CONFIRMAR</span>
+          <span x-show="enviandoFoto" class="flex items-center justify-center gap-2"><span class="loader border-surface-dark"></span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal SOS Takeover (Alerta inmersiva) -->
+  <div x-show="sosActivo" style="display:none;" class="fixed inset-0 z-[200] bg-danger text-white flex flex-col items-center justify-center text-center p-8 matte-grain" x-transition.opacity>
+    <div class="animate-pulse">
+      <i class="ph-fill ph-warning-circle text-[8rem] mb-6 shadow-danger/50 drop-shadow-2xl"></i>
+    </div>
+    <h1 class="font-headline text-4xl mb-4 font-bold border-b border-white/30 pb-4">¡ALERTA RECIBIDA!</h1>
+    <p class="text-lg font-bold tracking-wider mb-2">LA BASE HA SIDO NOTIFICADA</p>
+    <p class="text-sm text-white/80 mb-10 mx-6">Mantén la calma. Activaste el protocolo de emergencia y logramos ubicarte. El equipo base de Taller y monitoreo de CIF reaccionará inmediatamente.</p>
+    
+    <button @click="sosActivo = false" class="border border-white/50 bg-black/20 px-8 py-4 text-sm font-bold uppercase tracking-widest hover:bg-black/40 transition-colors shadow-lg">
+      <i class="ph-bold ph-check"></i> ENTENDIDO
+    </button>
+  </div>
+
+  <script src="assets/js/api.js?v=3"></script>
+  <script>
+  function operadorApp() {
+    return {
+      tab: 'sos', loading: true, guardando: false,
+      loadingAction: false, enviandoSOS: false, enviandoFoto: false,
+      showFinalModal: false, sosActivo: false,
+      usuario: null, misViajes: [], ranking: [],
+      scorecard: { puntos_semana:0, posicion:'—', viajes_cargados:0, viajes_vacios:0 },
+      viajeActual: null,
+      finFoto: null, finFotoNombre: '',
+      regForm: { tipo:'', origen:'', destino:'', notas:'', foto:null, fotoNombre:'' },
+      sosForm: { problema:'', urgencia:'media', puede_operar:true },
+
+      estatusBadge(e) {
+        if (!e) return 'badge-muted';
+        const st = e.toLowerCase();
+        if (st.includes('solicitado') || st.includes('pendiente')) return 'badge-muted';
+        if (st.includes('asignado') || st.includes('documentado')) return 'badge-info';
+        if (st.includes('transito') || st.includes('aduana') || st.includes('proceso')) return 'badge-primary';
+        if (st.includes('entregado') || st.includes('facturado') || st.includes('terminad')) return 'badge-success bg-success/10 text-success border-success/30';
+        return 'badge-muted';
+      },
+
+      async init() {
+        this.usuario = cifAPI.getCurrentUser() || await cifAPI.me();
+        if (this.usuario?.rol !== 'operador') { window.location.href = 'index.html'; return; }
+        await Promise.all([this.cargarViajes(), this.cargarPuntos()]);
+      },
+      async cargarViajes() {
+        this.loading = true;
+        const data = await cifAPI.get('/operadores/mis-viajes');
+        if (data?.viajes) this.misViajes = data.viajes;
+        this.loading = false;
+      },
+      async cargarPuntos() {
+        const data = await cifAPI.get('/gamificacion/ranking');
+        if (data?.ranking) this.ranking = data.ranking;
+        const sc = await cifAPI.get('/gamificacion/scorecard/me');
+        if (sc) this.scorecard = sc;
+      },
+      async iniciarViaje(v) {
+        if (!confirm('CONFIRMACIÓN:\n¿Comenzar el traslado de la unidad hacia el destino?')) return;
+        this.loadingAction = true;
+        const res = await cifAPI.put(`/viajes/${v.id}/estatus`, { estatus: 'en_transito' });
+        if (res?.ok) { cifToast('Viaje iniciado localmente'); v.estatus = 'en_transito'; }
+        else cifToast(res?.error || 'Error de conexión', 'error');
+        this.loadingAction = false;
+      },
+      abrirFinalizacion(v) { 
+        this.viajeActual = v; 
+        this.finFoto = null; 
+        this.finFotoNombre = ''; 
+        this.showFinalModal = true; 
+      },
+      onFinFoto(e) { 
+        const f = e.target.files[0]; 
+        if (f) { this.finFoto = f; this.finFotoNombre = f.name; } 
+      },
+      async confirmarEntrega() {
+        if (!this.finFoto) return;
+        this.enviandoFoto = true;
+        const fd = new FormData();
+        fd.append('voucher', this.finFoto);
+        const res = await cifAPI.postFile(`/viajes/${this.viajeActual.id}/voucher`, fd);
+        if (res?.ok) { 
+          cifToast('Boleta subida ✨ +' + (res.puntos ?? 2) + ' PTS'); 
+          this.showFinalModal = false; 
+          this.cargarViajes(); 
+        } else {
+          cifToast(res?.error || 'Network error.', 'error');
+        }
+        this.enviandoFoto = false;
+      },
+      onFoto(e) { 
+        const f = e.target.files[0]; 
+        if (f) { this.regForm.foto = f; this.regForm.fotoNombre = f.name; } 
+      },
+      async registrarMovimiento() {
+        if (!this.regForm.foto) { cifToast('La cámara/foto es obligatoria', 'error'); return; }
+        this.guardando = true;
+        const fd = new FormData();
+        Object.entries(this.regForm).forEach(([k,v]) => { if (k !== 'foto' && k !== 'fotoNombre') fd.append(k, v); });
+        fd.append('voucher', this.regForm.foto);
+        const res = await cifAPI.postFile('/viajes/registrar', fd);
+        if (res?.ok) {
+          cifToast('Validado ✨ +' + (res.puntos ?? 1) + ' PTS');
+          this.regForm = { tipo:'', origen:'', destino:'', notas:'', foto:null, fotoNombre:'' };
+          this.tab = 'puntos'; 
+          this.cargarPuntos();
+        } else {
+          cifToast(res?.error || 'Error local', 'error');
+        }
+        this.guardando = false;
+      },
+      async enviarSOS() {
+        this.enviandoSOS = true;
+        const res = await cifAPI.post('/taller/sos', this.sosForm);
+        if (res?.ok) {
+          // Ya no hay "Alert" nativo, usamos el Modal Full Screen Inmersivo
+          this.sosActivo = true;
+          this.sosForm = { problema:'', urgencia:'media', puede_operar:true };
+          this.tab = 'viajes'; // Restaura el tab en segundo plano
+        } else {
+          cifToast(res?.error || 'Protocolo fallido', 'error');
+        }
+        this.enviandoSOS = false;
+      }
+    };
+  }
+
+  function cifToast(msg, tipo='success') {
+    const el = document.createElement('div');
+    const bg = tipo === 'success' ? 'bg-success text-surface-dark font-bold' : 'bg-danger text-white font-bold';
+    el.className = `fixed bottom-24 left-1/2 -translate-x-1/2 z-[999] px-5 py-3 shadow-xl text-center rounded-sm text-sm uppercase tracking-wider ${bg} w-11/12 max-w-sm border-2 border-surface-dark`;
+    el.style.animation = 'slideUp 0.3s ease-out';
+    el.innerHTML = msg;
+    document.body.appendChild(el);
+    setTimeout(() => {
+      el.style.opacity = '0';
+      el.style.transition = 'opacity 0.3s';
+      setTimeout(() => el.remove(), 300);
+    }, 4000);
+  }
+  </script>
+</body>
+</html>

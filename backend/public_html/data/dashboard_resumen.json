@@ -1,0 +1,37 @@
+{
+  "resumen": {
+    "en_ruta": 4,
+    "en_taller": 2,
+    "disponibles": 10,
+    "viajes_activos": 4,
+    "cajas_disponibles": 96,
+    "solicitudes_taller_pendientes": 1,
+    "operadores_activos": 12
+  },
+  "viajes_activos": [
+    {
+      "id": 1001,
+      "operador": "Juan Diego Aguilar",
+      "origen": "Juárez (Planta 1)",
+      "destino": "El Paso (LIKOM)",
+      "estatus": "en_ruta"
+    },
+    {
+      "id": 1002,
+      "operador": "Angel Diaz",
+      "origen": "Juárez (Base)",
+      "destino": "El Paso (Aduana)",
+      "estatus": "en_aduana"
+    }
+  ],
+  "tractos_taller": [
+    {
+      "id": 1,
+      "numero_economico": "L-01",
+      "marca": "INTERNACIONAL",
+      "modelo": "1994",
+      "orden_activa": "#0023"
+    }
+  ],
+  "sos_pendientes": []
+}

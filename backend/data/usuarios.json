@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "email": "admin@cif.mx",
+    "nombre": "Administrador Principal",
+    "rol": "admin"
+  },
+  {
+    "id": 2,
+    "email": "trafico@cif.mx",
+    "nombre": "Coordinador de Tráfico",
+    "rol": "trafico"
+  },
+  {
+    "id": 3,
+    "email": "operador@cif.mx",
+    "nombre": "Operador Juan Pérez",
+    "rol": "operador"
+  },
+  {
+    "id": 4,
+    "email": "facturacion@cif.mx",
+    "nombre": "Auxiliar de Facturación",
+    "rol": "facturacion"
+  },
+  {
+    "id": 5,
+    "email": "taller@cif.mx",
+    "nombre": "Jefe de Taller",
+    "rol": "taller"
+  },
+  {
+    "id": 6,
+    "email": "porteria@cif.mx",
+    "nombre": "Guardia Portería",
+    "rol": "porteria"
+  }
+]

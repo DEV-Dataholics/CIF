@@ -1,0 +1,6 @@
+[
+  {"id":1,"puente":"Zaragoza","tarifa":"$185.00","vigencia":"2026-12-31"},
+  {"id":2,"puente":"Córdova (Américas)","tarifa":"$185.00","vigencia":"2026-12-31"},
+  {"id":3,"puente":"Santa Teresa","tarifa":"$210.00","vigencia":"2026-12-31"},
+  {"id":4,"puente":"Stanton","tarifa":"$195.00","vigencia":"2026-12-31"}
+]

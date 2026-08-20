@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "nombre_completo": "Juan Pérez",
+    "numero_operador": "OP-001",
+    "telefono": "6561234567",
+    "licencia_mx": "MX-987654321",
+    "licencia_mx_vencimiento": "2027-12-31",
+    "licencia_usa": "CDL-112233",
+    "fecha_ingreso": "2024-01-15",
+    "tracto_numero_economico": "T-01",
+    "activo": true
+  },
+  {
+    "id": 2,
+    "nombre_completo": "Carlos Gómez",
+    "numero_operador": "OP-002",
+    "telefono": "6569876543",
+    "licencia_mx": "MX-123456789",
+    "licencia_mx_vencimiento": "2024-05-10",
+    "licencia_usa": "",
+    "fecha_ingreso": "2023-06-20",
+    "tracto_numero_economico": "T-02",
+    "activo": false
+  },
+  {
+    "id": 3,
+    "activo": true,
+    "nombre_completo": "gustavo",
+    "numero_operador": "65421asd",
+    "telefono": "46521052",
+    "licencia_mx": "5+62346523",
+    "licencia_mx_vencimiento": "2026-05-27",
+    "licencia_usa": "",
+    "licencia_usa_vencimiento": "",
+    "fecha_ingreso": "2026-05-15"
+  }
+]

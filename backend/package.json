@@ -1,0 +1,23 @@
+{
+  "name": "cif-demo-system",
+  "version": "1.0.0",
+  "description": "CIF Sistema - Demo Mode with Mock Node.js API",
+  "scripts": {
+    "start": "concurrently \"npm run start:api\" \"npm run start:front\"",
+    "start:api": "node mock-api/server.js",
+    "start:front": "serve public_html -l 3000",
+    "install:all": "npm install"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
+    "@tailwindcss/forms": "^0.5.11",
+    "concurrently": "^8.2.2",
+    "serve": "^14.2.1",
+    "tailwindcss": "^4.3.0"
+  }
+}

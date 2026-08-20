@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "economico": "T-100",
+    "operador": "Mario Alberto Ruiz",
+    "estatus": "pendiente",
+    "fecha_reporte": "2026-05-15T07:28:05.744Z",
+    "problema": "ZXZX<ZX<Z<X",
+    "urgencia": "sos",
+    "puede_operar": false
+  }
+]

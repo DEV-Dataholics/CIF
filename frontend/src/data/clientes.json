@@ -1,0 +1,312 @@
+[
+  {
+    "id": 1,
+    "razonSocial": "ARES METAL",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 2,
+    "razonSocial": "ATR",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 3,
+    "razonSocial": "BIO PAPPEL",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 4,
+    "razonSocial": "BRENDA GALINDO",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 5,
+    "razonSocial": "CASTORES",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 6,
+    "razonSocial": "CATCHMASTER",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 7,
+    "razonSocial": "CIF",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 8,
+    "razonSocial": "CORRUGADOS",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 9,
+    "razonSocial": "DANHIL",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 10,
+    "razonSocial": "DANNY HERMAN",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 11,
+    "razonSocial": "DH",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 12,
+    "razonSocial": "ERI",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 13,
+    "razonSocial": "ETF",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 14,
+    "razonSocial": "GONHER",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 15,
+    "razonSocial": "IMSSA",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 16,
+    "razonSocial": "INFINITO",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 17,
+    "razonSocial": "JMIMX",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 18,
+    "razonSocial": "LINQ",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 19,
+    "razonSocial": "NHAVIS LOGISTICS",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 20,
+    "razonSocial": "ORTIZ GALINDO",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 21,
+    "razonSocial": "QUIMICA GONCAL",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 22,
+    "razonSocial": "ROGERS-FOAM",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 23,
+    "razonSocial": "SACSA",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 24,
+    "razonSocial": "SER",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 25,
+    "razonSocial": "SETA",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 26,
+    "razonSocial": "SIGO",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 27,
+    "razonSocial": "SR. VILLADO",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 28,
+    "razonSocial": "ST CORRUGADOS",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 29,
+    "razonSocial": "STRATEC",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 30,
+    "razonSocial": "TRANS FRONT",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  },
+  {
+    "id": 31,
+    "razonSocial": "VICAR",
+    "rfc": "",
+    "contacto": "",
+    "telefono": "",
+    "email": "",
+    "direccion": "",
+    "activo": true
+  }
+]

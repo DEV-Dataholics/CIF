@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIF — Acceso al Sistema</title>
+  <meta name="description" content="Sistema de Gestión Logística CIF — Transportista de Frontera Ciudad Juárez / El Paso">
+  <link href="assets/css/tailwind.min.css?v=2" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style>
+    body { min-height: 100dvh; }
+
+    /* Matte grain texture */
+    .matte-grain { position: relative; }
+    .matte-grain::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.03;
+      pointer-events: none;
+      background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCxtzo5Fd4tGwvT_jg4ysGETAyo_0QJXqFxE0Vz2jCSFfdCW_xcsx8ttX4CZRiXAQ5e-8ClJGovIme_H86utYa8siODIK5ToDWQRd0J97DLwVKIRNDWTJFuuP9hcZHxl3TW0UHrsINdFeEP-GfWzg6ZsUAe9dbaTn0kGfYEn6L_suxq7ifFL2e4HJJxC6M6yMa4wOfyyyiBZMm_ILej9DcNsEEVsRhY2idiHrWisdeOIG82K0lswo1JUKVmQYcwAiapSH8q-Y8FZ4J8);
+    }
+
+    .walnut-texture {
+      background-color: #3d2b1f;
+      background-image: repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(0,0,0,0.05) 40px, rgba(0,0,0,0.05) 41px);
+    }
+
+    /* Subtle ambient glow */
+    .login-ambient {
+      background:
+        radial-gradient(ellipse 60% 50% at 25% 0%, rgba(209,161,78,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 85% 100%, rgba(61,43,31,0.08) 0%, transparent 60%);
+    }
+
+    /* Gold accent line */
+    .gold-accent-line {
+      width: 48px;
+      height: 2px;
+      background: #D1A14E;
+    }
+
+    /* Input styling */
+    .login-input {
+      width: 100%;
+      background: #0e0e0f;
+      border: 1px solid #4f453f;
+      color: #e5e2e3;
+      font-family: "Manrope", sans-serif;
+      font-size: 0.875rem;
+      padding: 0.85rem 1rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .login-input:focus {
+      border-color: #D1A14E;
+      box-shadow: 0 0 0 2px rgba(209,161,78,0.15);
+    }
+    .login-input::placeholder { color: #9b8e87; }
+
+    /* Primary button */
+    .btn-gold {
+      width: 100%;
+      padding: 0.9rem;
+      background: linear-gradient(135deg, #D1A14E 0%, #A67B30 100%);
+      border: none;
+      color: #131314;
+      font-family: "Inter", sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-gold:hover:not(:disabled) {
+      background: #A67B30;
+      box-shadow: 0 8px 30px rgba(209,161,78,0.25);
+    }
+    .btn-gold:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Demo role chips */
+    .role-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      font-family: "Inter", sans-serif;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background: transparent;
+      border: 1px solid rgba(79,69,63,0.3);
+      color: #9b8e87;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .role-chip:hover {
+      border-color: #D1A14E;
+      color: #D1A14E;
+      background: rgba(209,161,78,0.05);
+    }
+
+    /* Spinner */
+    .gold-spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(19,19,20,0.3);
+      border-top-color: #131314;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Entry animation */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-entry { animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .animate-entry-delay { animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both; }
+
+    /* Divider */
+    .gold-divider {
+      display: flex; align-items: center; gap: 0.75rem;
+      color: #4f453f; font-size: 0.65rem; font-family: "Inter", sans-serif;
+      text-transform: uppercase; letter-spacing: 0.15em;
+    }
+    .gold-divider::before, .gold-divider::after {
+      content: ''; flex: 1; height: 1px; background: rgba(79,69,63,0.3);
+    }
+  </style>
+</head>
+
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+
+<div x-data="loginApp()" class="min-h-screen flex login-ambient">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!--  LEFT PANEL — Branding & Context (Desktop only)    -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="hidden lg:flex lg:w-[55%] relative overflow-hidden">
+    <!-- Walnut base -->
+    <div class="absolute inset-0 walnut-texture opacity-40"></div>
+    <!-- Dark overlay -->
+    <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/95 to-surface/70 z-10"></div>
+    <!-- Matte grain -->
+    <div class="absolute inset-0 matte-grain z-20"></div>
+
+    <!-- Content -->
+    <div class="relative z-30 flex flex-col justify-between p-16 w-full max-w-2xl">
+
+      <!-- Top: Brand -->
+      <div class="animate-entry mb-6">
+        <div class="flex items-center">
+          <img src="assets/LOGOCIF.png" alt="CIF Logística" style="height:12rem;width:auto;object-fit:contain;filter:drop-shadow(0 0 15px rgba(209,161,78,0.25));">
+        </div>
+      </div>
+
+      <!-- Center: Hero message -->
+      <div class="animate-entry-delay">
+        <div class="gold-accent-line mb-8"></div>
+        <h2 class="font-headline text-5xl font-bold tracking-tight leading-[1.15] mb-6">
+          Control Total<br>
+          de tu <span class="text-primary">Operación</span>
+        </h2>
+        <p class="font-body text-on-surface-variant text-lg leading-relaxed max-w-lg mb-12">
+          Plataforma integral para la gestión de flota, viajes y operadores
+          en el corredor logístico <span class="text-primary">Ciudad Juárez — El Paso</span>.
+        </p>
+
+        <!-- Feature pills -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <i class="ph-light ph-chart-line-up text-primary text-xl"></i>
+            </div>
+            <div>
+              <div class="font-body text-sm font-semibold text-on-surface">Monitoreo en Tiempo Real</div>
+              <div class="font-label text-[10px] uppercase tracking-widest text-outline">Dashboard · KPIs · Alertas SOS</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <i class="ph-light ph-map-trifold text-primary text-xl"></i>
+            </div>
+            <div>
+              <div class="font-body text-sm font-semibold text-on-surface">Trazabilidad Punto a Punto</div>
+              <div class="font-label text-[10px] uppercase tracking-widest text-outline">Kanban · Estatus · Evidencias</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <i class="ph-light ph-wrench text-primary text-xl"></i>
+            </div>
+            <div>
+              <div class="font-body text-sm font-semibold text-on-surface">Mantenimiento Inteligente</div>
+              <div class="font-label text-[10px] uppercase tracking-widest text-outline">Taller · Órdenes de Trabajo · Costos</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom: Version -->
+      <div class="animate-entry-delay">
+        <div class="flex items-center gap-6 pt-8 border-t border-outline-variant/10">
+          <div>
+            <span class="font-body text-sm font-bold text-on-surface">v1.0</span>
+            <span class="font-label text-[9px] uppercase text-outline block">MVP</span>
+          </div>
+          <div class="w-px h-6 bg-outline-variant/20"></div>
+          <div>
+            <span class="font-body text-sm font-bold text-primary">2026</span>
+            <span class="font-label text-[9px] uppercase text-outline block">Release</span>
+          </div>
+          <div class="w-px h-6 bg-outline-variant/20"></div>
+          <div>
+            <span class="font-body text-sm font-bold text-on-surface">Chihuahua</span>
+            <span class="font-label text-[9px] uppercase text-outline block">Región</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!--  RIGHT PANEL — Login Form                          -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="w-full lg:w-[45%] flex items-center justify-center p-6 sm:p-12">
+    <div class="w-full max-w-md animate-entry-delay">
+
+      <!-- Mobile brand (hidden on desktop) -->
+      <div class="lg:hidden text-center mb-10">
+        <img src="assets/LOGOCIF.png" alt="CIF Logística" class="mx-auto mb-2" style="height:3.5rem;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(209,161,78,0.2));">
+      </div>
+
+      <!-- Login Card -->
+      <div class="bg-surface-container-low matte-grain p-8 sm:p-10 border border-outline-variant/10">
+
+        <!-- Card header -->
+        <div class="mb-8">
+          <span class="font-label text-[10px] uppercase tracking-[0.3em] text-primary mb-3 block">Autenticación</span>
+          <h2 class="font-headline text-2xl font-bold tracking-tight mb-2">Acceso al Sistema</h2>
+          <p class="font-body text-sm text-on-surface-variant">Ingresa tus credenciales para continuar</p>
+        </div>
+
+        <!-- Error -->
+        <div x-show="error" x-transition
+             class="mb-6 p-4 bg-error-container/20 border border-error/20 flex items-start gap-3">
+          <i class="ph-fill ph-warning-circle text-error text-lg mt-0.5"></i>
+          <span class="text-error text-sm font-body" x-text="error"></span>
+        </div>
+
+        <!-- Form -->
+        <form @submit.prevent="doLogin" class="space-y-5">
+          <div>
+            <label for="email" class="block font-label text-[10px] uppercase tracking-widest text-outline mb-2">Correo electrónico</label>
+            <div class="relative">
+              <i class="ph-light ph-envelope absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg"></i>
+              <input
+                id="email"
+                x-model="form.email"
+                type="email"
+                class="login-input pl-10"
+                placeholder="usuario@cif.mx"
+                autocomplete="email"
+                required
+              >
+            </div>
+          </div>
+          <div>
+            <label for="password" class="block font-label text-[10px] uppercase tracking-widest text-outline mb-2">Contraseña</label>
+            <div class="relative">
+              <i class="ph-light ph-lock-key absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg"></i>
+              <input
+                id="password"
+                x-model="form.password"
+                :type="showPass ? 'text' : 'password'"
+                class="login-input pl-10 pr-12"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+              >
+              <button type="button" @click="showPass = !showPass"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors flex items-center justify-center w-8 h-8 focus:outline-none">
+                <i :class="showPass ? 'ph-eye-slash' : 'ph-eye'" class="ph-light text-lg relative top-[1px]"></i>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn-gold mt-2" :disabled="loading">
+            <span x-show="!loading">Iniciar Sesión</span>
+            <span x-show="loading" class="flex items-center justify-center gap-2">
+              <span class="gold-spinner"></span>
+              Verificando...
+            </span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-6 flex items-center justify-center gap-3">
+        <img src="assets/LOGOCIF.png" alt="CIF" style="height:1.6rem;width:auto;object-fit:contain;opacity:0.7;">
+        <p class="font-label text-[10px] uppercase tracking-wider text-outline-variant">
+          © 2026 CIF Logística · MVP v1.0
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script src="assets/js/api.js?v=3"></script>
+<script>
+function loginApp() {
+  return {
+    form: { email: '', password: 'cif2026' },
+    loading: false,
+    error: '',
+    showPass: false,
+
+    async doLogin() {
+      console.log("¿Existe cifAPI?", window.cifAPI);
+      this.loading = true;
+      this.error = '';
+      try {
+        const res = await window.cifAPI.login(this.form.email, this.form.password);
+        this.loading = false;
+
+        if (!res || res.error) {
+          this.error = res?.error || 'Error de conexión. Verifica que el backend esté corriendo.';
+          return;
+        }
+        if (!res.ok) {
+          this.error = res.mensaje || 'Credenciales incorrectas. Intenta de nuevo.';
+          return;
+        }
+
+        // Guardar usuario en sesión y redirigir
+        sessionStorage.setItem('cif_user', JSON.stringify(res.usuario));
+        const destinos = {
+          admin:        'home.html',
+          trafico:      'home.html',
+          operador:     'pwa-operador.html',
+          facturacion:  'home.html',
+          taller:       'home.html',
+          porteria:     'home.html',
+        };
+        window.location.href = destinos[res.usuario.rol] || 'home.html';
+      } catch (err) {
+        this.loading = false;
+        this.error = 'Error interno JS: ' + err.message;
+        console.error("Error en doLogin:", err);
+      }
+    }
+  };
+}
+</script>
+<script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+</body>
+</html>

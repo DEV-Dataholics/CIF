@@ -1,0 +1,1740 @@
+<html class="dark" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIF Logística — Gestión de Flota</title>
+  <link href="assets/css/tailwind.min.css?v=2" rel="stylesheet">
+  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style>
+    body { min-height: 100dvh; }
+    .matte-grain { position: relative; }
+    .matte-grain::before {
+      content: ""; position: absolute; inset: 0; opacity: 0.03; pointer-events: none;
+      background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCxtzo5Fd4tGwvT_jg4ysGETAyo_0QJXqFxE0Vz2jCSFfdCW_xcsx8ttX4CZRiXAQ5e-8ClJGovIme_H86utYa8siODIK5ToDWQRd0J97DLwVKIRNDWTJFuuP9hcZHxl3TW0UHrsINdFeEP-GfWzg6ZsUAe9dbaTn0kGfYEn6L_suxq7ifFL2e4HJJxC6M6yMa4wOfyyyiBZMm_ILej9DcNsEEVsRhY2idiHrWisdeOIG82K0lswo1JUKVmQYcwAiapSH8q-Y8FZ4J8);
+    }
+    .cif-table { width: 100%; border-collapse: collapse; }
+    .cif-table th { 
+      text-align: left; padding: 1rem; border-bottom: 1px solid rgba(79,69,63,0.3);
+      font-family: 'Inter', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9b8e87;
+    }
+    .cif-table td { padding: 1rem; border-bottom: 1px solid rgba(79,69,63,0.1); font-family: 'Manrope', sans-serif; }
+    .cif-table tbody tr:hover { background: rgba(79,69,63,0.05); }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(209,161,78,0.3); border-top-color: #D1A14E; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .badge { padding: 0.25rem 0.6rem; font-size: 0.7rem; font-weight: 700; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid transparent; display: inline-block; }
+    .badge-success { background: rgba(195,204,140,0.1); color: #c3cc8c; border-color: rgba(195,204,140,0.2); }
+    .badge-danger { background: rgba(255,180,171,0.1); color: #ffb4ab; border-color: rgba(255,180,171,0.2); }
+    .badge-info { background: rgba(59,130,246,0.1); color: #3b82f6; border-color: rgba(59,130,246,0.2); }
+    .badge-muted { background: rgba(155,142,135,0.1); color: #9b8e87; border-color: rgba(155,142,135,0.2); }
+    .badge-accent { background: rgba(209,161,78,0.1); color: #D1A14E; border-color: rgba(209,161,78,0.2); }
+    
+    .doc-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem 1rem; }
+    .doc-item   { padding: 1rem; background: rgba(255,255,255,.02); border: 1px solid rgba(155,142,135,0.2); }
+    .doc-label  { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #9b8e87; margin-bottom: .25rem; }
+    .doc-value  { font-size: .9rem; color: #e5e2e3; }
+    .doc-value.alert { color: #ffb4ab; font-weight: 700; }
+    .doc-value.ok    { color: #c3cc8c; }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+
+<div x-data="flotaApp()" x-init="init()" class="min-h-screen flex flex-col">
+
+  <header class="bg-surface-container-lowest sticky top-0 z-50 border-b border-outline-variant/10">
+    <div class="max-w-[1400px] mx-auto px-8 py-5 flex justify-between items-center">
+      <a href="home.html" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
+        <img src="assets/LOGOCIF.png" alt="CIF Logística" style="height:5.5rem;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(209,161,78,0.2));">
+      </a>
+
+      <nav class="hidden lg:flex gap-6 font-label text-[10px] uppercase tracking-widest font-bold">
+        <a class="text-outline-variant hover:text-primary transition-colors" href="home.html">Inicio</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="text-outline-variant hover:text-primary transition-colors hidden" href="viajes.html">Viajes</a>
+        <a class="text-primary border-b border-primary pb-1" href="flota.html">Flota</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="operadores.html">Operadores</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="taller.html">Taller</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="porteria.html">Accesos</a>
+        <a class="text-outline-variant hover:text-primary transition-colors" href="cobranza.html">Cobranza</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
+          <i class="ph-light ph-user text-primary text-xl"></i>
+        </div>
+        <button @click="cifAPI.logout()" class="hidden sm:flex items-center gap-2 text-[10px] font-label uppercase tracking-widest text-outline hover:text-primary transition-colors border border-outline-variant/20 px-4 py-2 font-bold">
+          <i class="ph-light ph-sign-out text-lg"></i> SALIR
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full max-w-[1400px] mx-auto px-8 py-10">
+    
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+      <div>
+        <span class="font-label text-primary text-[11px] uppercase tracking-[0.3em] mb-4 block">Módulo 03</span>
+        <h2 class="font-headline text-4xl font-bold tracking-tight mb-3 flex items-center gap-3">
+          <i class="ph-light ph-truck text-primary"></i> Gestión de Flota
+        </h2>
+        <div class="font-label text-xs uppercase tracking-widest text-outline">Control de Tractocamiones y Cajas</div>
+      </div>
+      
+      <div class="flex items-center gap-4 w-full md:w-auto">
+        <!-- Barra de Búsqueda Global -->
+        <div class="relative w-full md:w-72">
+          <i class="ph-light ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-outline"></i>
+          <input type="text" x-model="searchQuery" placeholder="Buscar eco, caja, cliente, etc..." class="w-full bg-surface-container-highest border border-outline-variant/30 text-on-surface text-xs font-label uppercase tracking-wider pl-9 pr-4 py-2.5 focus:border-primary outline-none placeholder:text-outline/50">
+        </div>
+        
+        <!-- Pestañas -->
+        <div class="flex bg-surface-container-low border border-outline-variant/20 p-1">
+          <button @click="subTab='monitoreo'" :class="subTab==='monitoreo' ? 'bg-surface-container-highest text-primary' : 'text-outline hover:text-white'" class="px-6 py-2 text-[10px] font-label font-bold uppercase tracking-widest transition-all">Monitoreo</button>
+          <button @click="subTab='tractos'" :class="subTab==='tractos' ? 'bg-surface-container-highest text-primary' : 'text-outline hover:text-white'" class="px-6 py-2 text-[10px] font-label font-bold uppercase tracking-widest transition-all">Tractos</button>
+          <button @click="subTab='cajas'" :class="subTab==='cajas' ? 'bg-surface-container-highest text-primary' : 'text-outline hover:text-white'" class="px-6 py-2 text-[10px] font-label font-bold uppercase tracking-widest transition-all">Cajas</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8">
+
+      <!-- ── MONITOREO DE UBICACIÓN (COMMAND CENTER) ── -->
+      <div x-show="subTab === 'monitoreo'" class="space-y-8 animate-entry-delay">
+        
+        <!-- Filtro por Cliente Asignado -->
+        <div class="flex items-center gap-4 mb-4 bg-surface-container-low border border-outline-variant/20 px-6 py-3">
+          <div class="flex items-center gap-2">
+            <i class="ph-light ph-funnel text-primary"></i>
+            <span class="font-label text-[10px] uppercase tracking-widest text-outline font-bold">Asignación Comercial:</span>
+          </div>
+          <select x-model="filtroClienteFlota" class="bg-surface border border-outline-variant/30 text-[10px] font-label font-bold uppercase tracking-widest px-4 py-2 focus:border-primary outline-none text-primary">
+            <option value="">TODOS LOS CLIENTES</option>
+            <template x-for="c in clientesFlotaUnicos" :key="c">
+              <option :value="c" x-text="c"></option>
+            </template>
+          </select>
+          <span x-show="filtroClienteFlota" class="font-label text-[9px] text-primary uppercase tracking-widest" x-text="'Filtrando: ' + filtroClienteFlota + ' — ' + (carrilesMonitoreo.base.length + carrilesMonitoreo.taller.length + carrilesMonitoreo.cliente.length + carrilesMonitoreo.enRuta.length) + ' unidades'"></span>
+        </div>
+
+        <!-- Tablero de Carriles -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          
+          <!-- CARRIL 1: BASE (EN INSTALACIONES) -->
+          <div class="bg-surface-container-low border border-outline-variant/15 flex flex-col min-h-[600px]">
+            <div class="px-6 py-5 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-low/80 sticky top-0 z-10 border-t-4 border-success">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center text-success">
+                  <i class="ph-fill ph-house-line"></i>
+                </div>
+                <div>
+                  <h4 class="font-headline font-bold text-sm text-on-surface">Base</h4>
+                  <div class="text-[9px] font-label uppercase tracking-widest text-outline">En Instalaciones</div>
+                </div>
+              </div>
+              <span class="font-mono text-sm font-bold text-success bg-success/15 px-2.5 py-1 rounded" x-text="carrilesMonitoreo.base.length"></span>
+            </div>
+            
+            <div class="p-4 flex-1 space-y-4 max-h-[70vh] overflow-y-auto matte-grain">
+              <template x-if="carrilesMonitoreo.base.length === 0">
+                <div class="text-center py-12 text-outline-variant italic text-xs">Sin unidades en base</div>
+              </template>
+              <template x-for="item in carrilesMonitoreo.base" :key="item.objeto.id + '-' + item.tipo">
+                <!-- Tarjeta de Monitoreo -->
+                <div class="bg-surface-container-lowest p-5 border border-outline-variant/10 hover:border-success/40 hover:-translate-y-0.5 transition-all duration-300 relative group flex flex-col gap-3">
+                  <div class="flex justify-between items-start">
+                    <span class="font-mono text-sm font-extrabold uppercase tracking-wide" 
+                      :class="item.tipo === 'tracto' ? 'text-primary' : 'text-outline'" 
+                      x-text="item.tipo === 'tracto' ? '🚛 ECO: ' + item.objeto.numero_economico : '📦 CAJA: ' + item.caja"></span>
+                    <span class="text-[9px] font-label font-bold uppercase px-2 py-0.5 rounded"
+                      :class="item.tipo==='tracto' ? 'bg-success/10 text-success' : 'bg-success/10 text-success'"
+                      x-text="item.objeto.estatus.toUpperCase()"></span>
+                  </div>
+                  
+                  <div class="space-y-1.5 text-xs text-on-surface-variant font-body">
+                    <div class="flex items-center gap-2">
+                      <i class="ph-light ph-user text-outline"></i>
+                      <span class="font-semibold text-on-surface" x-text="item.operador"></span>
+                    </div>
+                    <div class="flex items-center gap-2" x-show="item.tipo==='tracto'">
+                      <i class="ph-light ph-package text-outline"></i>
+                      <span x-text="item.caja ? 'Caja acoplada: ' + item.caja : 'Sin caja acoplada'" :class="item.caja ? 'text-on-surface font-semibold' : 'text-outline-variant italic'"></span>
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-end gap-3 pt-2 border-t border-outline-variant/5">
+                    <button @click="abrirDespachoFlota(item.objeto, item.tipo)" 
+                      class="text-[9px] font-label uppercase tracking-widest font-bold text-success hover:text-white hover:bg-success px-2 py-0.5 border border-success/30 transition-all flex items-center gap-1">
+                      <i class="ph-bold ph-truck font-bold"></i> Despachar
+                    </button>
+                    <button @click="abrirQuickAction(item.objeto, item.tipo)" 
+                      class="text-[9px] font-label uppercase tracking-widest font-bold text-outline hover:text-primary transition-colors flex items-center gap-1">
+                      <i class="ph-bold ph-lightning"></i> Acción
+                    </button>
+                    <button @click="item.tipo==='tracto' ? verDetalleTracto(item.objeto) : verDetalleCaja(item.objeto)" 
+                      class="text-[9px] font-label uppercase tracking-widest font-bold text-outline hover:text-primary transition-colors flex items-center gap-1">
+                      Detalles <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- CARRIL 2: TALLER (EN MANTENIMIENTO) -->
+          <div class="bg-surface-container-low border border-outline-variant/15 flex flex-col min-h-[600px]">
+            <div class="px-6 py-5 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-low/80 sticky top-0 z-10 border-t-4 border-danger">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-danger/10 flex items-center justify-center text-danger">
+                  <i class="ph-fill ph-wrench"></i>
+                </div>
+                <div>
+                  <h4 class="font-headline font-bold text-sm text-on-surface">Taller</h4>
+                  <div class="text-[9px] font-label uppercase tracking-widest text-outline">En Reparación</div>
+                </div>
+              </div>
+              <span class="font-mono text-sm font-bold text-danger bg-danger/15 px-2.5 py-1 rounded" x-text="carrilesMonitoreo.taller.length"></span>
+            </div>
+            
+            <div class="p-4 flex-1 space-y-4 max-h-[70vh] overflow-y-auto matte-grain">
+              <template x-if="carrilesMonitoreo.taller.length === 0">
+                <div class="text-center py-12 text-outline-variant italic text-xs">Sin unidades en taller</div>
+              </template>
+              <template x-for="item in carrilesMonitoreo.taller" :key="item.objeto.id + '-' + item.tipo">
+                <!-- Tarjeta de Monitoreo -->
+                <div class="bg-surface-container-lowest p-5 border border-outline-variant/10 hover:border-danger/40 hover:-translate-y-0.5 transition-all duration-300 relative group flex flex-col gap-3">
+                  <div class="flex justify-between items-start">
+                    <span class="font-mono text-sm font-extrabold uppercase tracking-wide" 
+                      :class="item.tipo === 'tracto' ? 'text-primary' : 'text-outline'" 
+                      x-text="item.tipo === 'tracto' ? '🚛 ECO: ' + item.objeto.numero_economico : '📦 CAJA: ' + item.caja"></span>
+                    <span class="text-[9px] font-label font-bold uppercase px-2 py-0.5 rounded bg-danger/10 text-danger"
+                      x-text="item.objeto.estatus.replace(/_/g,' ').toUpperCase()"></span>
+                  </div>
+                  
+                  <div class="space-y-1.5 text-xs text-on-surface-variant font-body">
+                    <div class="flex items-center gap-2">
+                      <i class="ph-light ph-user text-outline"></i>
+                      <span class="font-semibold text-on-surface" x-text="item.operador"></span>
+                    </div>
+                    <div class="flex items-center gap-2" x-show="item.tipo==='tracto'">
+                      <i class="ph-light ph-package text-outline"></i>
+                      <span x-text="item.caja ? 'Caja: ' + item.caja : 'Sin caja'" class="text-outline-variant"></span>
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-end gap-3 pt-2 border-t border-outline-variant/5">
+                    <button @click="abrirQuickAction(item.objeto, item.tipo)" 
+                      class="text-[9px] font-label uppercase tracking-widest font-bold text-outline hover:text-primary transition-colors flex items-center gap-1">
+                      <i class="ph-bold ph-lightning"></i> Acción
+                    </button>
+                    <button @click="item.tipo==='tracto' ? verDetalleTracto(item.objeto) : verDetalleCaja(item.objeto)" 
+                      class="text-[9px] font-label uppercase tracking-widest font-bold text-outline hover:text-primary transition-colors flex items-center gap-1">
+                      Detalles <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- CARRIL 3: EN CLIENTE (PATIO / OPERACIÓN) -->
+          <div class="bg-surface-container-low border border-outline-variant/15 flex flex-col min-h-[600px]">
+            <div class="px-6 py-5 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-low/80 sticky top-0 z-10 border-t-4 border-info">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-info/10 flex items-center justify-center text-info">
+                  <i class="ph-fill ph-buildings"></i>
+                </div>
+                <div>
+                  <h4 class="font-headline font-bold text-sm text-on-surface">En Cliente</h4>
+                  <div class="text-[9px] font-label uppercase tracking-widest text-outline">Patio Externo</div>
+                </div>
+              </div>
+              <span class="font-mono text-sm font-bold text-info bg-info/15 px-2.5 py-1 rounded" x-text="carrilesMonitoreo.cliente.length"></span>
+            </div>
+            
+            <div class="p-4 flex-1 space-y-4 max-h-[70vh] overflow-y-auto matte-grain">
+              <template x-if="carrilesMonitoreo.cliente.length === 0">
+                <div class="text-center py-12 text-outline-variant italic text-xs">Sin unidades en cliente</div>
+              </template>
+              <template x-for="item in carrilesMonitoreo.cliente" :key="item.objeto.id + '-' + item.tipo">
+                <!-- Tarjeta de Monitoreo -->
+                <div class="bg-surface-container-lowest p-5 border border-outline-variant/10 hover:border-info/40 hover:-translate-y-0.5 transition-all duration-300 relative group flex flex-col gap-3">
+                  <div class="flex justify-between items-start">
+                    <span class="font-mono text-sm font-extrabold uppercase tracking-wide" 
+                      :class="item.tipo === 'tracto' ? 'text-primary' : 'text-outline'" 
+                      x-text="item.tipo === 'tracto' ? '🚛 ECO: ' + item.objeto.numero_economico : '📦 CAJA: ' + item.caja"></span>
+                    <span class="text-[9px] font-label font-bold uppercase px-2 py-0.5 rounded bg-info/10 text-info"
+                      x-text="item.objeto.estatus.replace(/_/g,' ').toUpperCase()"></span>
+                  </div>
+                  
+                  <div class="space-y-1.5 text-xs text-on-surface-variant font-body">
+                    <div class="flex items-center gap-2">
+                      <i class="ph-light ph-buildings text-outline"></i>
+                      <span class="font-semibold text-on-surface" x-text="item.objeto.cliente_nombre || item.objeto.cliente_asignado || 'Cliente genérico'"></span>
+                    </div>
+                    <div class="flex items-center gap-2" x-show="item.tipo==='tracto'">
+                      <i class="ph-light ph-user text-outline"></i>
+                      <span class="text-on-surface" x-text="item.operador"></span>
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-end gap-3 pt-2 border-t border-outline-variant/5">
+                    <button @click="abrirDespachoFlota(item.objeto, item.tipo)" 
+                      class="text-[9px] font-label uppercase tracking-widest font-bold text-success hover:text-white hover:bg-success px-2 py-0.5 border border-success/30 transition-all flex items-center gap-1">
+                      <i class="ph-bold ph-truck font-bold"></i> Despachar
+                    </button>
+                    <button @click="abrirQuickAction(item.objeto, item.tipo)" 
+                      class="text-[9px] font-label uppercase tracking-widest font-bold text-outline hover:text-primary transition-colors flex items-center gap-1">
+                      <i class="ph-bold ph-lightning"></i> Acción
+                    </button>
+                    <button @click="item.tipo==='tracto' ? verDetalleTracto(item.objeto) : verDetalleCaja(item.objeto)" 
+                      class="text-[9px] font-label uppercase tracking-widest font-bold text-outline hover:text-primary transition-colors flex items-center gap-1">
+                      Detalles <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- CARRIL 4: EN RUTA (VIAJE ACTIVO) -->
+          <div class="bg-surface-container-low border border-outline-variant/15 flex flex-col min-h-[600px]">
+            <div class="px-6 py-5 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-low/80 sticky top-0 z-10 border-t-4 border-primary">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <i class="ph-fill ph-navigation-arrow"></i>
+                </div>
+                <div>
+                  <h4 class="font-headline font-bold text-sm text-on-surface">En Ruta</h4>
+                  <div class="text-[9px] font-label uppercase tracking-widest text-outline">Tránsito Activo</div>
+                </div>
+              </div>
+              <span class="font-mono text-sm font-bold text-primary bg-primary/15 px-2.5 py-1 rounded" x-text="carrilesMonitoreo.enRuta.length"></span>
+            </div>
+            
+            <div class="p-4 flex-1 space-y-4 max-h-[70vh] overflow-y-auto matte-grain">
+              <template x-if="carrilesMonitoreo.enRuta.length === 0">
+                <div class="text-center py-12 text-outline-variant italic text-xs">Sin unidades en ruta activa</div>
+              </template>
+              <template x-for="item in carrilesMonitoreo.enRuta" :key="item.objeto.id + '-' + item.tipo">
+                <!-- Tarjeta de Monitoreo -->
+                <div class="bg-surface-container-lowest p-5 border border-outline-variant/10 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300 relative group flex flex-col gap-3">
+                  <div class="flex justify-between items-start">
+                    <span class="font-mono text-sm font-extrabold uppercase tracking-wide text-primary" 
+                      x-text="item.tipo === 'tracto' ? '🚛 ECO: ' + item.objeto.numero_economico : '📦 CAJA: ' + item.caja"></span>
+                    <span class="text-[9px] font-label font-bold uppercase px-2 py-0.5 rounded bg-primary/10 text-primary"
+                      x-text="item.objeto.estatus.replace(/_/g,' ').toUpperCase()"></span>
+                  </div>
+                  
+                  <div class="space-y-1.5 text-xs text-on-surface-variant font-body">
+                    <div class="flex items-center gap-2">
+                      <i class="ph-light ph-user text-outline"></i>
+                      <span class="font-semibold text-on-surface" x-text="item.operador"></span>
+                    </div>
+                    <div class="flex items-center gap-2" x-show="item.caja">
+                      <i class="ph-light ph-package text-outline"></i>
+                      <span class="text-on-surface font-semibold" x-text="'Caja acoplada: ' + item.caja"></span>
+                    </div>
+                    <div class="mt-2 p-2 bg-surface/40 border border-outline-variant/5 text-[10px] space-y-1">
+                      <div class="flex justify-between"><span class="text-outline">Ruta:</span> <span class="font-bold text-on-surface" x-text="item.destino || 'Frontera/Cruce'"></span></div>
+                      <div class="flex justify-between" x-show="item.folio_viaje"><span class="text-outline">Viaje:</span> <span class="font-mono font-bold text-primary" x-text="item.folio_viaje"></span></div>
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-end gap-3 pt-2 border-t border-outline-variant/5">
+                    <button @click="abrirQuickAction(item.objeto, item.tipo)" 
+                      class="text-[9px] font-label uppercase tracking-widest font-bold text-outline hover:text-primary transition-colors flex items-center gap-1">
+                      <i class="ph-bold ph-lightning"></i> Acción
+                    </button>
+                    <button @click="item.tipo==='tracto' ? verDetalleTracto(item.objeto) : verDetalleCaja(item.objeto)" 
+                      class="text-[9px] font-label uppercase tracking-widest font-bold text-outline hover:text-primary transition-colors flex items-center gap-1">
+                      Detalles <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── TRACTOCAMIONES ── -->
+      <div x-show="subTab === 'tractos'">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-px bg-outline-variant/20 mb-8 border border-outline-variant/20">
+          <div class="bg-surface-container-low matte-grain p-8">
+            <div class="text-[10px] font-label uppercase tracking-widest text-outline mb-4">Total Tractos</div>
+            <div class="text-5xl font-body font-bold text-on-surface mb-2" x-text="tractosFiltrados.length"></div>
+          </div>
+          <div class="bg-surface-container-low matte-grain p-8 border-t-2 border-success">
+            <div class="text-[10px] font-label uppercase tracking-widest text-success mb-4 flex items-center gap-2">
+              <i class="ph-fill ph-check-circle"></i> Disponibles
+            </div>
+            <div class="text-5xl font-body font-bold text-success mb-2" x-text="tractosFiltrados.filter(t=>t.estatus==='disponible').length"></div>
+          </div>
+          <div class="bg-surface-container-low matte-grain p-8 border-t-2 border-primary">
+            <div class="text-[10px] font-label uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
+              <i class="ph-fill ph-steering-wheel"></i> En Ruta
+            </div>
+            <div class="text-5xl font-body font-bold text-primary mb-2" x-text="tractosFiltrados.filter(t=>t.estatus==='en_ruta').length"></div>
+          </div>
+          <div class="bg-surface-container-low matte-grain p-8 border-t-2 border-danger">
+            <div class="text-[10px] font-label uppercase tracking-widest text-danger mb-4 flex items-center gap-2">
+              <i class="ph-fill ph-wrench"></i> En Taller
+            </div>
+            <div class="text-5xl font-body font-bold text-danger mb-2" x-text="tractosFiltrados.filter(t=>t.estatus==='en_taller').length"></div>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-low border border-outline-variant/20 matte-grain flex flex-col">
+          <div class="flex items-center justify-between px-8 py-6 border-b border-outline-variant/20">
+            <div class="font-headline font-bold text-xl flex items-center gap-3">
+              <i class="ph-light ph-list-bullets text-primary"></i> Inventario de Tractocamiones
+            </div>
+            <button @click="abrirNuevoTracto()" class="bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-6 py-3 hover:brightness-110 transition-all flex items-center gap-2">
+              <i class="ph-bold ph-plus"></i> Registrar Nuevo
+            </button>
+          </div>
+          
+          <div x-show="loading" class="flex items-center justify-center py-20">
+             <span class="spinner" style="width:32px;height:32px;"></span>
+          </div>
+
+          <div x-show="!loading" class="overflow-auto">
+            <table class="cif-table">
+              <thead>
+                <tr>
+                  <th>Eco</th>
+                  <th>Marca / Modelo</th>
+                  <th>Placas MX / USA</th>
+                  <th>Operador Asignado</th>
+                  <th>Rendimiento Obj.</th>
+                  <th>Estatus</th>
+                  <th class="text-right px-8">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="t in tractosFiltrados" :key="t.id">
+                  <tr class="hover:bg-white/[0.02] transition-colors">
+                    <td class="font-mono text-sm font-bold text-primary px-8" x-text="t.numero_economico"></td>
+                    <td>
+                      <div class="text-sm font-bold text-on-surface" x-text="t.marca"></div>
+                      <div class="text-[10px] uppercase tracking-widest text-outline" x-text="t.modelo + (t.anio ? ' · ' + t.anio : '')"></div>
+                    </td>
+                    <td class="text-[10px] font-mono leading-relaxed">
+                      <div class="flex items-center gap-1"><span class="text-outline">MX:</span> <span class="text-on-surface" x-text="t.placas_mx ?? '—'"></span></div>
+                      <div class="flex items-center gap-1"><span class="text-outline">US:</span> <span class="text-on-surface" x-text="t.placas_usa ?? 'N/A'"></span></div>
+                    </td>
+                    <td class="text-sm font-label font-bold text-on-surface">
+                      <span x-show="t.operador_nombre" x-text="t.operador_nombre"></span>
+                      <span x-show="!t.operador_nombre" class="text-outline-variant italic font-normal">Sin asignar</span>
+                    </td>
+                    <td class="text-sm font-mono font-bold text-primary" x-text="(t.rendimiento_objetivo ?? '—') + ' km/l'"></td>
+                    <td>
+                      <span class="badge"
+                        :class="t.estatus==='disponible'?'badge-success':t.estatus==='en_taller'?'badge-danger':t.estatus==='en_ruta'?'badge-accent':'badge-muted'"
+                        x-text="t.estatus?.replace(/_/g,' ').toUpperCase()">
+                      </span>
+                    </td>
+                    <td class="text-right px-8 space-x-2 flex justify-end">
+                      <button @click="abrirQuickAction(t, 'tracto')" class="border border-outline-variant/40 text-outline hover:border-primary hover:text-primary transition-all p-2" title="Acción Rápida">
+                        <i class="ph-bold ph-lightning"></i>
+                      </button>
+                      <button @click="verDetalleTracto(t)" class="border border-outline-variant/40 text-outline hover:border-primary hover:text-primary transition-all p-2" title="Ver Detalles">
+                        <i class="ph-bold ph-eye"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CAJAS ── -->
+      <div x-show="subTab === 'cajas'">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-px bg-outline-variant/20 mb-8 border border-outline-variant/20">
+          <div class="bg-surface-container-low matte-grain p-8">
+            <div class="text-[10px] font-label uppercase tracking-widest text-outline mb-4">Total Cajas</div>
+            <div class="text-5xl font-body font-bold text-on-surface mb-2" x-text="cajasFiltradas.length"></div>
+          </div>
+          <div class="bg-surface-container-low matte-grain p-8 border-t-2 border-success">
+            <div class="text-[10px] font-label uppercase tracking-widest text-success mb-4 flex items-center gap-2">
+              <i class="ph-fill ph-check-circle"></i> Disponibles
+            </div>
+            <div class="text-5xl font-body font-bold text-success mb-2" x-text="cajasFiltradas.filter(c=>c.estatus==='disponible').length"></div>
+          </div>
+          <div class="bg-surface-container-low matte-grain p-8 border-t-2 border-info">
+            <div class="text-[10px] font-label uppercase tracking-widest text-info mb-4 flex items-center gap-2">
+              <i class="ph-fill ph-buildings"></i> En Cliente
+            </div>
+            <div class="text-5xl font-body font-bold text-info mb-2" x-text="cajasFiltradas.filter(c=>c.estatus==='en_cliente').length"></div>
+          </div>
+          <div class="bg-surface-container-low matte-grain p-8 border-t-2 border-primary">
+            <div class="text-[10px] font-label uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
+              <i class="ph-fill ph-map-pin"></i> En Viaje
+            </div>
+            <div class="text-5xl font-body font-bold text-primary mb-2" x-text="cajasFiltradas.filter(c=>c.estatus==='en_viaje').length"></div>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-low border border-outline-variant/20 matte-grain flex flex-col">
+          <div class="flex items-center justify-between px-8 py-6 border-b border-outline-variant/20">
+            <div class="font-headline font-bold text-xl flex items-center gap-3">
+              <i class="ph-light ph-package text-primary"></i> Inventario de Cajas
+            </div>
+            <button @click="abrirNuevaCaja()" class="bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-6 py-3 hover:brightness-110 transition-all flex items-center gap-2">
+               <i class="ph-bold ph-plus"></i> Registrar Caja
+            </button>
+          </div>
+
+          <!-- Filtros Compuestos -->
+          <div class="px-8 py-4 bg-surface-container-lowest/50 border-b border-outline-variant/20 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-[9px] font-label uppercase tracking-widest text-outline mb-1.5 font-bold">Ubicación Física</label>
+              <select x-model="filtroUbicacion" class="bg-surface border border-outline-variant/30 text-on-surface text-xs p-2.5 w-full focus:border-primary outline-none">
+                <option value="">Todas las ubicaciones</option>
+                <option value="BASE">Base</option>
+                <option value="TALLER">Taller</option>
+                <option value="CLIENTE">En Cliente (General)</option>
+                <option value="LOCALERA">Localera</option>
+                <option value="DAÑADA">Dañada / Inactiva</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[9px] font-label uppercase tracking-widest text-outline mb-1.5 font-bold">Cliente Asignado</label>
+              <select x-model="filtroCliente" class="bg-surface border border-outline-variant/30 text-on-surface text-xs p-2.5 w-full focus:border-primary outline-none">
+                <option value="">Todos los clientes</option>
+                <option value="LIKOM">LIKOM</option>
+                <option value="DANHIL">DANHIL</option>
+                <option value="JMI">JMI</option>
+                <option value="BIO PAPEL">BIO PAPEL</option>
+                <option value="SMURFIT">SMURFIT</option>
+                <option value="QUIMICA">QUÍMICA</option>
+              </select>
+            </div>
+            <div class="flex items-end">
+              <button @click="limpiarFiltrosCajas()" class="w-full border border-outline-variant/40 hover:border-primary text-outline hover:text-primary transition-all text-[9px] font-label uppercase tracking-widest font-bold py-3 flex items-center justify-center gap-2">
+                <i class="ph-bold ph-arrow-counter-clockwise"></i> Limpiar Filtros
+              </button>
+            </div>
+          </div>
+
+          <div x-show="loading" class="flex items-center justify-center py-20">
+             <span class="spinner" style="width:32px;height:32px;"></span>
+          </div>
+
+          <div x-show="!loading" class="overflow-auto">
+            <table class="cif-table">
+              <thead>
+                <tr>
+                  <th>Caja</th>
+                  <th>Tipo</th>
+                  <th>Ubicación Actual</th>
+                  <th>Cliente Asignado</th>
+                  <th>Placas / Documentación</th>
+                  <th>Inspección Anual</th>
+                  <th>Estatus</th>
+                  <th class="text-right px-8">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="c in cajasFiltradas" :key="c.id">
+                  <tr class="hover:bg-white/[0.02] transition-colors">
+                    <td class="font-mono text-sm font-bold text-primary px-8" x-text="c.numero_caja"></td>
+                    <td><span class="badge badge-muted text-[10px] uppercase font-bold" x-text="c.tipo"></span></td>
+                    <td class="text-sm font-label text-on-surface" x-text="c.ubicacion_actual ?? '—'"></td>
+                    <td class="text-sm font-label text-on-surface" x-text="c.cliente_nombre ?? '—'"></td>
+                    <td>
+                      <div class="text-[10px] font-mono text-on-surface" x-text="c.placas_mx ?? '—'"></div>
+                      <div class="mt-1" x-show="c.vencimiento_placas">
+                        <span class="text-[9px] font-label px-1.5 py-0.5" :class="evaluarVencimiento(c.vencimiento_placas).color" x-text="'Placas: ' + evaluarVencimiento(c.vencimiento_placas).label"></span>
+                      </div>
+                    </td>
+                    <td>
+                      <div x-show="c.inspeccion_anual">
+                        <div class="text-[10px] font-mono text-on-surface" x-text="fmtFechaSolo(parseFechaDMY(c.inspeccion_anual))"></div>
+                        <div class="mt-1">
+                          <span class="text-[9px] font-label px-1.5 py-0.5" :class="evaluarVencimiento(c.inspeccion_anual).color" x-text="evaluarVencimiento(c.inspeccion_anual).label"></span>
+                        </div>
+                      </div>
+                      <div x-show="!c.inspeccion_anual" class="text-outline-variant italic text-xs">Sin Inspección</div>
+                    </td>
+                    <td>
+                      <span class="badge"
+                        :class="c.estatus==='disponible'?'badge-success':c.estatus==='en_cliente'?'badge-info':c.estatus==='en_viaje'?'badge-accent':'badge-danger'"
+                        x-text="c.estatus?.replace(/_/g,' ').toUpperCase()">
+                      </span>
+                    </td>
+                    <td class="text-right px-8 space-x-2 flex justify-end">
+                       <button @click="abrirQuickAction(c, 'caja')" class="border border-outline-variant/40 text-outline hover:border-primary hover:text-primary transition-all p-2" title="Acción Rápida">
+                         <i class="ph-bold ph-lightning"></i>
+                       </button>
+                       <button @click="verDetalleCaja(c)" class="border border-outline-variant/40 text-outline hover:border-primary hover:text-primary transition-all p-2" title="Ver Detalles">
+                         <i class="ph-bold ph-eye"></i>
+                       </button>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ── Modal Detalle Tracto (F2.4) ── -->
+  <div x-show="showModal && modalTipo === 'tracto'" class="fixed inset-0 z-[100] flex items-center justify-center bg-surface/90 backdrop-blur-sm p-4" @click.self="showModal=false" x-transition>
+    <div class="bg-surface-container-low border border-outline-variant/30 w-full max-w-2xl matte-grain flex flex-col max-h-[90vh]">
+      <div class="px-8 py-6 border-b border-outline-variant/20 flex justify-between items-center">
+        <div>
+          <h3 class="font-headline font-bold text-2xl text-primary flex items-center gap-3">
+            <i class="ph-fill ph-truck"></i> Tracto: <span x-text="itemActivo?.numero_economico"></span>
+          </h3>
+          <div class="mt-2" x-show="!editandoModal">
+            <span class="badge"
+              :class="itemActivo?.estatus==='disponible'?'badge-success':itemActivo?.estatus==='en_taller'?'badge-danger':'badge-accent'"
+              x-text="itemActivo?.estatus?.replace(/_/g,' ').toUpperCase()">
+            </span>
+          </div>
+          <div class="mt-2" x-show="editandoModal">
+             <select x-model="formEdit.estatus" class="bg-surface border border-outline-variant/40 text-on-surface p-1 text-xs">
+                <option value="disponible">DISPONIBLE</option>
+                <option value="en_ruta">EN RUTA</option>
+                <option value="en_taller">EN TALLER</option>
+             </select>
+          </div>
+        </div>
+        <button class="text-outline hover:text-primary transition-colors text-2xl" @click="showModal=false"><i class="ph-bold ph-x"></i></button>
+      </div>
+
+      <div class="flex-1 overflow-auto p-8 space-y-10">
+        <div>
+           <h4 class="text-[10px] font-label font-bold uppercase tracking-[0.2em] text-outline mb-4">Información General</h4>
+           <div class="doc-grid">
+             <div class="doc-item">
+               <div class="doc-label">Tipo</div>
+               <div class="doc-value" x-show="!editandoModal" x-text="itemActivo?.tipo ?? 'TRACTOCAMION'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.tipo" class="bg-surface border border-outline-variant/40 text-sm p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">VIN (No. Serie)</div>
+               <div class="doc-value font-mono" x-show="!editandoModal" x-text="itemActivo?.vin ?? '—'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.vin" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1 uppercase">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Marca</div>
+               <div class="doc-value" x-show="!editandoModal" x-text="itemActivo?.marca"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.marca" class="bg-surface border border-outline-variant/40 text-sm p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Modelo</div>
+               <div class="doc-value" x-show="!editandoModal" x-text="itemActivo?.modelo"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.modelo" class="bg-surface border border-outline-variant/40 text-sm p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Año</div>
+               <div class="doc-value font-mono" x-show="!editandoModal" x-text="itemActivo?.anio ?? '—'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.anio" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1">
+             </div>
+           </div>
+        </div>
+
+        <div>
+           <h4 class="text-[10px] font-label font-bold uppercase tracking-[0.2em] text-outline mb-4">Tren Motriz</h4>
+           <div class="doc-grid">
+             <div class="doc-item">
+               <div class="doc-label">Número de Motor</div>
+               <div class="doc-value font-mono" x-show="!editandoModal" x-text="itemActivo?.numero_motor ?? '—'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.numero_motor" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1 uppercase">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Arreglo de Motor</div>
+               <div class="doc-value" x-show="!editandoModal" x-text="itemActivo?.arreglo_motor ?? '—'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.arreglo_motor" class="bg-surface border border-outline-variant/40 text-sm p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Marca Transmisión</div>
+               <div class="doc-value" x-show="!editandoModal" x-text="itemActivo?.marca_transmision ?? '—'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.marca_transmision" class="bg-surface border border-outline-variant/40 text-sm p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Modelo Transmisión</div>
+               <div class="doc-value font-mono" x-show="!editandoModal" x-text="itemActivo?.modelo_transmision ?? '—'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.modelo_transmision" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Tipo Diferencial</div>
+               <div class="doc-value" x-show="!editandoModal" x-text="itemActivo?.tipo_diferencial ?? '—'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.tipo_diferencial" class="bg-surface border border-outline-variant/40 text-sm p-1 w-full mt-1">
+             </div>
+           </div>
+        </div>
+
+        <div>
+           <h4 class="text-[10px] font-label font-bold uppercase tracking-[0.2em] text-outline mb-4">Placas y Permisos</h4>
+           <div class="doc-grid">
+             <div class="doc-item">
+               <div class="doc-label">Placas MX</div>
+               <div class="doc-value font-mono" x-show="!editandoModal" x-text="itemActivo?.placas_mx ?? '—'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.placas_mx" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Placas USA</div>
+               <div class="doc-value font-mono" x-show="!editandoModal" x-text="itemActivo?.placas_usa ?? 'N/A'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.placas_usa" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Permiso SCT</div>
+               <div class="doc-value font-mono" x-show="!editandoModal" x-text="itemActivo?.permiso_sct ?? '—'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.permiso_sct" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Vencimiento SCT</div>
+               <div class="doc-value font-mono font-bold" x-show="!editandoModal" :class="esVencido(itemActivo?.vencimiento_sct) ? 'alert' : 'ok'" x-text="fmtFechaSolo(itemActivo?.vencimiento_sct)"></div>
+               <input type="date" x-show="editandoModal" x-model="formEdit.vencimiento_sct" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Inspección Anual</div>
+               <div class="doc-value font-mono font-bold" x-show="!editandoModal" :class="esVencido(itemActivo?.inspeccion_anual) ? 'alert' : 'ok'" x-text="fmtFechaSolo(itemActivo?.inspeccion_anual)"></div>
+               <input type="date" x-show="editandoModal" x-model="formEdit.inspeccion_anual" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1">
+             </div>
+           </div>
+        </div>
+
+        <div>
+           <h4 class="text-[10px] font-label font-bold uppercase tracking-[0.2em] text-outline mb-4">Seguros y Responsable</h4>
+           <div class="doc-grid">
+             <div class="doc-item">
+               <div class="doc-label">Póliza MX</div>
+               <div class="doc-value font-mono" x-show="!editandoModal" x-text="itemActivo?.poliza_mx ?? '—'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.poliza_mx" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Venc. Póliza MX</div>
+               <div class="doc-value font-mono" x-show="!editandoModal" :class="esVencido(itemActivo?.vencimiento_poliza_mx) ? 'alert' : 'ok'" x-text="fmtFechaSolo(itemActivo?.vencimiento_poliza_mx) || '—'"></div>
+               <input type="date" x-show="editandoModal" x-model="formEdit.vencimiento_poliza_mx" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Póliza USA</div>
+               <div class="doc-value font-mono" x-show="!editandoModal" x-text="itemActivo?.poliza_usa ?? 'N/A'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.poliza_usa" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Venc. Póliza USA</div>
+               <div class="doc-value font-mono" x-show="!editandoModal" :class="esVencido(itemActivo?.vencimiento_poliza_usa) ? 'alert' : 'ok'" x-text="fmtFechaSolo(itemActivo?.vencimiento_poliza_usa) || '—'"></div>
+               <input type="date" x-show="editandoModal" x-model="formEdit.vencimiento_poliza_usa" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Rendimiento Obj.</div>
+               <div class="doc-value font-mono text-primary font-bold" x-show="!editandoModal" x-text="(itemActivo?.rendimiento_objetivo ?? '—') + ' km/l'"></div>
+               <input type="number" step="0.01" x-show="editandoModal" x-model="formEdit.rendimiento_objetivo" class="bg-surface border border-outline-variant/40 text-sm font-mono p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Operador Asignado</div>
+               <div class="doc-value font-bold" x-show="!editandoModal" x-text="itemActivo?.operador_nombre ?? 'SIN OPERADOR ASIGNADO'"></div>
+               <div x-show="editandoModal" class="mt-1">
+                 <select x-model="formEdit.operador_asignado_id" class="w-full bg-surface border border-outline-variant/40 text-sm p-2 focus:border-primary">
+                   <option value="">-- Sin Operador --</option>
+                   <template x-for="op in operadoresList" :key="op.id">
+                     <option :value="op.id" x-text="op.nombre_completo"></option>
+                   </template>
+                 </select>
+               </div>
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Cliente Asignado</div>
+               <div class="doc-value font-bold" x-show="!editandoModal" x-text="itemActivo?.cliente_asignado ?? '—'"></div>
+               <div x-show="editandoModal" class="relative mt-1">
+                 <select x-model="formEdit.cliente_asignado" class="w-full bg-surface border border-outline-variant/40 text-sm p-2 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed" :disabled="estaAsignado(itemActivo) && !itemActivo.editandoAsignacionEnDetalle">
+                    <option value="">-- Sin asignar --</option>
+                    <option value="LIKOM">LIKOM</option>
+                    <option value="DANHIL">DANHIL</option>
+                    <option value="JMI">JMI</option>
+                    <option value="BIO PAPEL">BIO PAPEL</option>
+                    <option value="SMURFIT">SMURFIT</option>
+                    <option value="QUIMICA">QUÍMICA</option>
+                 </select>
+                 <div x-show="estaAsignado(itemActivo) && !itemActivo.editandoAsignacionEnDetalle" class="absolute right-8 top-1/2 -translate-y-1/2 text-danger flex items-center cursor-pointer" @click="itemActivo.editandoAsignacionEnDetalle = true" title="Desbloquear para reasignar">
+                   <i class="ph-fill ph-lock-key text-lg"></i>
+                 </div>
+               </div>
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Horario / Turno</div>
+               <div class="doc-value font-bold" x-show="!editandoModal" x-text="itemActivo?.turno_asignado ?? '—'"></div>
+               <input type="text" x-show="editandoModal" x-model="formEdit.turno_asignado" placeholder="Ej. 11 A 11" class="bg-surface border border-outline-variant/40 text-sm p-1 w-full mt-1">
+             </div>
+             <div class="doc-item">
+               <div class="doc-label">Tipo Operación</div>
+               <div class="doc-value font-bold" x-show="!editandoModal" x-text="(itemActivo?.tipo_operacion ?? '—').toUpperCase()"></div>
+               <select x-show="editandoModal" x-model="formEdit.tipo_operacion" class="bg-surface border border-outline-variant/40 text-sm p-1 w-full mt-1">
+                 <option value="">-- Seleccionar --</option>
+                 <option value="local">LOCAL</option>
+                 <option value="cruce">CRUCE</option>
+                 <option value="foraneo">FORÁNEO</option>
+               </select>
+             </div>
+           </div>
+        </div>
+      </div>
+
+      <div class="px-8 py-6 border-t border-outline-variant/20 flex justify-between items-center bg-surface-container-low">
+        <div>
+          <button x-show="!editandoModal" @click="activarEdicion()" class="bg-primary text-on-primary font-label text-[10px] uppercase font-bold tracking-widest px-6 py-2 hover:brightness-110 flex items-center gap-2">
+            <i class="ph-bold ph-pencil"></i> Editar
+          </button>
+          <div x-show="editandoModal" class="flex gap-2">
+            <button @click="guardarEdicion()" class="bg-success text-on-primary font-label text-[10px] uppercase font-bold tracking-widest px-6 py-2 hover:brightness-110 flex items-center gap-2">
+              <span x-show="!guardandoEdicion"><i class="ph-bold ph-check"></i> Guardar</span>
+              <span x-show="guardandoEdicion" class="spinner w-4 h-4 border-white"></span>
+            </button>
+            <button @click="editandoModal = false" class="border border-outline-variant/40 text-outline px-6 py-2 text-[10px] uppercase font-bold hover:text-white hover:border-white">Cancelar</button>
+          </div>
+        </div>
+        <button @click="showModal=false" class="text-outline hover:text-primary transition-colors text-[10px] font-bold uppercase tracking-widest">Cerrar Detalle</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal Detalle Caja (F2.4) ── -->
+  <div x-show="showModal && modalTipo === 'caja'" class="fixed inset-0 z-[100] flex items-center justify-center bg-surface/90 backdrop-blur-sm p-4" @click.self="showModal=false" x-transition>
+    <div class="bg-surface-container-low border border-outline-variant/30 w-full max-w-lg matte-grain flex flex-col max-h-[90vh]">
+      <div class="px-8 py-6 border-b border-outline-variant/20 flex justify-between items-center">
+        <div>
+          <h3 class="font-headline font-bold text-2xl text-primary flex items-center gap-3">
+            <i class="ph-fill ph-package"></i> Caja: <span x-text="itemActivo?.numero_caja"></span>
+          </h3>
+          <div class="mt-2">
+            <span class="badge badge-muted" x-text="(itemActivo?.tipo ?? '').toUpperCase()"></span>
+          </div>
+        </div>
+        <button class="text-outline hover:text-primary transition-colors text-2xl" @click="showModal=false"><i class="ph-bold ph-x"></i></button>
+      </div>
+
+      <div class="flex-1 overflow-auto p-8 space-y-10">
+        <div>
+           <h4 class="text-[10px] font-label font-bold uppercase tracking-[0.2em] text-outline mb-4">Identificación</h4>
+           <div class="doc-grid">
+             <div class="doc-item"><div class="doc-label">Placas MX</div><div class="doc-value font-mono" x-text="itemActivo?.placas_mx ?? '—'"></div></div>
+             <div class="doc-item"><div class="doc-label">Placas USA</div><div class="doc-value font-mono" x-text="itemActivo?.placas_usa ?? 'N/A'"></div></div>
+           </div>
+        </div>
+
+        <div>
+           <h4 class="text-[10px] font-label font-bold uppercase tracking-[0.2em] text-outline mb-4">Ubicación y Estatus</h4>
+           <div class="doc-grid">
+             <div class="doc-item" style="grid-column: span 2">
+               <div class="doc-label">Ubicación Actual</div>
+               <div class="doc-value" x-text="itemActivo?.ubicacion_actual ?? 'No disponible'"></div>
+             </div>
+             <div class="doc-item" style="grid-column: span 2">
+               <div class="doc-label">Cliente / Asignación</div>
+               <div class="doc-value" x-text="itemActivo?.cliente_nombre ?? 'Disponible para viaje'"></div>
+             </div>
+             <div class="doc-item" style="grid-column: span 2">
+                <div class="doc-label">Estatus Operativo</div>
+                <div class="mt-1">
+                   <span class="badge"
+                    :class="itemActivo?.estatus==='disponible'?'badge-success':itemActivo?.estatus==='en_cliente'?'badge-info':itemActivo?.estatus==='en_viaje'?'badge-accent':'badge-danger'"
+                    x-text="itemActivo?.estatus?.replace(/_/g,' ').toUpperCase()">
+                  </span>
+                </div>
+             </div>
+           </div>
+        </div>
+      </div>
+
+      <div class="px-8 py-6 border-t border-outline-variant/20 flex justify-end">
+        <button @click="showModal=false" class="border border-outline-variant/40 text-outline hover:text-primary hover:border-primary transition-all px-8 py-3 text-[10px] font-bold uppercase tracking-widest">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal Nueva Caja (F3.3) ── -->
+  <div x-show="showNuevaCaja" class="fixed inset-0 z-[100] flex items-center justify-center bg-surface/90 backdrop-blur-sm p-4" @click.self="showNuevaCaja=false" x-transition>
+    <div class="bg-surface-container-low border border-outline-variant/30 w-full max-w-md matte-grain shadow-2xl">
+      <div class="px-8 py-6 border-b border-outline-variant/20">
+        <h3 class="font-headline font-bold text-xl text-primary flex items-center gap-3">
+          <i class="ph-bold ph-plus-circle"></i> Nueva Caja
+        </h3>
+      </div>
+      <form @submit.prevent="guardarCaja" class="p-8 space-y-6">
+        <div>
+          <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Número Económico *</label>
+          <input x-model="formCaja.numero_caja" type="text" class="w-full bg-surface border border-outline-variant/40 text-primary font-mono font-bold p-4 focus:border-primary outline-none" required placeholder="p.ej. CAJA-100" style="text-transform:uppercase">
+        </div>
+        <div>
+          <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Tipo de Caja *</label>
+          <select x-model="formCaja.tipo" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-label text-sm p-4 focus:border-primary outline-none" required>
+            <option value="seca">Caja Seca</option>
+            <option value="refrigerada">Refrigerada</option>
+            <option value="plataforma">Plataforma</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Placas MX *</label>
+            <input x-model="formCaja.placas_mx" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-4 focus:border-primary outline-none" required>
+          </div>
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Placas USA</label>
+            <input x-model="formCaja.placas_usa" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-4 focus:border-primary outline-none">
+          </div>
+        </div>
+        <div class="flex gap-4 pt-4">
+          <button type="button" @click="showNuevaCaja=false" class="flex-1 border border-outline-variant/40 text-outline font-label text-[10px] font-bold uppercase tracking-widest py-4 hover:brightness-125 transition-all">Cancelar</button>
+          <button type="submit" class="flex-1 bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest py-4 hover:brightness-110 transition-all flex justify-center items-center gap-2" :disabled="guardandoCaja">
+            <span x-show="!guardandoCaja">Registrar</span>
+            <span x-show="guardandoCaja" class="spinner border-on-primary" style="border-top-color:transparent"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Modal Nuevo Tracto (F3.3) ── -->
+  <div x-show="showNuevoTracto" class="fixed inset-0 z-[100] flex items-center justify-center bg-surface/90 backdrop-blur-sm p-4" @click.self="showNuevoTracto=false" x-transition>
+    <div class="bg-surface-container-low border border-outline-variant/30 w-full max-w-xl matte-grain shadow-2xl">
+      <div class="px-8 py-6 border-b border-outline-variant/20">
+        <h3 class="font-headline font-bold text-xl text-primary flex items-center gap-3">
+          <i class="ph-bold ph-plus-circle"></i> Registrar Tractocamión
+        </h3>
+      </div>
+      <form @submit.prevent="guardarTracto" class="p-8 space-y-6">
+        <div class="grid grid-cols-2 gap-6">
+          <div class="col-span-1">
+             <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">NÚMERO ECONÓMICO *</label>
+             <input x-model="formTracto.numero_economico" type="text" class="w-full bg-surface border border-outline-variant/40 text-primary font-mono font-bold p-4 focus:border-primary outline-none uppercase" required>
+          </div>
+          <div class="col-span-1">
+             <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">RENDIMIENTO OBJ. (km/l) *</label>
+             <input x-model="formTracto.rendimiento_objetivo" type="number" step="0.01" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-4 focus:border-primary outline-none" required>
+          </div>
+          <div class="col-span-1">
+             <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">MARCA *</label>
+             <input x-model="formTracto.marca" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-4 focus:border-primary outline-none" required>
+          </div>
+          <div class="col-span-1">
+             <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">MODELO *</label>
+             <input x-model="formTracto.modelo" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-4 focus:border-primary outline-none" required>
+          </div>
+          <div class="col-span-1">
+             <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">PLACAS MX *</label>
+             <input x-model="formTracto.placas_mx" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-4 focus:border-primary outline-none" required>
+          </div>
+          <div class="col-span-1">
+             <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">PLACAS USA</label>
+             <input x-model="formTracto.placas_usa" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-4 focus:border-primary outline-none">
+          </div>
+          <div class="col-span-1">
+             <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">VIN (No. SERIE) *</label>
+             <input x-model="formTracto.vin" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-4 focus:border-primary outline-none uppercase" required>
+          </div>
+          <div class="col-span-1">
+             <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">AÑO</label>
+             <input x-model="formTracto.anio" type="number" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-4 focus:border-primary outline-none">
+          </div>
+        </div>
+        <div class="flex gap-4 pt-4">
+          <button type="button" @click="showNuevoTracto=false" class="flex-1 border border-outline-variant/40 text-outline font-label text-[10px] font-bold uppercase tracking-widest py-4 hover:brightness-125 transition-all">Cancelar</button>
+          <button type="submit" class="flex-1 bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest py-4 hover:brightness-110 transition-all flex justify-center items-center gap-2" :disabled="guardandoTracto">
+            <span x-show="!guardandoTracto">Guardar Registro</span>
+            <span x-show="guardandoTracto" class="spinner border-on-primary" style="border-top-color:transparent"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ── Modal Acción Rápida ── -->
+  <div x-show="showQuickAction" class="fixed inset-0 z-[110] flex items-center justify-center bg-surface/90 backdrop-blur-sm p-4" @click.self="showQuickAction=false" x-transition>
+    <div class="bg-surface-container-low border border-outline-variant/30 w-full max-w-sm matte-grain shadow-2xl">
+      <div class="px-8 py-6 border-b border-outline-variant/20">
+        <h3 class="font-headline font-bold text-xl text-primary flex items-center gap-3">
+          <i class="ph-bold ph-lightning"></i> Acción Rápida
+        </h3>
+        <div class="text-[10px] uppercase font-label tracking-widest text-outline mt-2" x-text="quickTipo === 'tracto' ? 'Tracto: ' + quickItem?.numero_economico : 'Caja: ' + quickItem?.numero_caja"></div>
+      </div>
+      
+      <form @submit.prevent="guardarQuickAction" class="p-8 space-y-6">
+        <div>
+          <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Estatus Operativo</label>
+          <select x-model="quickForm.estatus" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-label text-sm p-4 focus:border-primary outline-none">
+            <template x-if="quickTipo === 'tracto'">
+               <optgroup label="Tractocamión">
+                 <option value="disponible">DISPONIBLE</option>
+                 <option value="en_ruta">EN RUTA</option>
+                 <option value="en_taller">EN TALLER</option>
+               </optgroup>
+            </template>
+            <template x-if="quickTipo === 'caja'">
+               <optgroup label="Caja">
+                 <option value="disponible">DISPONIBLE</option>
+                 <option value="en_viaje">EN VIAJE</option>
+                 <option value="en_cliente">EN CLIENTE</option>
+                 <option value="fuera_servicio">TALLER / FUERA DE SERVICIO</option>
+               </optgroup>
+            </template>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Cliente / Asignación</label>
+          <div class="relative">
+            <select x-model="quickForm.cliente_asignado" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-label text-sm p-4 focus:border-primary outline-none disabled:opacity-50 disabled:cursor-not-allowed" :disabled="estaAsignado(quickItem) && !quickItem.editandoAsignacion">
+              <option value="">(Sin asignar)</option>
+              <option value="LIKOM">LIKOM</option>
+              <option value="DANHIL">DANHIL</option>
+              <option value="JMI">JMI</option>
+              <option value="BIO PAPEL">BIO PAPEL</option>
+              <option value="SMURFIT">SMURFIT</option>
+              <option value="QUIMICA">QUÍMICA</option>
+            </select>
+            <div x-show="estaAsignado(quickItem) && !quickItem.editandoAsignacion" class="absolute right-4 top-1/2 -translate-y-1/2 text-danger flex items-center gap-2 cursor-pointer" @click="quickItem.editandoAsignacion = true" title="Desbloquear para reasignar">
+              <i class="ph-fill ph-lock-key text-lg"></i>
+            </div>
+            <div x-show="estaAsignado(quickItem) && !quickItem.editandoAsignacion" class="text-[9px] text-danger mt-1">Unidad en uso. Desbloquea para forzar reasignación.</div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Ubicación Física</label>
+          <select x-model="quickForm.ubicacion_actual" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-label text-sm p-4 focus:border-primary outline-none">
+            <option value="BASE">BASE</option>
+            <option value="TALLER">TALLER</option>
+            <option value="EN RUTA">EN RUTA</option>
+            <option value="CLIENTE">CLIENTE</option>
+          </select>
+        </div>
+
+        <div class="flex gap-4 pt-4">
+          <button type="button" @click="showQuickAction=false" class="flex-1 border border-outline-variant/40 text-outline font-label text-[10px] font-bold uppercase tracking-widest py-4 hover:brightness-125 transition-all">Cancelar</button>
+          <button type="submit" class="flex-1 bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest py-4 hover:brightness-110 transition-all flex justify-center items-center gap-2" :disabled="guardandoQuick">
+            <span x-show="!guardandoQuick">Actualizar</span>
+            <span x-show="guardandoQuick" class="spinner border-on-primary" style="border-top-color:transparent"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── MODAL: DESPACHO DIRECTO DESDE FLOTA ── -->
+  <div x-show="showDespachoFlota" class="fixed inset-0 z-[120] flex items-center justify-center bg-surface/95 backdrop-blur-sm p-4" @click.self="showDespachoFlota = false" x-transition x-cloak>
+    <div class="bg-surface-container-low border border-outline-variant/30 w-full max-w-lg matte-grain shadow-2xl overflow-hidden">
+      <div class="px-8 py-6 border-b border-outline-variant/20 flex justify-between items-start">
+        <div>
+          <h3 class="font-headline font-bold text-2xl text-primary flex items-center gap-3">
+            <i class="ph-fill ph-navigation-arrow"></i> Despachar a Ruta
+          </h3>
+          <p class="text-[10px] font-label uppercase tracking-widest text-outline mt-1">Despacho contextual directo desde Monitoreo</p>
+        </div>
+        <button @click="showDespachoFlota = false" class="text-outline hover:text-white transition-colors"><i class="ph-bold ph-x text-xl"></i></button>
+      </div>
+
+      <form @submit.prevent="guardarDespachoFlota" class="p-8 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Tipo Movimiento -->
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Transacción Operativa</label>
+            <select x-model="formDespacho.tipo_movimiento" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-label text-sm focus:border-primary focus:outline-none" required>
+              <option value="local_cargado">Local Cargado</option>
+              <option value="local_vacio">Local Vacío</option>
+              <option value="recoleccion">Recolección</option>
+              <option value="interplanta">Interplanta</option>
+              <option value="exportacion">Exportación</option>
+              <option value="importacion">Importación</option>
+            </select>
+          </div>
+
+          <!-- Cliente -->
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Cliente / Entidad</label>
+            <select x-model="formDespacho.cliente_id" @change="if(formDespacho.cliente_id) formDespacho.destino = formDespacho.cliente_id" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-label text-sm focus:border-primary focus:outline-none">
+              <option value="">No aplica</option>
+              <template x-for="c in catalogosDespacho.destinos.filter(d => d.tipo === 'cliente')">
+                <option :value="c.nombre" x-text="c.nombre"></option>
+              </template>
+            </select>
+          </div>
+
+          <!-- Origen -->
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Origen de Operación</label>
+            <select x-model="formDespacho.origen" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-label text-sm focus:border-primary focus:outline-none" required>
+              <option value="">Selecciona origen...</option>
+              <template x-for="d in catalogosDespacho.destinos">
+                <option :value="d.nombre" x-text="d.nombre"></option>
+              </template>
+            </select>
+          </div>
+
+          <!-- Destino -->
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Destino Objetivo</label>
+            <select x-model="formDespacho.destino" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-label text-sm focus:border-primary focus:outline-none" required>
+              <option value="">Selecciona destino...</option>
+              <template x-for="d in catalogosDespacho.destinos">
+                <option :value="d.nombre" x-text="d.nombre"></option>
+              </template>
+            </select>
+          </div>
+
+          <div class="md:col-span-2 border-t border-outline-variant/20 pt-4 mt-2">
+            <span class="font-headline font-bold text-xs uppercase tracking-widest text-primary">Vinculación de Recursos</span>
+          </div>
+
+          <!-- Tractocamion -->
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2"><i class="ph-light ph-truck pr-1"></i> Unidad (Tracto)</label>
+            <select x-model="formDespacho.tractocamion_id" class="w-full bg-surface border border-outline-variant/40 text-primary font-mono font-bold p-3 focus:border-primary focus:outline-none disabled:opacity-75 disabled:bg-surface-container" :disabled="formDespacho.origenTipo === 'tracto'" required>
+              <option value="">Vincular unidad...</option>
+              <template x-for="t in disponiblesTractos">
+                <option :value="t.id" x-text="'Eco: ' + t.numero_economico"></option>
+              </template>
+            </select>
+          </div>
+
+          <!-- Caja -->
+          <div>
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2"><i class="ph-light ph-package pr-1"></i> Caja (Remolque)</label>
+            <select x-model="formDespacho.caja_id" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-label text-sm focus:border-primary focus:outline-none disabled:opacity-75 disabled:bg-surface-container" :disabled="formDespacho.origenTipo === 'caja'">
+              <option value="">(Sin caja - Solo Tracto)</option>
+              <template x-for="c in disponiblesCajas">
+                <option :value="c.id" x-text="'📦 ' + c.numero_caja + ' (' + c.tipo.toUpperCase() + ')'"></option>
+              </template>
+            </select>
+          </div>
+
+          <!-- Operador -->
+          <div class="md:col-span-2">
+            <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2"><i class="ph-light ph-user pr-1"></i> Operador a Cargo</label>
+            <select x-model="formDespacho.operador_id" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-label text-sm focus:border-primary focus:outline-none" required>
+              <option value="">Asignar operador...</option>
+              <template x-for="o in disponiblesOperadores">
+                <option :value="o.id" x-text="o.nombre_completo + ' (' + o.numero_operador + ')'"></option>
+              </template>
+            </select>
+          </div>
+
+          <!-- Campos Caja (Sello y Estado) - Dinámicos -->
+          <template x-if="formDespacho.caja_id">
+            <div class="md:col-span-2 grid grid-cols-2 gap-5 bg-surface-container-high/40 p-4 border border-outline-variant/10 rounded-sm">
+              <div>
+                <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Estado de Caja</label>
+                <select x-model="formDespacho.estado_caja" class="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 font-label text-sm focus:border-primary focus:outline-none">
+                  <option value="cargada">Cargada (Carga Sellada)</option>
+                  <option value="vacia">Vacía (Retorno / Rampa)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-label uppercase tracking-widest text-outline font-bold mb-2">Número de Sello</label>
+                <input x-model="formDespacho.numero_sello" type="text" class="w-full bg-surface border border-outline-variant/40 text-on-surface font-mono p-3 focus:border-primary focus:outline-none" placeholder="Sello de seguridad">
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="flex gap-4 pt-4 border-t border-outline-variant/10">
+          <button type="button" @click="showDespachoFlota = false" class="flex-1 border border-outline-variant/40 text-outline font-label text-[10px] font-bold uppercase tracking-widest py-4 hover:brightness-125 transition-all">Cancelar</button>
+          <button type="submit" class="flex-1 bg-success text-on-surface font-label text-[10px] font-bold uppercase tracking-widest py-4 hover:brightness-110 transition-all flex justify-center items-center gap-2" :disabled="guardandoDespacho">
+            <span x-show="!guardandoDespacho"><i class="ph-bold ph-paper-plane-tilt"></i> Confirmar Despacho</span>
+            <span x-show="guardandoDespacho" class="spinner border-on-surface" style="border-top-color:transparent"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script src="assets/js/api.js?v=3"></script>
+<script>
+function flotaApp() {
+  return {
+    subTab: 'monitoreo', loading: true, searchQuery: '',
+    filtroClienteFlota: '',
+    tractos: [], cajas: [], operadoresList: [], viajesList: [],
+    filtroUbicacion: '', filtroCliente: '',
+    showModal: false, modalTipo: '', itemActivo: null, editandoModal: false, formEdit: {}, guardandoEdicion: false,
+    showNuevaCaja: false, guardandoCaja: false, formCaja: {},
+    showNuevoTracto: false, guardandoTracto: false, formTracto: {},
+    showQuickAction: false, quickItem: null, quickTipo: '', quickForm: {}, guardandoQuick: false,
+    usuario: null,
+
+    // Despacho Flota Directo
+    showDespachoFlota: false,
+    formDespacho: { tipo_movimiento: 'local_cargado', cliente_id: '', origen: '', destino: '', operador_id: '', tractocamion_id: '', caja_id: '', estado_caja: 'cargada', numero_sello: '', origenTipo: '' },
+    catalogosDespacho: { destinos: [] },
+    guardandoDespacho: false,
+
+    get disponiblesOperadores() {
+      return this.operadoresList.filter(o => {
+        // activo can be 1 (int from DB) or 'activo' (string) — handle both
+        const estaActivo = o.activo == 1 || o.activo === true || o.estatus === 'activo';
+        if (!estaActivo) return false;
+        const ocupado = this.viajesList.some(v => 
+          (v.estatus === 'solicitado' || v.estatus === 'asignado' || v.estatus === 'en_transito' || v.estatus === 'en_aduana') && 
+          v.operador_id == o.id
+        );
+        return !ocupado;
+      });
+    },
+
+    get disponiblesCajas() {
+      return this.cajas.filter(c => {
+        if (this.formDespacho.caja_id == c.id) return true;
+        const enViajeActivo = this.viajesList.some(v => 
+          (v.estatus === 'solicitado' || v.estatus === 'asignado' || v.estatus === 'en_transito' || v.estatus === 'en_aduana') && 
+          (v.caja_id == c.id || v.numero_caja == c.numero_caja)
+        );
+        return c.estatus === 'disponible' && !enViajeActivo;
+      });
+    },
+
+    get disponiblesTractos() {
+      return this.tractos.filter(t => {
+        if (this.formDespacho.tractocamion_id == t.id) return true;
+        const enViajeActivo = this.viajesList.some(v => 
+          (v.estatus === 'solicitado' || v.estatus === 'asignado' || v.estatus === 'en_transito' || v.estatus === 'en_aduana') && 
+          v.tractocamion_id == t.id
+        );
+        return t.estatus === 'disponible' && !enViajeActivo;
+      });
+    },
+
+    async init() {
+      this.usuario = cifAPI.getCurrentUser() || await cifAPI.me();
+      await Promise.all([this.cargarTractos(), this.cargarCajas(), this.cargarViajesList()]);
+      this.loading = false;
+    },
+
+    async cargarViajesList() {
+      const resp = await cifAPI.get('/viajes');
+      if (resp?.viajes) this.viajesList = resp.viajes;
+      else if (resp?.data) this.viajesList = resp.data;
+    },
+
+    // ── Clientes únicos para filtro de Flota ───────────────
+    get clientesFlotaUnicos() {
+      const set = new Set();
+      this.tractos.forEach(t => { if (t.cliente_nombre) set.add(t.cliente_nombre); if (t.cliente_asignado) set.add(t.cliente_asignado); });
+      this.cajas.forEach(c => { if (c.cliente_nombre) set.add(c.cliente_nombre); if (c.cliente_asignado) set.add(c.cliente_asignado); });
+      return [...set].sort();
+    },
+
+    // ── Computed Command Center ──────────────────────────────────
+    get carrilesMonitoreo() {
+      const base = [];
+      const taller = [];
+      const cliente = [];
+      const enRuta = [];
+
+      // 1. Clasificar Tractocamiones (y sus cajas y viajes activos asociados)
+      this.tractos.forEach(t => {
+        // Encontrar si hay un viaje activo asignado a este tractocamión
+        const viajeActivo = this.viajesList.find(v => 
+          (v.estatus === 'asignado' || v.estatus === 'en_transito' || v.estatus === 'en_aduana') && 
+          v.tractocamion_id == t.id
+        );
+        
+        let cajaAsignada = null;
+        if (viajeActivo && viajeActivo.caja_id) {
+          cajaAsignada = this.cajas.find(c => c.id == viajeActivo.caja_id || c.numero_caja === viajeActivo.caja_id);
+        }
+
+        const item = {
+          tipo: 'tracto',
+          objeto: t,
+          operador: t.operador_nombre || 'Sin operador',
+          caja: cajaAsignada ? cajaAsignada.numero_caja : null,
+          destino: viajeActivo ? (viajeActivo.origen + ' ➔ ' + viajeActivo.destino) : null,
+          folio_viaje: viajeActivo ? viajeActivo.folio : null,
+          ubicacion: (t.ubicacion_actual || 'Base').toUpperCase(),
+          estatus: t.estatus
+        };
+
+        if (t.estatus === 'en_taller' || item.ubicacion === 'TALLER') {
+          taller.push(item);
+        } else if (t.estatus === 'en_ruta' || item.ubicacion === 'EN RUTA' || viajeActivo) {
+          enRuta.push(item);
+        } else if (item.ubicacion === 'CLIENTE') {
+          cliente.push(item);
+        } else {
+          base.push(item);
+        }
+      });
+
+      // 2. Clasificar Cajas Sueltas (que no estén asignadas a tractocamiones activos)
+      this.cajas.forEach(c => {
+        const yaMapeada = this.tractos.some(t => {
+          const viaje = this.viajesList.find(v => 
+            (v.estatus === 'asignado' || v.estatus === 'en_transito' || v.estatus === 'en_aduana') && 
+            v.tractocamion_id == t.id
+          );
+          return viaje && (viaje.caja_id == c.id || viaje.caja_id === c.numero_caja);
+        });
+
+        if (yaMapeada) return;
+
+        const item = {
+          tipo: 'caja',
+          objeto: c,
+          operador: '— (Remolque suelto)',
+          caja: c.numero_caja,
+          destino: null,
+          folio_viaje: null,
+          ubicacion: (c.ubicacion_actual || 'Base').toUpperCase(),
+          estatus: c.estatus
+        };
+
+        if (c.estatus === 'fuera_servicio' || item.ubicacion === 'TALLER') {
+          taller.push(item);
+        } else if (c.estatus === 'en_viaje' || item.ubicacion === 'EN RUTA') {
+          enRuta.push(item);
+        } else if (c.estatus === 'en_cliente' || item.ubicacion === 'CLIENTE') {
+          cliente.push(item);
+        } else {
+          base.push(item);
+        }
+      });
+
+      // Filter based on searchQuery
+      const filterArr = (arr) => {
+        let result = arr;
+        // Client filter
+        if (this.filtroClienteFlota) {
+          const fc = this.filtroClienteFlota.toLowerCase();
+          result = result.filter(i => {
+            const cn = (i.objeto?.cliente_nombre || i.objeto?.cliente_asignado || '').toLowerCase();
+            return cn.includes(fc);
+          });
+        }
+        // Search filter
+        if (this.searchQuery && this.searchQuery.trim().length > 0) {
+          const q = this.searchQuery.trim().toLowerCase();
+          result = result.filter(i => {
+            const str = `${i.tipo} ${i.operador} ${i.caja || ''} ${i.destino || ''} ${i.folio_viaje || ''} ${i.estatus} ${i.objeto?.numero_economico || ''} ${i.objeto?.numero_caja || ''} ${i.objeto?.cliente_nombre || ''} ${i.objeto?.cliente_asignado || ''}`.toLowerCase();
+            return str.includes(q);
+          });
+        }
+        return result;
+      };
+
+      return {
+        base: filterArr(base),
+        taller: filterArr(taller),
+        cliente: filterArr(cliente),
+        enRuta: filterArr(enRuta)
+      };
+    },
+
+    async cargarTractos() {
+      const resp = await cifAPI.get('/tractocamiones');
+      if (resp?.tractos) this.tractos = resp.tractos;
+      else if (resp?.data) this.tractos = resp.data;
+    },
+
+    async cargarCajas() {
+      const resp = await cifAPI.get('/cajas');
+      if (resp?.cajas) this.cajas = resp.cajas;
+      else if (resp?.data) this.cajas = resp.data;
+    },
+
+    async cargarOperadoresList() {
+      const resp = await cifAPI.get('/operadores');
+      if (resp?.operadores) this.operadoresList = resp.operadores;
+      else if (resp?.data) this.operadoresList = resp.data;
+    },
+
+    verDetalleTracto(t) {
+      this.itemActivo = t;
+      this.modalTipo  = 'tracto';
+      this.editandoModal = false;
+      this.showModal  = true;
+      if(this.operadoresList.length === 0) {
+        this.cargarOperadoresList();
+      }
+    },
+
+    activarEdicion() {
+      this.formEdit = {
+        tipo: this.itemActivo.tipo || 'TRACTOCAMION',
+        vin: this.itemActivo.vin || '',
+        numero_motor: this.itemActivo.numero_motor || '',
+        arreglo_motor: this.itemActivo.arreglo_motor || '',
+        marca_transmision: this.itemActivo.marca_transmision || '',
+        modelo_transmision: this.itemActivo.modelo_transmision || '',
+        tipo_diferencial: this.itemActivo.tipo_diferencial || '',
+        inspeccion_anual: this.itemActivo.inspeccion_anual || '',
+        cliente_asignado: this.itemActivo.cliente_asignado || '',
+        turno_asignado: this.itemActivo.turno_asignado || '',
+        tipo_operacion: this.itemActivo.tipo_operacion || '',
+        marca: this.itemActivo.marca,
+        modelo: this.itemActivo.modelo,
+        anio: this.itemActivo.anio,
+        rendimiento_objetivo: this.itemActivo.rendimiento_objetivo,
+        placas_mx: this.itemActivo.placas_mx,
+        placas_usa: this.itemActivo.placas_usa,
+        permiso_sct: this.itemActivo.permiso_sct,
+        vencimiento_sct: this.itemActivo.vencimiento_sct,
+        poliza_mx: this.itemActivo.poliza_mx,
+        vencimiento_poliza_mx: this.itemActivo.vencimiento_poliza_mx,
+        poliza_usa: this.itemActivo.poliza_usa,
+        vencimiento_poliza_usa: this.itemActivo.vencimiento_poliza_usa,
+        operador_asignado_id: this.itemActivo.operador_asignado_id,
+        estatus: this.itemActivo.estatus
+      };
+      this.itemActivo = { ...this.itemActivo, editandoAsignacionEnDetalle: false };
+      this.editandoModal = true;
+    },
+
+    async guardarEdicion() {
+      this.guardandoEdicion = true;
+      
+      let payload = { ...this.formEdit };
+      // Transformar vacíos a null para IDs numéricos si es necesario
+      if (!payload.operador_asignado_id) payload.operador_asignado_id = null;
+
+      const res = await cifAPI.put(`/tractocamiones/${this.itemActivo.id}`, payload);
+      this.guardandoEdicion = false;
+      
+      if (res?.ok) {
+        cifToast('Tractocamión actualizado');
+        this.editandoModal = false;
+        await this.cargarTractos();
+        // Recargar info del ítem activo
+        this.itemActivo = this.tractos.find(x => x.id === this.itemActivo.id);
+      } else {
+        cifToast(res?.error || 'No se pudo actualizar', 'error');
+      }
+    },
+
+    verDetalleCaja(c) {
+      this.itemActivo = c;
+      this.modalTipo  = 'caja';
+      this.showModal  = true;
+    },
+
+    abrirNuevaCaja() {
+      this.formCaja = { numero_caja:'', tipo:'seca', placas_mx:'', placas_usa:'' };
+      this.showNuevaCaja = true;
+    },
+
+    async guardarCaja() {
+      this.guardandoCaja = true;
+      const res = await cifAPI.post('/cajas', this.formCaja);
+      this.guardandoCaja = false;
+      if (res?.ok) {
+        cifToast('✅ Caja creada exitosamente');
+        this.showNuevaCaja = false;
+        await this.cargarCajas();
+      } else {
+        cifToast(res?.error || 'Error al guardar caja', 'error');
+      }
+    },
+
+    abrirNuevoTracto() {
+      this.formTracto = { numero_economico:'', rendimiento_objetivo:'', marca:'', modelo:'', anio:'', vin:'', permiso_sct:'', vencimiento_sct:'', placas_mx:'', placas_usa:'' };
+      this.showNuevoTracto = true;
+    },
+
+    abrirQuickAction(item, tipo) {
+      this.quickItem = { ...item, editandoAsignacion: false };
+      this.quickTipo = tipo;
+      this.quickForm = {
+        estatus: item.estatus || 'disponible',
+        cliente_asignado: item.cliente_asignado || item.cliente_nombre || '',
+        ubicacion_actual: item.ubicacion_actual || 'BASE'
+      };
+      this.showQuickAction = true;
+    },
+
+    async guardarQuickAction() {
+      this.guardandoQuick = true;
+      const endpoint = this.quickTipo === 'tracto' ? `/tractocamiones/${this.quickItem.id}` : `/cajas/${this.quickItem.id}`;
+      
+      let payload = {
+        estatus: this.quickForm.estatus,
+        ubicacion_actual: this.quickForm.ubicacion_actual
+      };
+      if (this.quickTipo === 'tracto') {
+        payload.cliente_asignado = this.quickForm.cliente_asignado;
+      } else {
+        payload.cliente_nombre = this.quickForm.cliente_asignado;
+      }
+
+      const res = await cifAPI.put(endpoint, payload);
+      this.guardandoQuick = false;
+
+      if (res?.ok) {
+        cifToast('Actualizado correctamente');
+        this.showQuickAction = false;
+        if (this.quickTipo === 'tracto') await this.cargarTractos();
+        else await this.cargarCajas();
+      } else {
+        cifToast(res?.error || 'Error al actualizar', 'error');
+      }
+    },
+
+    async abrirDespachoFlota(item, tipo) {
+      if (item.estatus === 'en_taller' || item.estatus === 'en_ruta' || item.estatus === 'fuera_servicio' || item.estatus === 'en_viaje') {
+        cifToast('⚠️ Bloqueado: Este activo no se encuentra disponible para despacho.', 'error');
+        return;
+      }
+
+      if (this.operadoresList.length === 0) {
+        await this.cargarOperadoresList();
+      }
+
+      if (!this.catalogosDespacho.destinos || this.catalogosDespacho.destinos.length === 0) {
+        const resp = await cifAPI.get('/destinos_catalogos');
+        if (resp && resp.destinos) {
+          this.catalogosDespacho.destinos = resp.destinos;
+        } else {
+          this.catalogosDespacho.destinos = [
+            { nombre: "Planta Licom", tipo: "cliente" },
+            { nombre: "Planta Foxconn", tipo: "cliente" },
+            { nombre: "Planta Biopapel", tipo: "cliente" },
+            { nombre: "Planta Sumitomo", tipo: "cliente" }
+          ];
+        }
+      }
+
+      let ubiSugerida = item.ubicacion_actual || 'BASE';
+      const ubiUpper = ubiSugerida.toUpperCase();
+      if (ubiUpper === 'BASE' || ubiUpper === 'EN RUTA') {
+        ubiSugerida = 'Base CIF — Patio Juárez';
+      } else if (ubiUpper === 'TALLER') {
+        ubiSugerida = 'Taller CIF';
+      } else if (ubiUpper === 'CLIENTE') {
+        ubiSugerida = item.cliente_nombre || item.cliente_asignado || 'Planta Licom';
+      }
+
+      this.formDespacho = {
+        tipo_movimiento: 'local_cargado',
+        cliente_id: '',
+        origen: ubiSugerida,
+        destino: '',
+        operador_id: '',
+        tractocamion_id: '',
+        caja_id: '',
+        estado_caja: 'cargada',
+        numero_sello: '',
+        origenTipo: tipo
+      };
+
+      if (tipo === 'tracto') {
+        this.formDespacho.tractocamion_id = item.id;
+        if (item.operador_asignado_id) {
+          const opDisponible = this.disponiblesOperadores.find(o => o.id == item.operador_asignado_id);
+          if (opDisponible) {
+            this.formDespacho.operador_id = item.operador_asignado_id;
+          }
+        }
+      } else if (tipo === 'caja') {
+        this.formDespacho.caja_id = item.id;
+      }
+
+      this.showDespachoFlota = true;
+    },
+
+    async guardarDespachoFlota() {
+      if (!this.formDespacho.tractocamion_id) {
+        cifToast('⚠️ Selecciona una unidad (Tracto) para despachar.', 'error');
+        return;
+      }
+      if (!this.formDespacho.operador_id) {
+        cifToast('⚠️ Asigna un operador para el viaje.', 'error');
+        return;
+      }
+
+      this.guardandoDespacho = true;
+
+      const tractoObj = this.tractos.find(t => t.id == this.formDespacho.tractocamion_id);
+      const cajaObj = this.cajas.find(c => c.id == this.formDespacho.caja_id);
+      const operadorObj = this.operadoresList.find(o => o.id == this.formDespacho.operador_id);
+
+      const nuevoViaje = {
+        tipo_movimiento: this.formDespacho.tipo_movimiento,
+        cliente: this.formDespacho.cliente_id || 'No aplica',
+        cliente_id: this.formDespacho.cliente_id || '',
+        origen: this.formDespacho.origen,
+        destino: this.formDespacho.destino,
+        operador_id: parseInt(this.formDespacho.operador_id),
+        operador: operadorObj ? operadorObj.nombre_completo : 'Operador Indefinido',
+        tractocamion_id: parseInt(this.formDespacho.tractocamion_id),
+        caja_id: this.formDespacho.caja_id ? parseInt(this.formDespacho.caja_id) : null,
+        economico: tractoObj ? tractoObj.numero_economico : '—',
+        numero_caja: cajaObj ? cajaObj.numero_caja : null,
+        estatus: 'en_transito',
+        fecha_despacho: new Date().toISOString()
+      };
+
+      try {
+        const viajeRes = await cifAPI.post('/viajes', nuevoViaje);
+
+        if (viajeRes && viajeRes.ok) {
+          await cifAPI.put(`/tractocamiones/${this.formDespacho.tractocamion_id}`, {
+            estatus: 'en_ruta',
+            ubicacion_actual: 'EN RUTA'
+          });
+
+          if (this.formDespacho.caja_id) {
+            await cifAPI.put(`/cajas/${this.formDespacho.caja_id}`, {
+              estatus: 'en_viaje',
+              ubicacion_actual: 'EN RUTA',
+              cliente_nombre: this.formDespacho.cliente_id || ''
+            });
+          }
+
+          await cifAPI.post('/porteria/bitacora', {
+            tipo_movimiento: 'salida',
+            tractocamion_id: parseInt(this.formDespacho.tractocamion_id),
+            caja_id: cajaObj ? cajaObj.numero_caja : '',
+            estado_caja: this.formDespacho.caja_id ? this.formDespacho.estado_caja : '',
+            numero_sello: this.formDespacho.caja_id ? this.formDespacho.numero_sello : '',
+            destino_origen_id: 1,
+            destino_origen: this.formDespacho.destino,
+            observaciones: 'Despacho remoto ejecutado desde Monitoreo de Flota.'
+          });
+
+          cifToast('⚡ Despacho completado con éxito. Unidad en Ruta.');
+          this.showDespachoFlota = false;
+
+          await Promise.all([this.cargarTractos(), this.cargarCajas(), this.cargarViajesList()]);
+        } else {
+          cifToast(viajeRes?.error || 'No se pudo crear la orden de despacho', 'error');
+        }
+      } catch (err) {
+        console.error("Error al despachar desde monitoreo", err);
+        cifToast('Error en la conexión al núcleo logístico.', 'error');
+      }
+
+      this.guardandoDespacho = false;
+    },
+
+    estaAsignado(item) {
+      if (!item) return false;
+      return item.estatus === 'en_viaje' || item.estatus === 'en_cliente' || item.estatus === 'en_ruta';
+    },
+
+    async guardarTracto() {
+      this.guardandoTracto = true;
+      const res = await cifAPI.post('/tractocamiones', this.formTracto);
+      this.guardandoTracto = false;
+      if (res?.ok) {
+        cifToast('✅ Tractocamión creado exitosamente');
+        this.showNuevoTracto = false;
+        await this.cargarTractos();
+      } else {
+        cifToast(res?.error || 'Error al guardar tractocamión', 'error');
+      }
+    },
+
+    esVencido(fecha) {
+      if (!fecha) return false;
+      return new Date(fecha) < new Date();
+    },
+
+    fmtFechaSolo(d) { return fmtFechaSolo(d); },
+
+    limpiarFiltrosCajas() {
+      this.filtroUbicacion = '';
+      this.filtroCliente = '';
+    },
+
+    parseFechaDMY(str) {
+      if (!str) return null;
+      if (str === 'TEMPORAL' || str === 'MEXICANA') return null;
+      if (str.includes('-')) return new Date(str);
+      
+      const partes = str.split('/');
+      if (partes.length === 3) {
+        const dia = parseInt(partes[0], 10);
+        const mes = parseInt(partes[1], 10) - 1; // 0-indexed
+        const anio = parseInt(partes[2], 10);
+        return new Date(anio, mes, dia);
+      }
+      return new Date(str);
+    },
+
+    evaluarVencimiento(fechaStr) {
+      const fecha = this.parseFechaDMY(fechaStr);
+      if (!fecha) return { label: 'Vigente', color: 'badge-success', days: 999 };
+      const hoy = new Date();
+      hoy.setHours(0,0,0,0);
+      fecha.setHours(0,0,0,0);
+      
+      const diffTime = fecha - hoy;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 0) {
+        return { label: `Vencida (${Math.abs(diffDays)}d)`, color: 'badge-danger font-bold', days: diffDays };
+      }
+      if (diffDays <= 30) {
+        return { label: `Vence en ${diffDays}d`, color: 'badge-warning font-bold', days: diffDays };
+      }
+      return { label: 'Vigente', color: 'badge-success', days: diffDays };
+    },
+
+    get cajasFiltradas() {
+      let result = this.cajas.filter(c => {
+        // 1. Filtrar por Ubicación Física
+        if (this.filtroUbicacion) {
+          if (this.filtroUbicacion === 'CLIENTE') {
+            const u = (c.ubicacion_actual || '').toUpperCase();
+            if (['BASE', 'TALLER', 'LOCALERA', 'DAÑADA', 'FORANEA/CRUCE'].includes(u)) {
+              return false;
+            }
+          } else {
+            if ((c.ubicacion_actual || '').toUpperCase() !== this.filtroUbicacion) {
+              return false;
+            }
+          }
+        }
+        
+        // 2. Filtrar por Cliente Asignado
+        if (this.filtroCliente) {
+          const u = (c.ubicacion_actual || '').toUpperCase();
+          const cli = (c.cliente_nombre || '').toUpperCase();
+          if (u !== this.filtroCliente && cli !== this.filtroCliente) {
+            return false;
+          }
+        }
+        
+        return true;
+      });
+      
+      if (this.searchQuery && this.searchQuery.trim().length > 0) {
+        const q = this.searchQuery.trim().toLowerCase();
+        result = result.filter(c => {
+           const str = `${c.numero_caja} ${c.placas_mx} ${c.placas_usa} ${c.tipo} ${c.estatus} ${c.ubicacion_actual || ''} ${c.cliente_nombre || ''}`.toLowerCase();
+           return str.includes(q);
+        });
+      }
+      return result;
+    },
+
+    get tractosFiltrados() {
+      let result = this.tractos;
+      if (this.searchQuery && this.searchQuery.trim().length > 0) {
+        const q = this.searchQuery.trim().toLowerCase();
+        result = result.filter(t => {
+           const str = `${t.numero_economico} ${t.marca} ${t.modelo} ${t.placas_mx} ${t.estatus} ${t.operador_nombre || ''}`.toLowerCase();
+           return str.includes(q);
+        });
+      }
+      return result;
+    }
+  };
+}
+</script>
+</body>
+</html>
