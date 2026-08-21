@@ -229,7 +229,8 @@ export default function ConcentradoPrecios() {
                                   <span className="font-mono text-lg font-bold text-success">
                                     {r.dolares !== null && r.dolares !== undefined 
                                       ? `USD $${r.dolares.toFixed(2)}` 
-                                      : (r.pesos !== null && r.pesos !== undefined ? `MXN $${r.pesos.toFixed(2)}` : 'N/A')}
+                                      : (r.pesos !== null && r.pesos !== undefined ? `MXN $${r.pesos.toFixed(2)}` 
+                                      : (r.precio !== null && r.precio !== undefined ? `USD $${r.precio.toFixed(2)}` : 'N/A'))}
                                   </span>
                                 </div>
                                 <div className="flex-1 text-center">
