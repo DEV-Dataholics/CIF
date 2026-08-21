@@ -35,7 +35,13 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->put('cajas/(:num)',         'CajaController::update/$1');
     $routes->put('cajas/(:num)/asignar','CajaController::asignar/$1');
     $routes->get('viajes/catalogos',          'ViajeController::catalogos');
-    $routes->get('destinos_catalogos',        'ViajeController::destinosCatalogos');
+    
+    // Destinos / Localidades
+    $routes->get('destinos_catalogos',           'DestinosController::index');
+    $routes->post('destinos_catalogos',          'DestinosController::create');
+    $routes->put('destinos_catalogos/(:num)',    'DestinosController::update/$1');
+    $routes->delete('destinos_catalogos/(:num)', 'DestinosController::delete/$1');
+
     $routes->get('viajes',                    'ViajeController::index');
     $routes->get('viajes/(:num)',             'ViajeController::show/$1');
     $routes->post('viajes',                   'ViajeController::create');
