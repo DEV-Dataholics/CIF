@@ -76,9 +76,15 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->put('clientes/(:num)',            'ClientesController::update/$1');
     $routes->delete('clientes/(:num)',         'ClientesController::delete/$1');
 
-    // Tipos de Movimiento Dummy Routes to prevent 404s
-    $routes->get('tiposMovimiento',            'AuthController::me'); // Dummy read handled by frontend static JSON
-    $routes->put('tiposMovimiento/(:num)',     'AuthController::me'); // Dummy update to prevent 404 error
-    $routes->post('tiposMovimiento',            'AuthController::me'); // Dummy insert to prevent 404 error
-    $routes->delete('tiposMovimiento/(:num)',   'AuthController::me'); // Dummy delete to prevent 404 error
+    // Tipos de Movimiento Routes
+    $routes->get('tiposMovimiento',            'TiposMovimientoController::index');
+    $routes->post('tiposMovimiento',           'TiposMovimientoController::create');
+    $routes->put('tiposMovimiento/(:num)',     'TiposMovimientoController::update/$1');
+    $routes->delete('tiposMovimiento/(:num)',  'TiposMovimientoController::delete/$1');
+
+    // Precios Routes
+    $routes->get('precios',            'PreciosController::index');
+    $routes->post('precios',           'PreciosController::create');
+    $routes->put('precios/(:num)',     'PreciosController::update/$1');
+    $routes->delete('precios/(:num)',  'PreciosController::delete/$1');
 });

@@ -21,18 +21,8 @@ export const db = {
   // Read all records from a table
   getAll: async (table) => {
     // Fallback local static catalog tables where no database api is defined
-    if (table === 'tiposMovimiento') {
-      const stored = localStorage.getItem('cif_tipos_movimiento');
-      if (stored) return JSON.parse(stored);
-      localStorage.setItem('cif_tipos_movimiento', JSON.stringify(fallbackTiposMovimiento));
-      return fallbackTiposMovimiento;
-    }
-    if (table === 'precios') {
-      const stored = localStorage.getItem('cif_precios');
-      if (stored) return JSON.parse(stored);
-      localStorage.setItem('cif_precios', JSON.stringify(fallbackPrecios));
-      return fallbackPrecios;
-    }
+
+
 
     try {
       const response = await fetch(getEndpoint(table), { credentials: 'include' });
@@ -76,15 +66,7 @@ export const db = {
 
   // Insert a new record
   insert: async (table, record) => {
-    if (table === 'tiposMovimiento' || table === 'precios') {
-      const storageKey = table === 'tiposMovimiento' ? 'cif_tipos_movimiento' : 'cif_precios';
-      const items = await db.getAll(table);
-      const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-      const newItem = { id: newId, ...record };
-      items.push(newItem);
-      localStorage.setItem(storageKey, JSON.stringify(items));
-      return newItem;
-    }
+
 
     const response = await fetch(getEndpoint(table), {
       method: 'POST',
@@ -104,13 +86,7 @@ export const db = {
 
   // Update an existing record
   update: async (table, id, updates) => {
-    if (table === 'tiposMovimiento' || table === 'precios') {
-      const storageKey = table === 'tiposMovimiento' ? 'cif_tipos_movimiento' : 'cif_precios';
-      let items = await db.getAll(table);
-      items = items.map(item => item.id == id ? { ...item, ...updates } : item);
-      localStorage.setItem(storageKey, JSON.stringify(items));
-      return { id, ...updates };
-    }
+
 
     const response = await fetch(`${getEndpoint(table)}/${id}`, {
       method: 'PUT',
@@ -130,23 +106,7 @@ export const db = {
 
   // Delete a record
   remove: async (table, id) => {
-    if (table === 'tiposMovimiento' || table === 'precios') {
-      const storageKey = table === 'tiposMovimiento' ? 'cif_tipos_movimiento' : 'cif_precios';
-      let items = await db.getAll(table);
-      
-      if (table === 'tiposMovimiento') {
-        const itemToDelete = items.find(item => item.id == id);
-        if (itemToDelete) {
-          let precios = await db.getAll('precios');
-          precios = precios.filter(p => p.tipo_mov_id != id && p.tipoMovimiento !== itemToDelete.nombre);
-          localStorage.setItem('cif_precios', JSON.stringify(precios));
-        }
-      }
 
-      items = items.filter(item => item.id != id);
-      localStorage.setItem(storageKey, JSON.stringify(items));
-      return true;
-    }
 
     const response = await fetch(`${getEndpoint(table)}/${id}`, {
       method: 'DELETE',
@@ -172,3 +132,4 @@ export const db = {
     console.log("DB reset requested.");
   }
 };
+
