@@ -1,35 +1,27 @@
 import React, { useMemo, useState, useRef } from 'react';
 import { Money, CaretDown, CaretUp, MicrosoftExcelLogo } from '@phosphor-icons/react';
 import { useData } from '../../context/DataContext';
-import preciosDataInitial from '../../data/precios.json';
 import * as XLSX from 'xlsx';
+import { db } from '../../services/db';
 
 export default function ConcentradoPrecios() {
-  const { clientes, tiposMovimiento, crud } = useData();
+  const { clientes, tiposMovimiento, precios, crud, refreshData } = useData();
   const [expandedClient, setExpandedClient] = useState(null);
   const [showManualModal, setShowManualModal] = useState(false);
-  const [manualForm, setManualForm] = useState({ cliente: '', tipoMovimiento: '', tarifa: '', fechaVigencia: new Date().toISOString().split('T')[0] });
+  const [manualForm, setManualForm] = useState({ id: null, cliente: '', tipoMovimiento: '', tarifa: '', fechaVigencia: new Date().toISOString().split('T')[0] });
   
-  // Usar estado local para simular la actualización de la base de datos
-  const [preciosData, setPreciosData] = useState(() => {
-    // Inicializar precios con fecha si no tienen
-    return preciosDataInitial.map(p => ({
-      ...p,
-      fechaVigencia: p.fechaVigencia || '2026-06-01'
-    }));
-  });
   const fileInputRef = useRef(null);
 
   const stats = useMemo(() => {
     return clientes.map(c => {
-      const rutasDelCliente = preciosData.filter(p => p.cliente === c.razonSocial);
+      const rutasDelCliente = (precios || []).filter(p => p.cliente === c.razonSocial || p.cliente === c.razon_social);
       return {
-        cliente: c.razonSocial,
+        cliente: c.razonSocial || c.razon_social,
         cantidad: rutasDelCliente.length,
         rutas: rutasDelCliente
       };
     }).sort((a, b) => a.cliente.localeCompare(b.cliente));
-  }, [clientes, preciosData]);
+  }, [clientes, precios]);
 
   const toggleExpand = (clienteName) => {
     if (expandedClient === clienteName) {
@@ -55,13 +47,10 @@ export default function ConcentradoPrecios() {
     try {
       if (crud) {
         await crud.remove('precios', id);
-      } else {
-        setPreciosData(prev => prev.filter(r => r.id !== id));
       }
     } catch (err) {
       console.error(err);
-      // Fallback local edit state
-      setPreciosData(prev => prev.filter(r => r.id !== id));
+      alert("Error al eliminar la tarifa.");
     }
   };
 
@@ -88,10 +77,25 @@ export default function ConcentradoPrecios() {
         })).filter(p => p.cliente && p.tipoMovimiento); // Filtrar filas inválidas
 
         if (nuevosPrecios.length > 0) {
-          // Reemplazar o añadir (simplificado: añadimos simulando actualización masiva)
-          // En un sistema real esto actualizaría la base de datos backend
-          setPreciosData(prev => [...prev, ...nuevosPrecios]);
-          alert(`Importación exitosa. Se han importado/actualizado ${nuevosPrecios.length} tarifas en USD.`);
+          (async () => {
+            try {
+              if (crud) {
+                await Promise.all(nuevosPrecios.map(p => db.insert('precios', {
+                  cliente_id: clientes.find(c => c.razonSocial === p.cliente || c.razon_social === p.cliente)?.id || 1,
+                  tipo_mov_id: tiposMovimiento.find(t => t.nombre === p.tipoMovimiento)?.id || 1,
+                  precio: p.dolares,
+                  fecha_vigencia: p.fechaVigencia,
+                  cliente: p.cliente,
+                  tipoMovimiento: p.tipoMovimiento
+                })));
+                if (refreshData) await refreshData();
+              }
+              alert(`Importación exitosa. Se han importado/actualizado ${nuevosPrecios.length} tarifas en USD.`);
+            } catch (err) {
+              console.error(err);
+              alert("Error al importar tarifas.");
+            }
+          })();
         } else {
           alert('El archivo no contiene la estructura esperada: Cliente, Movimiento, Tarifa_USD, Fecha.');
         }
@@ -114,48 +118,27 @@ export default function ConcentradoPrecios() {
         cliente_id: clientes.find(c => c.razonSocial === manualForm.cliente || c.razon_social === manualForm.cliente)?.id || 1,
         tipo_mov_id: tiposMovimiento.find(t => t.nombre === manualForm.tipoMovimiento)?.id || 1,
         precio: parseFloat(manualForm.tarifa),
-        fecha_vigencia: manualForm.fechaVigencia
+        fecha_vigencia: manualForm.fechaVigencia,
+        cliente: manualForm.cliente,
+        tipoMovimiento: manualForm.tipoMovimiento
       };
 
       if (manualForm.id) {
         if (crud) {
           await crud.update('precios', manualForm.id, payload);
-        } else {
-          setPreciosData(prev => prev.map(r => r.id === manualForm.id ? { ...r, cliente: manualForm.cliente, tipoMovimiento: manualForm.tipoMovimiento, dolares: parseFloat(manualForm.tarifa), fechaVigencia: manualForm.fechaVigencia } : r));
         }
       } else {
         if (crud) {
           await crud.insert('precios', payload);
-        } else {
-          const nuevaTarifa = {
-            id: Date.now(),
-            cliente: manualForm.cliente,
-            tipoMovimiento: manualForm.tipoMovimiento,
-            dolares: parseFloat(manualForm.tarifa),
-            fechaVigencia: manualForm.fechaVigencia
-          };
-          setPreciosData(prev => [...prev, nuevaTarifa]);
         }
       }
+      if (refreshData) await refreshData();
+      setShowManualModal(false);
+      setManualForm({ cliente: '', tipoMovimiento: '', tarifa: '', fechaVigencia: new Date().toISOString().split('T')[0] });
     } catch (err) {
       console.error(err);
-      // Fallback
-      if (manualForm.id) {
-        setPreciosData(prev => prev.map(r => r.id === manualForm.id ? { ...r, cliente: manualForm.cliente, tipoMovimiento: manualForm.tipoMovimiento, dolares: parseFloat(manualForm.tarifa), fechaVigencia: manualForm.fechaVigencia } : r));
-      } else {
-        const nuevaTarifa = {
-          id: Date.now(),
-          cliente: manualForm.cliente,
-          tipoMovimiento: manualForm.tipoMovimiento,
-          dolares: parseFloat(manualForm.tarifa),
-          fechaVigencia: manualForm.fechaVigencia
-        };
-        setPreciosData(prev => [...prev, nuevaTarifa]);
-      }
+      alert("Error al guardar la tarifa.");
     }
-
-    setShowManualModal(false);
-    setManualForm({ cliente: '', tipoMovimiento: '', tarifa: '', fechaVigencia: new Date().toISOString().split('T')[0] });
   };
 
   return (
