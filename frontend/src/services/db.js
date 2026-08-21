@@ -133,6 +133,16 @@ export const db = {
     if (table === 'tiposMovimiento' || table === 'precios') {
       const storageKey = table === 'tiposMovimiento' ? 'cif_tipos_movimiento' : 'cif_precios';
       let items = await db.getAll(table);
+      
+      if (table === 'tiposMovimiento') {
+        const itemToDelete = items.find(item => item.id == id);
+        if (itemToDelete) {
+          let precios = await db.getAll('precios');
+          precios = precios.filter(p => p.tipo_mov_id != id && p.tipoMovimiento !== itemToDelete.nombre);
+          localStorage.setItem('cif_precios', JSON.stringify(precios));
+        }
+      }
+
       items = items.filter(item => item.id != id);
       localStorage.setItem(storageKey, JSON.stringify(items));
       return true;
