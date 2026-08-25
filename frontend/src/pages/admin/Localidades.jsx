@@ -16,7 +16,7 @@ const columns = [
 ];
 
 export default function Localidades() {
-  const { localidades: data, setLocalidades } = useData();
+  const { localidades: data, setLocalidades, crud } = useData();
   return (
     <div className="space-y-6 animate-in">
       <AdminCrud 
@@ -24,6 +24,8 @@ export default function Localidades() {
         icon={MapPin}
         data={data}
         setData={setLocalidades}
+        tableName="localidades"
+        crud={crud}
         columns={columns}
       />
     </div>

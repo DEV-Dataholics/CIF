@@ -23,7 +23,7 @@ const renderAlertas = (licencia, visa) => {
 };
 
 export default function Operadores() {
-  const { operadores: data, setOperadores, unidades, cajas } = useData();
+  const { operadores: data, setOperadores, unidades, cajas, crud } = useData();
 
   const columns = [
     { key: 'id', label: '#' },
@@ -60,5 +60,5 @@ export default function Operadores() {
     { key: 'vigenciaVisa', label: 'Vigencia Visa/FAST', formType: 'date', hideInTable: true }
   ];
 
-  return <AdminCrud title="Catálogo de Operadores" icon={SteeringWheel} columns={columns} data={data} setData={setOperadores} />;
+  return <AdminCrud title="Catálogo de Operadores" icon={SteeringWheel} columns={columns} data={data} setData={setOperadores} crud={crud} tableName="operadores" />;
 }

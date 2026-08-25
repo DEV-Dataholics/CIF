@@ -53,6 +53,10 @@ export default function ReportesPrefacturacion() {
   const [tipoCambio, setTipoCambio] = useState(17.20);
   const [busqueda, setBusqueda] = useState('');
 
+  const [filtrosAplicados, setFiltrosAplicados] = useState({
+    fi: '2026-06-01', ff: '2026-06-30', cli: 'DANHIL', filtroOperador: '', filtroTipoMov: '', busqueda: ''
+  });
+
   // ── Column visibility ─────────────────────────────────────
   const [visibleColumns, setVisibleColumns] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -72,52 +76,64 @@ export default function ReportesPrefacturacion() {
 
   // ── Filter pipeline ───────────────────────────────────────
   const filteredMovimientos = useMemo(() => {
+    const { fi: aFi, ff: aFf, cli: aCli, filtroOperador: aOp, filtroTipoMov: aTm, busqueda: aQ } = filtrosAplicados;
     return movimientos.filter(r => {
-      if (fi && r.fecha < fi) return false;
-      if (ff && r.fecha > ff) return false;
-      if (cli && r.cliente !== cli) return false;
-      if (filtroOperador && r.operador !== filtroOperador) return false;
-      if (filtroTipoMov && r.tipoMov !== filtroTipoMov) return false;
-      if (busqueda) {
-        const q = busqueda.toUpperCase();
+      if (aFi && r.fecha < aFi) return false;
+      if (aFf && r.fecha > aFf) return false;
+      if (aCli && r.cliente !== aCli) return false;
+      if (aOp && r.operador !== aOp) return false;
+      if (aTm && r.tipoMov !== aTm) return false;
+      if (aQ) {
+        const q = aQ.toUpperCase();
         const searchable = `${r.origen} ${r.destino} ${r.operador} ${r.caja} ${r.tractor} ${r.valeFisico} ${r.sello}`.toUpperCase();
         if (!searchable.includes(q)) return false;
       }
       return true;
     });
-  }, [movimientos, fi, ff, cli, filtroOperador, filtroTipoMov, busqueda]);
+  }, [movimientos, filtrosAplicados]);
 
   // ── Dynamic filter options ────────────────────────────────
   const operadoresList = useMemo(() => {
+    const { fi: aFi, ff: aFf, cli: aCli } = filtrosAplicados;
     const baseFiltered = movimientos.filter(r => {
-      if (fi && r.fecha < fi) return false;
-      if (ff && r.fecha > ff) return false;
-      if (cli && r.cliente !== cli) return false;
+      if (aFi && r.fecha < aFi) return false;
+      if (aFf && r.fecha > aFf) return false;
+      if (aCli && r.cliente !== aCli) return false;
       return true;
     });
     return [...new Set(baseFiltered.map(m => m.operador).filter(Boolean))].sort();
-  }, [movimientos, fi, ff, cli]);
+  }, [movimientos, filtrosAplicados.fi, filtrosAplicados.ff, filtrosAplicados.cli]);
 
   const tiposMovList = useMemo(() => {
+    const { fi: aFi, ff: aFf, cli: aCli } = filtrosAplicados;
     const baseFiltered = movimientos.filter(r => {
-      if (fi && r.fecha < fi) return false;
-      if (ff && r.fecha > ff) return false;
-      if (cli && r.cliente !== cli) return false;
+      if (aFi && r.fecha < aFi) return false;
+      if (aFf && r.fecha > aFf) return false;
+      if (aCli && r.cliente !== aCli) return false;
       return true;
     });
     return [...new Set(baseFiltered.map(m => m.tipoMov).filter(Boolean))].sort();
-  }, [movimientos, fi, ff, cli]);
+  }, [movimientos, filtrosAplicados.fi, filtrosAplicados.ff, filtrosAplicados.cli]);
 
   // ── Price-enriched movements ──────────────────────────────
   const movimientosConPrecio = useMemo(() => {
     return filteredMovimientos.map(m => {
-      const tarifa = precios.find(p => p.cliente === m.cliente && p.tipoMovimiento === m.tipoMov);
+      const tarifa = precios.find(p => {
+        const pCliente = (p.cliente || '').trim().toLowerCase();
+        const mCliente = (m.cliente || '').trim().toLowerCase();
+        
+        const pTipo = (p.tipoMovimiento || '').trim().toLowerCase().replace(/ /g, '_');
+        const mTipo = (m.tipoMov || '').trim().toLowerCase().replace(/ /g, '_');
+        
+        return pCliente === mCliente && pTipo === mTipo;
+      });
+      
       let costo = 0;
       if (tarifa) {
-        if (tarifa.dolares !== null && tarifa.dolares !== undefined) {
-          costo = tarifa.dolares;
-        } else if (tarifa.pesos !== null && tarifa.pesos !== undefined) {
-          costo = tarifa.pesos / tipoCambio;
+        // tarifa.precio = DB column name; tarifa.dolares = legacy static JSON fallback
+        const valorTarifa = tarifa.precio ?? tarifa.dolares ?? tarifa.pesos;
+        if (valorTarifa !== null && valorTarifa !== undefined) {
+          costo = Number(valorTarifa);
         }
       }
       return { ...m, costo };
@@ -156,50 +172,38 @@ export default function ReportesPrefacturacion() {
     const wb = XLSX.utils.book_new();
     const wsData = [];
 
-    // Orden requerido por TR-004: Movimiento, caja, tractor, operador, cliente, fecha, folio, hora y locales
-    const excelHeaders = [
-      'Movimiento',
-      'Caja',
-      'Tractor',
-      'Operador',
-      'Cliente',
-      'Fecha',
-      'Folio',
-      'Hora',
-      'Locales (Origen -> Destino)',
-      'Monto Movimiento (USD)'
-    ];
+    const columnsToExport = ALL_COLUMNS.filter(c => visibleColumns.includes(c.key));
+    const excelHeaders = columnsToExport.map(c => c.label);
 
     wsData.push(['CIF - REPORTE DE PRE-FACTURACIÓN Y MOVIMIENTOS']);
-    wsData.push([`Cliente: ${cli || 'TODOS'}`]);
-    wsData.push([`Periodo: ${fi} al ${ff}`]);
-    if (filtroOperador) wsData.push([`Operador: ${filtroOperador}`]);
-    if (filtroTipoMov) wsData.push([`Tipo Movimiento: ${filtroTipoMov}`]);
+    wsData.push([`Cliente: ${filtrosAplicados.cli || 'TODOS'}`]);
+    wsData.push([`Periodo: ${filtrosAplicados.fi} al ${filtrosAplicados.ff}`]);
+    if (filtrosAplicados.filtroOperador) wsData.push([`Operador: ${filtrosAplicados.filtroOperador}`]);
+    if (filtrosAplicados.filtroTipoMov) wsData.push([`Tipo Movimiento: ${filtrosAplicados.filtroTipoMov}`]);
     wsData.push([`MONTO TOTAL ACUMULADO: ${formatUSD(resumen.granTotalUSD)} USD (${formatMXN(resumen.granTotalMXN)} MXN)`]);
     wsData.push([]);
 
     tiposOrdenados.forEach(tipo => {
-      wsData.push([`${tipo} | ${getTipoDescription(tipo)}`]);
+      wsData.push([`${tipo}`]);
       wsData.push(excelHeaders);
 
       grupos[tipo].forEach(m => {
-        wsData.push([
-          m.tipoMov || '',
-          m.caja || '',
-          m.tractor || '',
-          m.operador || '',
-          m.cliente || '',
-          m.fecha || '',
-          m.valeFisico || m.id || '',
-          m.hora || '',
-          `${m.origen || ''} -> ${m.destino || ''}`,
-          m.costo || 0
-        ]);
+        const rowData = columnsToExport.map(col => {
+          if (col.key === 'valeFisico') return m.valeFisico || m.id || '';
+          return m[col.key] !== undefined && m[col.key] !== null ? m[col.key] : '';
+        });
+        wsData.push(rowData);
       });
 
       // Subtotal row per group
       const subtotal = grupos[tipo].reduce((acc, m) => acc + (m.costo || 0), 0);
-      wsData.push([`Subtotal ${tipo}`, '', '', '', '', '', '', '', '', subtotal]);
+      const costoIdx = columnsToExport.findIndex(c => c.key === 'costo');
+      const subtotalRow = new Array(columnsToExport.length).fill('');
+      subtotalRow[0] = `Subtotal ${tipo}`;
+      if (costoIdx !== -1) {
+        subtotalRow[costoIdx] = subtotal;
+      }
+      wsData.push(subtotalRow);
       wsData.push([]);
     });
 
@@ -213,11 +217,8 @@ export default function ReportesPrefacturacion() {
     wsData.push(['TOTALES GENERALES', resumen.granTotalViajes, '', resumen.granTotalUSD, resumen.granTotalMXN]);
 
     const ws = XLSX.utils.aoa_to_sheet(wsData);
-    ws['!cols'] = [
-      { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 25 },
-      { wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 10 },
-      { wch: 35 }, { wch: 22 }
-    ];
+    // Dynamic widths based on column count
+    ws['!cols'] = columnsToExport.map(c => ({ wch: c.label.length + 5 }));
 
     XLSX.utils.book_append_sheet(wb, ws, 'Pre-Facturación');
     XLSX.writeFile(wb, `CIF_Reporte_PreFacturacion_${cli || 'TODOS'}_${new Date().toISOString().split('T')[0]}.xlsx`);
@@ -374,9 +375,19 @@ export default function ReportesPrefacturacion() {
               <div className="flex items-center gap-2 bg-surface border border-outline-variant/40 px-3 py-2">
                 <MagnifyingGlass size={14} className="text-outline shrink-0" />
                 <input type="text" value={busqueda} onChange={e => setBusqueda(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && setFiltrosAplicados({fi, ff, cli, filtroOperador, filtroTipoMov, busqueda})}
                   placeholder="Origen, destino, caja, folio..."
                   className="bg-transparent text-sm outline-none flex-1 text-on-surface placeholder:text-outline/50" />
               </div>
+            </div>
+
+            <div className="flex items-end pb-0.5">
+              <button 
+                onClick={() => setFiltrosAplicados({fi, ff, cli, filtroOperador, filtroTipoMov, busqueda})}
+                className="bg-primary text-on-primary px-5 py-2 text-xs font-bold uppercase tracking-widest hover:brightness-110 flex items-center gap-2 h-[38px] shadow-sm">
+                <MagnifyingGlass size={16} weight="bold" />
+                Buscar
+              </button>
             </div>
 
             {hasExtraFilters && (

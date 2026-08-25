@@ -73,11 +73,19 @@ class CajaController extends BaseController
         return $this->json(['ok' => true, 'id' => $id], 201);
     }
 
-    public function update(int $id): ResponseInterface
+    public function update(int $id): \CodeIgniter\HTTP\ResponseInterface
     {
-        $data = $this->request->getJSON(true);
-        unset($data['id'], $data['activo']);
-        $this->db()->table('cajas')->where('id', $id)->update($data);
+        $raw = $this->request->getJSON(true);
+        $data = [];
+        if (isset($raw['numeroCaja'])) $data['numero_caja'] = $raw['numeroCaja'];
+        if (isset($raw['tipo'])) $data['tipo'] = $raw['tipo'];
+        if (isset($raw['placas'])) $data['placas_mx'] = $raw['placas'];
+        if (isset($raw['estatus'])) $data['estatus'] = $raw['estatus'];
+        if (isset($raw['activo'])) $data['activo'] = $raw['activo'] ? 1 : 0;
+        
+        if (!empty($data)) {
+            $this->db()->table('cajas')->where('id', $id)->update($data);
+        }
         return $this->json(['ok' => true]);
     }
 
@@ -104,5 +112,14 @@ class CajaController extends BaseController
 
         return $this->json(['ok' => true]);
     }
-}
 
+    public function delete(int $id): \CodeIgniter\HTTP\ResponseInterface
+    {
+        try {
+            \Config\Database::connect()->table('cajas')->where('id', $id)->delete();
+            return $this->json(['ok' => true]);
+        } catch (\Exception $e) {
+            return $this->json(['ok' => false, 'error' => 'No se puede eliminar porque esta asignado a otras tablas.'], 409);
+        }
+    }
+}

@@ -39,14 +39,13 @@ const columns = [
     key: 'estatus', 
     label: 'Estatus', 
     formType: 'select',
-    options: ['disponible', 'en_ruta', 'mantenimiento'],
+    options: ['disponible', 'en_ruta', 'en_taller', 'fuera_base'],
     render: (v) => {
-      let color = 'badge-muted';
-      if (v === 'disponible') color = 'badge-success';
-      if (v === 'en_ruta') color = 'badge-warning';
-      if (v === 'mantenimiento') color = 'badge-danger';
-      const label = typeof v === 'string' ? v.replace('_', ' ') : String(v || '');
-      return <span className={`badge ${color} uppercase text-[10px]`}>{label}</span>
+      let cls = 'badge-muted';
+      if (v === 'disponible') cls = 'badge-success';
+      if (v === 'en_ruta') cls = 'badge-warning';
+      if (v === 'en_taller' || v === 'fuera_base') cls = 'badge-danger';
+      return <span className={`badge ${cls} uppercase text-[10px]`}>{v?.replace('_', ' ').toUpperCase()}</span>;
     }
   },
   { key: 'activo', label: 'Activo', formType: 'boolean', render: (v) => <span className={`badge ${v ? 'badge-success' : 'badge-muted'}`}>{v ? 'Sí' : 'No'}</span> },
@@ -56,6 +55,6 @@ const columns = [
 ];
 
 export default function Unidades() {
-  const { unidades: data, setUnidades } = useData();
-  return <AdminCrud title="Tractos (Unidades)" subtitle="Catálogo de tractocamiones" icon={Truck} columns={columns} data={data} setData={setUnidades} />;
+  const { unidades: data, setUnidades, crud } = useData();
+  return <AdminCrud title="Tractos (Unidades)" subtitle="Catálogo de tractocamiones" icon={Truck} columns={columns} data={data} setData={setUnidades} crud={crud} tableName="unidades" />;
 }

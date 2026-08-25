@@ -20,14 +20,15 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
   }, [data, search, columns]);
 
   const handleDelete = async (id) => {
-    if (crud && tableName) {
-      try {
+    try {
+      if (crud && tableName) {
         await crud.remove(tableName, id);
-      } catch (err) {
-        alert("Error al eliminar: " + err.message);
       }
-    } else if (setData) {
-      setData(prev => prev.filter(r => r.id !== id));
+      if (setData) {
+        setData(prev => prev.filter(r => r.id !== id));
+      }
+    } catch (err) {
+      alert("Error al eliminar: " + err.message);
     }
   };
 
@@ -44,26 +45,29 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
   };
 
   const handleSave = async () => {
-    if (crud && tableName) {
-      try {
+    try {
+      let savedData = { ...formData };
+      if (crud && tableName) {
         if (editRow) {
-          await crud.update(tableName, editRow.id, formData);
+          savedData = await crud.update(tableName, editRow.id, formData);
         } else {
           // Garantizar activo:true por defecto al crear
-          await crud.insert(tableName, { activo: true, ...formData });
+          savedData = await crud.insert(tableName, { activo: true, ...formData });
         }
-      } catch (err) {
-        alert("Error al guardar: " + err.message);
       }
-    } else if (setData) {
-      if (editRow) {
-        setData(prev => prev.map(r => r.id === editRow.id ? { ...r, ...formData } : r));
-      } else {
-        const newId = data.length > 0 ? Math.max(...data.map(d => typeof d.id === 'number' ? d.id : 0)) + 1 : 1;
-        setData(prev => [{ id: newId, activo: true, ...formData }, ...prev]);
+      
+      if (setData) {
+        if (editRow) {
+          setData(prev => prev.map(r => r.id === editRow.id ? { ...r, ...savedData } : r));
+        } else {
+          const newId = savedData.id || (data.length > 0 ? Math.max(...data.map(d => typeof d.id === 'number' ? d.id : 0)) + 1 : 1);
+          setData(prev => [{ id: newId, activo: true, ...savedData }, ...prev]);
+        }
       }
+      setShowModal(false);
+    } catch (err) {
+      alert("Error al guardar: " + err.message);
     }
-    setShowModal(false);
   };
 
   return (

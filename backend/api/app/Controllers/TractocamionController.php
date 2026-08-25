@@ -41,11 +41,34 @@ class TractocamionController extends BaseController
         return $this->json(['ok' => true, 'id' => $id], 201);
     }
 
-    public function update(int $id): ResponseInterface
+    public function update(int $id): \CodeIgniter\HTTP\ResponseInterface
     {
-        $data = $this->request->getJSON(true);
-        unset($data['id']);
-        \Config\Database::connect()->table('tractocamiones')->where('id', $id)->update($data);
+        $raw = $this->request->getJSON(true);
+        $data = [];
+        if (isset($raw['numeroEconomico'])) $data['numero_economico'] = $raw['numeroEconomico'];
+        if (isset($raw['placas'])) $data['placas_mx'] = $raw['placas'];
+        if (isset($raw['marca'])) $data['marca'] = $raw['marca'];
+        if (isset($raw['modelo'])) $data['modelo'] = $raw['modelo'];
+        if (isset($raw['anio'])) $data['anio'] = $raw['anio'];
+        if (isset($raw['estatus'])) $data['estatus'] = $raw['estatus'];
+        if (isset($raw['activo'])) $data['activo'] = $raw['activo'] ? 1 : 0;
+        if (isset($raw['vigenciaSCT'])) $data['vencimiento_sct'] = $raw['vigenciaSCT'];
+        if (isset($raw['vigenciaSeguro'])) $data['vencimiento_poliza_mx'] = $raw['vigenciaSeguro'];
+        
+        if (!empty($data)) {
+            \Config\Database::connect()->table('tractocamiones')->where('id', $id)->update($data);
+        }
         return $this->json(['ok' => true]);
+    }
+
+    public function delete(int $id): ResponseInterface
+    {
+        try {
+            \Config\Database::connect()->table('tractocamiones')->where('id', $id)->delete();
+            return $this->json(['ok' => true]);
+        } catch (\Exception $e) {
+            // Foreign key constraints can fail the deletion. We catch it.
+            return $this->json(['ok' => false, 'error' => 'No se puede eliminar el tractocamión porque está asignado a otras tablas.'], 409);
+        }
     }
 }

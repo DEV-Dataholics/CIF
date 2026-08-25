@@ -3,6 +3,7 @@ import { Money, CaretDown, CaretUp, MicrosoftExcelLogo } from '@phosphor-icons/r
 import { useData } from '../../context/DataContext';
 import * as XLSX from 'xlsx';
 import { db } from '../../services/db';
+import SearchableSelect from '../../components/SearchableSelect';
 
 export default function ConcentradoPrecios() {
   const { clientes, tiposMovimiento, precios, crud, refreshData } = useData();
@@ -227,10 +228,10 @@ export default function ConcentradoPrecios() {
                                 <div className="flex-1 text-center">
                                   <span className="font-label text-[9px] uppercase tracking-widest text-outline block mb-1">Tarifa</span>
                                   <span className="font-mono text-lg font-bold text-success">
-                                    {r.dolares !== null && r.dolares !== undefined 
-                                      ? `USD $${r.dolares.toFixed(2)}` 
-                                      : (r.pesos !== null && r.pesos !== undefined ? `MXN $${r.pesos.toFixed(2)}` 
-                                      : (r.precio !== null && r.precio !== undefined ? `USD $${r.precio.toFixed(2)}` : 'N/A'))}
+                                    {r.dolares !== null && r.dolares !== undefined && r.dolares !== ''
+                                      ? `USD $${Number(r.dolares).toFixed(2)}` 
+                                      : (r.pesos !== null && r.pesos !== undefined && r.pesos !== '' ? `MXN $${Number(r.pesos).toFixed(2)}` 
+                                      : (r.precio !== null && r.precio !== undefined && r.precio !== '' ? `USD $${Number(r.precio).toFixed(2)}` : 'N/A'))}
                                   </span>
                                 </div>
                                 <div className="flex-1 text-center">
@@ -272,17 +273,23 @@ export default function ConcentradoPrecios() {
             <form onSubmit={handleManualSubmit} className="space-y-4">
               <div>
                 <label className="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-1">Cliente</label>
-                <input list="modal-clientes" required value={manualForm.cliente} onChange={e => setManualForm({...manualForm, cliente: e.target.value})} className="w-full bg-background border border-outline-variant/30 text-on-surface p-3 text-sm outline-none focus:border-primary" />
-                <datalist id="modal-clientes">
-                  {clientes.map(c => <option key={c.id} value={c.razonSocial} />)}
-                </datalist>
+                <SearchableSelect 
+                  options={clientes.map(c => c.razonSocial ?? c.razon_social).filter(Boolean)}
+                  value={manualForm.cliente}
+                  onChange={val => setManualForm({...manualForm, cliente: val})}
+                  placeholder="Seleccionar cliente..."
+                  className="w-full bg-background border border-outline-variant/30 text-on-surface p-3 text-sm outline-none focus:border-primary"
+                />
               </div>
               <div>
                 <label className="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-1">Tipo de Movimiento</label>
-                <input list="modal-movimientos" required value={manualForm.tipoMovimiento} onChange={e => setManualForm({...manualForm, tipoMovimiento: e.target.value})} className="w-full bg-background border border-outline-variant/30 text-on-surface p-3 text-sm outline-none focus:border-primary" />
-                <datalist id="modal-movimientos">
-                  {tiposMovimiento?.map((tm, idx) => <option key={idx} value={tm.nombre} />)}
-                </datalist>
+                <SearchableSelect 
+                  options={tiposMovimiento?.map(tm => tm.nombre).filter(Boolean) || []}
+                  value={manualForm.tipoMovimiento}
+                  onChange={val => setManualForm({...manualForm, tipoMovimiento: val})}
+                  placeholder="Seleccionar tipo..."
+                  className="w-full bg-background border border-outline-variant/30 text-on-surface p-3 text-sm outline-none focus:border-primary"
+                />
               </div>
               <div>
                 <label className="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-1">Tarifa (USD)</label>

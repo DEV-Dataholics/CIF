@@ -170,6 +170,12 @@ export default function SuperCapturaWizard({ open, onClose }) {
   const [step, setStep] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  // Fetch latest data on mount to ensure fresh catalogs if updated in another tab
+  useEffect(() => {
+    if (refreshData) refreshData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── Step 1: Operator data ─────────────────────────────────
   const [operador, setOperador] = useState('');
   const [tractor, setTractor] = useState('');
@@ -218,30 +224,38 @@ export default function SuperCapturaWizard({ open, onClose }) {
 
   // ── Derived lists ─────────────────────────────────────────
   const operadoresList = useMemo(() =>
-    operadores.filter(o => o.activo).map(o => o.nombreCompleto), [operadores]);
+    operadores.filter(o => o.activo || o.estatus === 'Activo' || o.estatus === 'activo')
+      .map(o => o.nombreCompleto ?? o.nombre_completo).filter(Boolean), [operadores]);
 
   const unidadesList = useMemo(() =>
-    unidades.map(u => u.numeroEconomico), [unidades]);
+    unidades.map(u => u.numeroEconomico ?? u.numero_economico).filter(Boolean), [unidades]);
 
   const cajasList = useMemo(() =>
-    cajasData.map(c => c.numeroCaja), [cajasData]);
+    cajasData.map(c => c.numeroCaja ?? c.numero_caja).filter(Boolean), [cajasData]);
 
   const clientesList = useMemo(() =>
-    [...new Set(clientesData.filter(c => c.activo).map(c => c.razonSocial))], [clientesData]);
+    [...new Set(
+      clientesData
+        .filter(c => c.activo || c.activo !== 0)
+        .map(c => c.razonSocial ?? c.razon_social)
+        .filter(Boolean)
+    )], [clientesData]);
 
   const localidadesList = useMemo(() =>
-    localidadesData.map(l => l.nombre), [localidadesData]);
+    localidadesData.map(l => l.nombre).filter(Boolean), [localidadesData]);
 
   const filteredTiposMovimiento = useMemo(() => {
-    if (!tiposMovimiento) return [];
+    if (!tiposMovimiento || tiposMovimiento.length === 0) return [];
     if (!cliente) return tiposMovimiento;
     const clientUpper = cliente.trim().toUpperCase();
     
-    // Mostramos los específicos del cliente Y los de uso general (NA)
-    return tiposMovimiento.filter(t => {
+    // Show types specific to this client OR marked as general (NA/TODOS)
+    const filtered = tiposMovimiento.filter(t => {
       const associated = (t.clienteAsociado || '').trim().toUpperCase();
-      return associated === clientUpper || associated === 'NA';
+      return associated === clientUpper || associated === 'NA' || associated === 'TODOS' || associated === '';
     });
+    // If no client-specific types, fall back to showing ALL types
+    return filtered.length > 0 ? filtered : tiposMovimiento;
   }, [tiposMovimiento, cliente]);
 
   // ── Auto-suggest when operator changes ────────────────────
@@ -249,9 +263,12 @@ export default function SuperCapturaWizard({ open, onClose }) {
     setOperador(name);
     if (!name) { setTractor(''); setCaja(''); setCliente(''); return; }
 
-    const opInfo = operadores.find(o => o.nombreCompleto === name);
-    let autoTractor = opInfo?.tractorAsignado || '';
-    let autoCaja = opInfo?.cajaAsignada || '';
+    // Support snake_case (API) and camelCase (legacy)
+    const opInfo = operadores.find(o =>
+      (o.nombreCompleto ?? o.nombre_completo) === name
+    );
+    let autoTractor = opInfo?.tractorAsignado || opInfo?.tractor_asignado || '';
+    let autoCaja = opInfo?.cajaAsignada || opInfo?.caja_asignada || '';
 
     // Build fuzzy matcher: split name into words, match if all words exist in operador field
     const nameWords = name.replace(/\(.*?\)/g, '').trim().toUpperCase().split(/\s+/);
@@ -343,22 +360,48 @@ export default function SuperCapturaWizard({ open, onClose }) {
 
   // ── Final confirmation ────────────────────────────────────
   const handleConfirm = async () => {
+    // Helper: return int ID or null if we only have the display string
+    const toId = (val) => {
+      const n = parseInt(val, 10);
+      return Number.isFinite(n) ? n : null;
+    };
+
     try {
       for (let i = 0; i < routes.length; i++) {
         const r = routes[i];
         const selectedCaja = r.caja || caja;
-        const clienteId = clientesData.find(c => c.razonSocial === cliente)?.id || cliente;
-        const operadorId = operadores.find(o => o.nombreCompleto === operador)?.id || operador;
-        const tractorId = unidades.find(u => u.numeroEconomico === tractor)?.id || tractor;
-        const tipoMovId = tiposMovimiento.find(t => t.nombre === r.tipoMov)?.id || r.tipoMov;
-        const cajaId = cajasData.find(c => c.numeroCaja === selectedCaja || c.numeroEconomico === selectedCaja)?.id || selectedCaja;
+
+        // The API may return snake_case (razon_social) OR camelCase (razonSocial)
+        const clienteObj = clientesData.find(c =>
+          (c.razonSocial ?? c.razon_social) === cliente
+        );
+        const operadorObj = operadores.find(o =>
+          (o.nombreCompleto ?? o.nombre_completo) === operador
+        );
+        const tractorObj = unidades.find(u =>
+          (u.numeroEconomico ?? u.numero_economico) === tractor
+        );
+        const cajaObj = cajasData.find(c =>
+          (c.numeroCaja ?? c.numero_caja) === selectedCaja
+        );
+
+        const clienteId  = clienteObj?.id  ? parseInt(clienteObj.id, 10)  : null;
+        const operadorId = operadorObj?.id  ? parseInt(operadorObj.id, 10) : toId(operador);
+        const tractorId  = tractorObj?.id   ? parseInt(tractorObj.id, 10)  : toId(tractor);
+        const cajaId     = cajaObj?.id      ? parseInt(cajaObj.id, 10)     : null;
+
+        // tipo_movimiento: send the slug (snake_case), not the display label
+        const tipoMovSlug = r.tipoMov
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, '_');
 
         const payload = {
           cliente_id: clienteId,
           operador_id: operadorId,
           tractocamion_id: tractorId,
-          tipo_movimiento: r.tipoMov.toLowerCase().replace(' ', '_'), // Enums are snake_case lowercase
-          caja_id: cajaId || null,
+          tipo_movimiento: tipoMovSlug,
+          caja_id: cajaId,
           origen: r.origen,
           destino: r.destino,
           via_cruce: r.puente || '',
@@ -408,9 +451,23 @@ export default function SuperCapturaWizard({ open, onClose }) {
             Wizard
           </span>
         </div>
-        <button onClick={() => onClose()} className="p-2 text-outline hover:text-danger hover:bg-danger/10 rounded transition-colors" title="Guardar borrador y cerrar">
-          <X size={20} />
-        </button>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => {
+              if (window.confirm('¿Estás seguro de limpiar la captura? Se perderá todo el progreso no guardado.')) {
+                localStorage.removeItem('cif_supercaptura_draft');
+                resetWizard(true);
+              }
+            }} 
+            className="flex items-center gap-2 font-label text-[10px] uppercase tracking-widest text-outline hover:text-danger border border-transparent hover:border-danger/30 px-3 py-1.5 transition-colors shadow-sm bg-surface"
+            title="Borrar borrador e iniciar de cero"
+          >
+            <Trash size={16} /> Limpiar Captura
+          </button>
+          <button onClick={() => onClose()} className="p-2 text-outline hover:text-danger hover:bg-danger/10 rounded transition-colors" title="Guardar borrador y cerrar">
+            <X size={20} />
+          </button>
+        </div>
       </div>
 
       {/* ── Stepper ──────────────────────────────────────── */}
@@ -454,7 +511,15 @@ export default function SuperCapturaWizard({ open, onClose }) {
                           const nuevo = window.prompt("Nombre del nuevo operador:");
                           if(nuevo && nuevo.trim() !== '') {
                             try {
-                              await crud.insert('operadores', { nombre_completo: nuevo.trim(), activo: 1 });
+                              const res = await fetch('/api/operadores/rapido', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'include',
+                                body: JSON.stringify({ nombre_completo: nuevo.trim() })
+                              });
+                              const result = await res.json();
+                              if (!res.ok) throw new Error(result.error || 'Error al crear operador');
+                              if (refreshData) await refreshData();
                               handleOperadorChange(nuevo.trim());
                             } catch (e) {
                               alert("Error al guardar operador: " + e.message);
@@ -519,7 +584,7 @@ export default function SuperCapturaWizard({ open, onClose }) {
                             const nueva = window.prompt("Número de caja nueva (Alta Rápida):");
                             if(nueva && nueva.trim() !== '') {
                               // Esto generará algo de deuda técnica sin placa/año, pero agiliza la captura
-                              crud.insert('cajas', { numeroCaja: nueva.trim(), estatus: 'Activo' });
+                              crud.insert('cajas', { numero_caja: nueva.trim(), estatus: 'disponible', tipo_caja: 'Seca' });
                               setCaja(nueva.trim());
                             }
                           }}
@@ -635,7 +700,7 @@ export default function SuperCapturaWizard({ open, onClose }) {
                           const nuevo = window.prompt("Nueva ubicación (Origen):");
                           if(nuevo && nuevo.trim() !== '') {
                             try {
-                              await crud.insert('localidades', { nombre: nuevo.trim(), tipo: 'ciudad', estado: 'NA', pais: 'MX', activo: 1 });
+                              await crud.insert('localidades', { nombre: nuevo.trim(), tipo: 'ciudad', ciudad: 'Juárez' });
                               setRouteForm(p => ({...p, origen: nuevo.trim()}));
                             } catch (e) {
                               alert("Error al guardar localidad: " + e.message);
@@ -666,7 +731,7 @@ export default function SuperCapturaWizard({ open, onClose }) {
                           const nuevo = window.prompt("Nueva ubicación (Destino):");
                           if(nuevo && nuevo.trim() !== '') {
                             try {
-                              await crud.insert('localidades', { nombre: nuevo.trim(), tipo: 'ciudad', estado: 'NA', pais: 'MX', activo: 1 });
+                              await crud.insert('localidades', { nombre: nuevo.trim(), tipo: 'ciudad', ciudad: 'Juárez' });
                               setRouteForm(p => ({...p, destino: nuevo.trim()}));
                             } catch (e) {
                               alert("Error al guardar localidad: " + e.message);

@@ -1,6 +1,6 @@
 import { RoadHorizon } from '@phosphor-icons/react';
 import AdminCrud from '../../components/AdminCrud';
-import data from '../../data/peajes.json';
+import { useData } from '../../context/DataContext';
 
 const columns = [
   { key: 'id', label: '#' },
@@ -10,5 +10,6 @@ const columns = [
 ];
 
 export default function Peajes() {
-  return <AdminCrud title="Peajes" subtitle="Tarifas de puentes internacionales" icon={RoadHorizon} columns={columns} data={data} />;
+  const { peajes, setPeajes, crud } = useData();
+  return <AdminCrud title="Peajes" subtitle="Tarifas de puentes internacionales" icon={RoadHorizon} columns={columns} data={peajes || []} setData={setPeajes} tableName="peajes" crud={crud} />;
 }

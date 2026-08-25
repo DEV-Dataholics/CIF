@@ -54,21 +54,81 @@ class ViajeController extends BaseController
     {
         $data = $this->request->getJSON(true);
 
-        // ── REGLA R1: Tracto no taller ──
+        // Validar campos obligatorios
+        if (empty($data['operador_id']) || empty($data['tractocamion_id'])) {
+            return $this->json(['ok' => false, 'error' => 'operador_id y tractocamion_id son requeridos.'], 422);
+        }
+
+        // 🛑 REGLA R1: Tracto no taller 🛑
         $tracto = $this->db()->table('tractocamiones')->where('id', $data['tractocamion_id'])->get()->getRowArray();
+
+        if (!$tracto) {
+            return $this->json(['ok' => false, 'error' => "El tractocamion_id={$data['tractocamion_id']} no existe en la base de datos."], 404);
+        }
+
         if ($tracto['estatus'] === 'en_taller') {
             return $this->json(['ok' => false, 'error' => "El tracto {$tracto['numero_economico']} está en taller."], 422);
         }
 
-        $id = $this->db()->table('viajes')->insert($data + ['estatus' => 'asignado', 'created_by' => session()->get('user_id')], true);
+        // Solo insertar columnas que existen en la tabla viajes
+        $allowedColumns = ['cliente_id', 'operador_id', 'tractocamion_id', 'caja_id',
+                           'tipo_movimiento', 'origen', 'destino', 'via_cruce',
+                           'folio_boleta', 'fecha_salida', 'fecha_llegada', 'notas'];
+        $insert = array_intersect_key($data, array_flip($allowedColumns));
+        $insert['estatus']    = $data['estatus'] ?? 'asignado';
+        $insert['created_by'] = session()->get('user_id');
+
+        // Asegurar que cliente_id sea null si no se proporcionó o no es numérico
+        if (empty($insert['cliente_id']) || !is_numeric($insert['cliente_id'])) {
+            $insert['cliente_id'] = null;
+        }
+
+        $id = $this->db()->table('viajes')->insert($insert, true);
         $this->db()->table('tractocamiones')->where('id', $data['tractocamion_id'])->update(['estatus' => 'en_ruta']);
 
         // F1.4: Sincronizar caja → en_viaje
-        if (!empty($data['caja_id'])) {
-            $this->db()->table('cajas')->where('id', $data['caja_id'])->update(['estatus' => 'en_viaje']);
+        if (!empty($insert['caja_id'])) {
+            $this->db()->table('cajas')->where('id', $insert['caja_id'])->update(['estatus' => 'en_viaje']);
         }
 
         return $this->json(['ok' => true, 'id' => $id], 201);
+    }
+
+    public function update(int $id): ResponseInterface
+    {
+        $data = $this->request->getJSON(true);
+        $db   = $this->db();
+        
+        $viaje = $db->table('viajes')->where('id', $id)->get()->getRowArray();
+        if (!$viaje) {
+            return $this->json(['ok' => false, 'error' => 'Viaje no encontrado.'], 404);
+        }
+
+        // Filtramos columnas validas de la tabla viajes
+        $allowed = [
+            'operador_id', 'tractocamion_id', 'caja_id', 'cliente_id', 
+            'tipo_movimiento', 'origen', 'destino', 'estatus', 'notas', 
+            'folio_boleta', 'via_cruce', 'fecha_salida'
+        ];
+        
+        $updateData = [];
+        foreach ($allowed as $field) {
+            if (array_key_exists($field, $data)) {
+                $updateData[$field] = $data[$field];
+            }
+        }
+
+        if (!empty($updateData)) {
+            $db->table('viajes')->where('id', $id)->update($updateData);
+        }
+
+        return $this->json(['ok' => true]);
+    }
+
+    public function delete(int $id): ResponseInterface
+    {
+        $this->db()->table('viajes')->where('id', $id)->delete();
+        return $this->json(['ok' => true]);
     }
 
     public function cambiarEstatus(int $id): ResponseInterface

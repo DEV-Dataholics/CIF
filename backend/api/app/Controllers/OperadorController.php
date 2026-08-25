@@ -111,11 +111,22 @@ class OperadorController extends BaseController
         ], 201);
     }
 
-    public function update(int $id): ResponseInterface
+    public function update(int $id): \CodeIgniter\HTTP\ResponseInterface
     {
-        $data = $this->request->getJSON(true);
-        unset($data['id'], $data['usuario_id']);
-        $this->db()->table('operadores')->where('id', $id)->update($data);
+        $raw = $this->request->getJSON(true);
+        $data = [];
+        if (isset($raw['nombreCompleto'])) $data['nombre_completo'] = $raw['nombreCompleto'];
+        if (isset($raw['licencia'])) $data['licencia_mx'] = $raw['licencia'];
+        if (isset($raw['visa'])) $data['licencia_usa'] = $raw['visa'];
+        if (isset($raw['fast'])) $data['licencia_usa'] = $raw['fast'];
+        if (isset($raw['telefono'])) $data['telefono'] = $raw['telefono'];
+        if (isset($raw['activo'])) $data['activo'] = $raw['activo'] ? 1 : 0;
+        if (isset($raw['vigenciaLicencia'])) $data['licencia_mx_vencimiento'] = $raw['vigenciaLicencia'];
+        if (isset($raw['vigenciaVisa'])) $data['licencia_usa_vencimiento'] = $raw['vigenciaVisa'];
+        
+        if (!empty($data)) {
+            $this->db()->table('operadores')->where('id', $id)->update($data);
+        }
         return $this->json(['ok' => true]);
     }
 
@@ -137,5 +148,14 @@ class OperadorController extends BaseController
 
         return $this->json(['ok' => true, 'operador' => $op, 'viajes' => $viajes]);
     }
-}
 
+    public function delete(int $id): \CodeIgniter\HTTP\ResponseInterface
+    {
+        try {
+            \Config\Database::connect()->table('operadores')->where('id', $id)->delete();
+            return $this->json(['ok' => true]);
+        } catch (\Exception $e) {
+            return $this->json(['ok' => false, 'error' => 'No se puede eliminar porque esta asignado a otras tablas.'], 409);
+        }
+    }
+}

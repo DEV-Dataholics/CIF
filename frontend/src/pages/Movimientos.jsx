@@ -7,73 +7,73 @@ import SuperCapturaWizard from '../components/SuperCapturaWizard';
 import { useData } from '../context/DataContext';
 import * as XLSX from 'xlsx';
 
-const ALL_COLUMNS = [
-  { key: 'acciones', label: 'Acciones', render: (_, row) => (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        setEditRow({ ...row });
-      }}
-      className="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors"
-      title="Editar viaje"
-    >
-      <PencilSimple size={16} weight="bold" />
-    </button>
-  )},
-  { key: 'id', label: '#' },
-  { key: 'fecha', label: 'Fecha' },
-  { key: 'hora', label: 'Hora', render: (v) => <span className="font-mono text-primary font-bold">{v}</span> },
-  { key: 'usuario', label: 'Usuario' },
-  { key: 'cliente', label: 'Cliente', render: (v) => <span className="font-semibold">{v}</span> },
-  { key: 'tipoMov', label: 'Tipo Mov', render: (v) => (
-    <span className={`badge ${v === 'ENTRADA' ? 'badge-success' : 'badge-danger'}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${v === 'ENTRADA' ? 'bg-success' : 'bg-danger'}`} />
-      {v}
-    </span>
-  )},
-  { key: 'origen', label: 'Origen' },
-  { key: 'destino', label: 'Destino' },
-  { key: 'clasificacion', label: 'Clasif.', render: (v) => <span className="font-bold text-outline">{v}</span> },
-  { key: 'operador', label: 'Operador' },
-  { key: 'tractor', label: 'Tractor', render: (v) => <span className="font-mono font-bold text-on-surface">{v}</span> },
-  { key: 'caja', label: '#Caja', render: (v) => <span className="font-mono text-outline">{v}</span> },
-  { key: 'facPedimento', label: '#Fac/Pedimento (Folio)', render: (v, row) => <span className="font-mono text-xs font-bold">{row.valeFisico || v || '—'}</span> },
-  { key: 'puente', label: 'Puente' },
-  { key: 'numVoucher', label: 'Num. Voucher', render: (v) => <span className="font-mono text-xs">{v}</span> },
-  { key: 'peaje', label: 'Peaje' },
-  { key: 'sello', label: 'Sello', render: (v) => <span className="font-mono font-bold">{v}</span> },
-  { key: 'salioOrigen', label: 'Salió Origen' },
-  { key: 'puntoRevision', label: 'Punto Revisión' },
-  { key: 'entradaMX', label: 'Entrada MX' },
-  { key: 'salidaMX', label: 'Salida MX' },
-  { key: 'entradaAM', label: 'Entrada AM' },
-  { key: 'salidaAM', label: 'Salida AM' },
-  { key: 'horaEntrega', label: 'Hora Entrega' },
-  { key: 'estatus', label: 'Estatus', render: (v) => {
-    const cls = v === 'Completo' ? 'badge-success' : v === 'En Ruta' ? 'badge-warning' : 'badge-muted';
-    return <span className={`badge ${cls}`}>{v}</span>;
-  }},
-  { key: 'cmt', label: 'CMT' },
-  { key: 'factura', label: 'Factura' },
-];
-
-const DEFAULT_VISIBLE = ['acciones','fecha','hora','cliente','tipoMov','origen','destino','operador','tractor','caja','facPedimento','sello','estatus','factura'];
-const STORAGE_KEY = 'cif_columns_movimientos';
-
-// ── Helper: Formatear fecha para despliegue ───────────────
-function formatDateDisplay(dateStr) {
-  if (!dateStr) return '—';
-  const parts = dateStr.split('-');
-  if (parts.length === 3) {
-    const [y, m, d] = parts;
-    return `${d}/${m}/${y}`;
-  }
-  return dateStr;
-}
-
 export default function Movimientos() {
   const { movimientos: movData, clientes, operadores, cajas, unidades, tiposMovimiento, crud } = useData();
+  const STORAGE_KEY = 'cif_columns_movimientos';
+
+  // ── Helper: Formatear fecha para despliegue ───────────────
+  function formatDateDisplay(dateStr) {
+    if (!dateStr) return '—';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const [y, m, d] = parts;
+      return `${d}/${m}/${y}`;
+    }
+    return dateStr;
+  }
+
+  const ALL_COLUMNS = [
+    { key: 'acciones', label: 'Acciones', render: (_, row) => (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setEditRow({ ...row });
+        }}
+        className="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors"
+        title="Editar viaje"
+      >
+        <PencilSimple size={16} weight="bold" />
+      </button>
+    )},
+    { key: 'id', label: '#' },
+    { key: 'fecha', label: 'Fecha' },
+    { key: 'hora', label: 'Hora', render: (v) => <span className="font-mono text-primary font-bold">{v}</span> },
+    { key: 'usuario', label: 'Usuario' },
+    { key: 'cliente', label: 'Cliente', render: (v) => <span className="font-semibold">{v}</span> },
+    { key: 'tipoMov', label: 'Tipo Mov', render: (v) => (
+      <span className={`badge ${v === 'ENTRADA' ? 'badge-success' : 'badge-danger'}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${v === 'ENTRADA' ? 'bg-success' : 'bg-danger'}`} />
+        {v}
+      </span>
+    )},
+    { key: 'origen', label: 'Origen' },
+    { key: 'destino', label: 'Destino' },
+    { key: 'clasificacion', label: 'Clasif.', render: (v) => <span className="font-bold text-outline">{v}</span> },
+    { key: 'operador', label: 'Operador' },
+    { key: 'tractor', label: 'Tractor', render: (v) => <span className="font-mono font-bold text-on-surface">{v}</span> },
+    { key: 'caja', label: '#Caja', render: (v) => <span className="font-mono text-outline">{v}</span> },
+    { key: 'facPedimento', label: 'Folio (Vale Físico)', render: (v, row) => <span className="font-mono text-xs font-bold">{row.valeFisico || v || '—'}</span> },
+    { key: 'puente', label: 'Puente' },
+    { key: 'numVoucher', label: 'Num. Voucher', render: (v) => <span className="font-mono text-xs">{v}</span> },
+    { key: 'peaje', label: 'Peaje' },
+    { key: 'sello', label: 'Sello', render: (v) => <span className="font-mono font-bold">{v}</span> },
+    { key: 'salioOrigen', label: 'Salió Origen' },
+    { key: 'puntoRevision', label: 'Punto Revisión' },
+    { key: 'entradaMX', label: 'Entrada MX' },
+    { key: 'salidaMX', label: 'Salida MX' },
+    { key: 'entradaAM', label: 'Entrada AM' },
+    { key: 'salidaAM', label: 'Salida AM' },
+    { key: 'horaEntrega', label: 'Hora Entrega' },
+    { key: 'estatus', label: 'Estatus', render: (v) => {
+      const cls = v === 'Completo' ? 'badge-success' : v === 'En Ruta' ? 'badge-warning' : 'badge-muted';
+      return <span className={`badge ${cls}`}>{v}</span>;
+    }},
+    { key: 'cmt', label: 'CMT' },
+    { key: 'factura', label: 'Factura' },
+  ];
+
+  const DEFAULT_VISIBLE = ['acciones','fecha','hora','cliente','tipoMov','origen','destino','operador','tractor','caja','facPedimento','sello','estatus','factura'];
 
   const [visibleColumns, setVisibleColumns] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -607,6 +607,18 @@ export default function Movimientos() {
                     via_cruce: editRow.puente || '',
                     folio_boleta: editRow.valeFisico || editRow.facPedimento || '',
                     estatus: editRow.estatus,
+                    notas: editRow.clasificacion || '',
+                    peaje: editRow.peaje || '',
+                    sello: editRow.sello || '',
+                    salio_origen: editRow.salioOrigen || '',
+                    punto_revision: editRow.puntoRevision || '',
+                    entrada_mx: editRow.entradaMX || '',
+                    salida_mx: editRow.salidaMX || '',
+                    entrada_am: editRow.entradaAM || '',
+                    salida_am: editRow.salidaAM || '',
+                    hora_entrega: editRow.horaEntrega || '',
+                    cmt: editRow.cmt || '',
+                    factura: editRow.factura || ''
                   };
                   
                   // Handle date and time

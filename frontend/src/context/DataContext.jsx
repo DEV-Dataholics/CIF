@@ -12,6 +12,7 @@ export function DataProvider({ children }) {
   const [unidades, setUnidades] = useState([]);
   const [operadores, setOperadores] = useState([]);
   const [localidades, setLocalidades] = useState([]);
+  const [peajes, setPeajes] = useState([]);
   const [precios, setPrecios] = useState([]);
   const [tiposMovimiento, setTiposMovimiento] = useState([]);
 
@@ -26,6 +27,7 @@ export function DataProvider({ children }) {
         dbCajas,
         dbFacturas,
         dbLocalidades,
+        dbPeajes,
         dbPrecios
       ] = await Promise.all([
         db.getAll('clientes'),
@@ -35,6 +37,7 @@ export function DataProvider({ children }) {
         db.getAll('cajas'),
         db.getAll('facturas'),
         db.getAll('localidades'),
+        db.getAll('peajes'),
         db.getAll('precios')
       ]);
 
@@ -45,31 +48,35 @@ export function DataProvider({ children }) {
         placas: u.placas_mx || u.placas || '',
         marca: u.marca || '',
         modelo: u.modelo || '',
-        anio: u.anio || ''
+        anio: u.anio || '',
+        activo: (u.activo === true || u.activo == 1 || u.activo === '1')
       }));
 
       const mappedCajas = (dbCajas || []).map(c => ({
         ...c,
         numeroCaja: c.numero_caja || c.numeroCaja || '',
         tipo: c.tipo || '',
-        placas: c.placas_mx || c.placas || ''
+        placas: c.placas_mx || c.placas || '',
+        activo: (c.activo === true || c.activo == 1 || c.activo === '1')
       }));
 
       const mappedOperadores = (dbOperadores || []).map(o => ({
         ...o,
         nombreCompleto: o.nombre_completo || o.nombreCompleto || '',
         licencia: o.licencia_mx || o.licencia || '',
-        visa: o.licencia_usa || o.visa || '',
         vigenciaLicencia: o.licencia_mx_vencimiento || o.vigenciaLicencia || null,
-        vigenciaVisa: o.licencia_usa_vencimiento || o.vigenciaVisa || null
+        visa: o.licencia_usa || o.visa || '',
+        vigenciaVisa: o.licencia_usa_vencimiento || o.vigenciaVisa || null,
+        activo: (o.activo === true || o.activo == 1 || o.activo === '1')
       }));
 
-      setClientes(dbClientes);
+      setClientes((dbClientes || []).map(c => ({ ...c, activo: (c.activo === true || c.activo == 1 || c.activo === '1') })));
       setFacturas(dbFacturas);
       setCajas(mappedCajas);
       setUnidades(mappedUnidades);
       setOperadores(mappedOperadores);
-      setLocalidades(dbLocalidades);
+      setLocalidades((dbLocalidades || []).map(l => ({ ...l, activo: (l.activo === true || l.activo == 1 || l.activo === '1') })));
+      setPeajes(dbPeajes || []);
       setTiposMovimiento(dbTiposMov);
 
       // 2. Hidratar (Populate) Movimientos y Precios para no romper la UI actual
@@ -93,13 +100,24 @@ export function DataProvider({ children }) {
         const t = dbTiposMov.find(tm => tm.id === m.tipoMovId || tm.id == m.tipo_movimiento);
         const caja = dbCajas.find(cj => cj.id === m.cajaId || cj.id == m.caja_id);
         
+        let fecha = m.fecha;
+        let hora = m.hora;
+        if (m.fecha_salida && (!fecha || !hora)) {
+          const parts = m.fecha_salida.split(' ');
+          if (!fecha) fecha = parts[0] || '';
+          if (!hora) hora = parts[1] ? parts[1].substring(0, 5) : '';
+        }
+
         return {
           ...m,
+          fecha,
+          hora,
           cliente: c ? c.razonSocial || c.razon_social : m.cliente,
           operador: o ? o.nombreCompleto || o.nombre_completo : m.operador,
           tractor: u ? u.numeroEconomico || u.numero_economico : m.tractor,
           tipoMov: t ? t.nombre : (m.tipoMov || m.tipo_movimiento),
-          caja: caja ? caja.numeroCaja || caja.numero_caja : m.caja
+          caja: caja ? caja.numeroCaja || caja.numero_caja : m.caja,
+          valeFisico: m.folio_boleta || m.valeFisico || ''
         };
       });
       setMovimientos(dbMovimientosHydrated);
@@ -164,9 +182,9 @@ export function DataProvider({ children }) {
 
   return (
     <DataContext.Provider value={{
-      clientes, facturas, movimientos, cajas, unidades, operadores, localidades, precios, tiposMovimiento,
+      clientes, facturas, movimientos, cajas, unidades, operadores, localidades, peajes, precios, tiposMovimiento,
       addFacturaYCliente, updateFacturaEstatus, resetDemo, crud,
-      setMovimientos, setCajas, setUnidades, setOperadores, setClientes, setLocalidades, setPrecios, setTiposMovimiento, refreshData
+      setMovimientos, setCajas, setUnidades, setOperadores, setClientes, setLocalidades, setPeajes, setPrecios, setTiposMovimiento, refreshData
     }}>
       {children}
     </DataContext.Provider>

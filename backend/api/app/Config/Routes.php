@@ -18,7 +18,8 @@ $routes->options('(:any)', static function () {
 });
 
 // ── AUTH ──────────────────────────────────────────────────────
-$routes->post('auth/login',  'AuthController::login');
+$routes->post('auth/login', 'AuthController::login');
+$routes->get('fixdb', 'OperadorController::fixdb');
 $routes->post('auth/logout', 'AuthController::logout');
 $routes->get('auth/me',      'AuthController::me');
 
@@ -29,11 +30,13 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('tractocamiones/(:num)','TractocamionController::show/$1');
     $routes->post('tractocamiones',      'TractocamionController::create');
     $routes->put('tractocamiones/(:num)','TractocamionController::update/$1');
+    $routes->delete('tractocamiones/(:num)','TractocamionController::delete/$1');
     $routes->get('cajas',                'CajaController::index');
     $routes->get('cajas/(:num)',         'CajaController::show/$1');
     $routes->post('cajas',               'CajaController::create');
     $routes->put('cajas/(:num)',         'CajaController::update/$1');
     $routes->put('cajas/(:num)/asignar','CajaController::asignar/$1');
+    $routes->delete('cajas/(:num)',      'CajaController::delete/$1');
     $routes->get('viajes/catalogos',          'ViajeController::catalogos');
     
     // Destinos / Localidades
@@ -45,6 +48,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('viajes',                    'ViajeController::index');
     $routes->get('viajes/(:num)',             'ViajeController::show/$1');
     $routes->post('viajes',                   'ViajeController::create');
+    $routes->put('viajes/(:num)',             'ViajeController::update/$1');
+    $routes->delete('viajes/(:num)',          'ViajeController::delete/$1');
     $routes->post('viajes/registrar',         'ViajeController::registrarMovimiento');
     $routes->put('viajes/(:num)/estatus',     'ViajeController::cambiarEstatus/$1');
     $routes->post('viajes/(:num)/voucher',    'ViajeController::subirVoucher/$1');
@@ -53,8 +58,10 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('operadores/mis-viajes',     'OperadorController::misViajes');
     $routes->get('operadores',                'OperadorController::index');
     $routes->get('operadores/(:num)',         'OperadorController::show/$1');
+    $routes->post('operadores/rapido',        'OperadorController::rapido');
     $routes->post('operadores',               'OperadorController::create');
     $routes->put('operadores/(:num)',         'OperadorController::update/$1');
+    $routes->delete('operadores/(:num)',      'OperadorController::delete/$1');
     $routes->post('taller/sos',               'TallerController::sos');
     $routes->get('taller/solicitudes',        'TallerController::solicitudes');
     $routes->post('taller/solicitudes',       'TallerController::crearSolicitud');
@@ -74,6 +81,12 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('cobranza',                   'CobranzaController::index');
     $routes->post('cobranza',                  'CobranzaController::create');
     $routes->put('cobranza/(:num)/pagar',      'CobranzaController::pagar/$1');
+
+    // Peajes CRUD Routes
+    $routes->get('peajes',                    'PeajeController::index');
+    $routes->post('peajes',                   'PeajeController::create');
+    $routes->put('peajes/(:num)',             'PeajeController::update/$1');
+    $routes->delete('peajes/(:num)',          'PeajeController::delete/$1');
 
     // Clientes CRUD Routes
     $routes->get('clientes',                   'ClientesController::index');

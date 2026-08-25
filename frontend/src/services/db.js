@@ -43,8 +43,9 @@ export const db = {
       if (table === 'unidades') return data.tractos || data.tractocamiones || [];
       if (table === 'operadores') return data.operadores || [];
       if (table === 'localidades') return data.destinos || [];
+      if (table === 'peajes') return data.peajes || [];
       
-      return data.data || data;
+      return data[table] || data.data || data;
     } catch (error) {
       console.error(`Error loading ${table}:`, error);
       return [];

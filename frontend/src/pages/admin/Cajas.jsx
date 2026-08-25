@@ -39,13 +39,13 @@ const columns = [
     key: 'estatus', 
     label: 'Estatus', 
     formType: 'select',
-    options: ['disponible', 'en_ruta', 'mantenimiento'],
+    options: ['disponible', 'en_viaje', 'en_cliente', 'prestada', 'en_taller'],
     render: (v) => {
-      let color = 'badge-muted';
-      if (v === 'disponible') color = 'badge-success';
-      if (v === 'en_ruta') color = 'badge-warning';
-      if (v === 'mantenimiento') color = 'badge-danger';
-      return <span className={`badge ${color} uppercase text-[10px]`}>{v.replace('_', ' ')}</span>
+      let cls = 'badge-muted';
+      if (v === 'disponible') cls = 'badge-success';
+      if (v === 'en_viaje' || v === 'prestada') cls = 'badge-warning';
+      if (v === 'en_taller' || v === 'en_cliente') cls = 'badge-danger';
+      return <span className={`badge ${cls}`}>{v?.replace('_', ' ').toUpperCase()}</span>;
     }
   },
   { key: 'activo', label: 'Activo', formType: 'boolean', render: (v) => <span className={`badge ${v ? 'badge-success' : 'badge-muted'}`}>{v ? 'Sí' : 'No'}</span> },
@@ -54,6 +54,6 @@ const columns = [
 ];
 
 export default function Cajas() {
-  const { cajas: data, setCajas } = useData();
-  return <AdminCrud title="Cajas (Remolques)" subtitle="Catálogo de remolques y cajas" icon={Package} columns={columns} data={data} setData={setCajas} />;
+  const { cajas: data, setCajas, crud } = useData();
+  return <AdminCrud title="Cajas (Remolques)" subtitle="Catálogo de remolques y cajas" icon={Package} columns={columns} data={data} setData={setCajas} crud={crud} tableName="cajas" />;
 }
