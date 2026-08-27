@@ -158,4 +158,59 @@ class OperadorController extends BaseController
             return $this->json(['ok' => false, 'error' => 'No se puede eliminar porque esta asignado a otras tablas.'], 409);
         }
     }
-}
+
+    /**
+     * Creacion rapida de operador desde Super Captura.
+     * Solo requiere nombre_completo. Auto-genera numero_operador.
+     * POST /operadores/rapido
+     */
+    public function rapido(): ResponseInterface
+    {
+        $data = $this->request->getJSON(true);
+        $nombre = trim($data['nombre_completo'] ?? '');
+
+        if (empty($nombre)) {
+            return $this->json(['ok' => false, 'error' => 'El nombre del operador es requerido.'], 422);
+        }
+
+        $db = $this->db();
+
+        // Auto-generar numero_operador unico: OP-XXXX
+        $maxNum = $db->query("SELECT MAX(CAST(REPLACE(numero_operador, 'OP-', '') AS UNSIGNED)) AS max_n FROM operadores WHERE numero_operador LIKE 'OP-%'")->getRowArray();
+        $siguiente = ($maxNum['max_n'] ?? 0) + 1;
+        $numeroOperador = 'OP-' . str_pad($siguiente, 4, '0', STR_PAD_LEFT);
+
+        // Crear usuario del sistema (email/password minimos)
+        $email    = strtolower(str_replace(' ', '.', $numeroOperador)) . '@cif.mx';
+        $password = password_hash('cif2026', PASSWORD_BCRYPT);
+
+        $db->table('usuarios')->insert([
+            'nombre'   => $nombre,
+            'email'    => $email,
+            'password' => $password,
+            'rol'      => 'operador',
+            'activo'   => 1,
+        ]);
+        $usuarioId = $db->insertID();
+
+        // Insertar operador con datos minimos
+        $db->table('operadores')->insert([
+            'usuario_id'      => $usuarioId,
+            'numero_operador' => $numeroOperador,
+            'nombre_completo' => $nombre,
+            'licencia_mx'     => 'PENDIENTE',
+            'activo'          => 1,
+            'fecha_ingreso'   => date('Y-m-d'),
+        ]);
+        $opId = $db->insertID();
+
+        // Devolver el operador recien creado para auto-seleccion inmediata
+        $operador = $db->table('operadores')->where('id', $opId)->get()->getRowArray();
+
+        return $this->json([
+            'ok'       => true,
+            'id'       => $opId,
+            'operador' => $operador,
+        ], 201);
+    }
+}
