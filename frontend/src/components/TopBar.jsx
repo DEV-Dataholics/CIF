@@ -1,8 +1,10 @@
-import { SignOut, User, Bell } from '@phosphor-icons/react';
+import { SignOut, User, Bell, Sun, Moon } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 export default function TopBar() {
   const navigate = useNavigate();
+  const { isDark, toggleTheme } = useTheme();
   const now = new Date();
   const fecha = now.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -23,6 +25,15 @@ export default function TopBar() {
           >
             <Bell size={18} weight="light" />
             <span className="absolute -top-1 -right-1 w-4 h-4 bg-danger text-on-primary text-[8px] font-bold flex items-center justify-center rounded-full">3</span>
+          </button>
+
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            className="w-9 h-9 flex items-center justify-center border border-outline-variant/20 text-outline hover:text-primary hover:border-primary/40 transition-all"
+          >
+            {isDark ? <Sun size={18} weight="light" /> : <Moon size={18} weight="light" />}
           </button>
 
           {/* User */}

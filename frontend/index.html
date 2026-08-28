@@ -1,11 +1,28 @@
 <!DOCTYPE html>
-<html class="dark" lang="es">
+<html class="dark" lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CIF — Sistema de Gestión Logística V2</title>
   <meta name="description" content="Sistema de Gestión Logística CIF V2 — Cruces Internacionales Fronterizos — Ciudad Juárez / El Paso" />
   <link rel="icon" type="image/png" href="/assets/LOGOCIF.png" />
+  <!-- Anti-FOUC: apply theme before CSS/JS loads to prevent flash -->
+  <script>
+    (function() {
+      try {
+        var stored = localStorage.getItem('cif_theme');
+        var theme = (stored === 'light' || stored === 'dark')
+          ? stored
+          : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        document.documentElement.setAttribute('data-theme', theme);
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch(e) {}
+    })();
+  </script>
 </head>
 <body>
   <div id="root"></div>

@@ -1,33 +1,124 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Manrope:wght@400;500;600;700&family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Manrope:wght@400;500;600;700&family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── Base ──────────────────────────────────── */
-:root {
+/* ══════════════════════════════════════════════════
+   DESIGN TOKENS — DARK MODE (default)
+   All Tailwind color utilities reference these vars.
+   ══════════════════════════════════════════════════ */
+:root,
+[data-theme="dark"] {
   color-scheme: dark;
+
+  --color-primary:                    #D1A14E;
+  --color-on-primary:                 #131314;
+  --color-primary-container:          #3d2b00;
+  --color-on-primary-container:       #A67B30;
+  --color-surface:                    #131314;
+  --color-surface-dim:                #131314;
+  --color-surface-container-lowest:   #0e0e0f;
+  --color-surface-container-low:      #1b1b1c;
+  --color-surface-container:          #1f1f20;
+  --color-surface-container-high:     #2a2a2b;
+  --color-surface-container-highest:  #353436;
+  --color-on-surface:                 #e5e2e3;
+  --color-on-surface-variant:         #d2c4bc;
+  --color-outline:                    #9b8e87;
+  --color-outline-variant:            #4f453f;
+  --color-tertiary-container:         #3d2b1f;
+  --color-on-tertiary-container:      #ac9181;
+  --color-error:                      #ffb4ab;
+  --color-error-container:            #93000a;
+  --color-secondary:                  #c3cc8c;
+  --color-success:                    #c3cc8c;
+  --color-warning:                    #D1A14E;
+  --color-danger:                     #ffb4ab;
+  --color-info:                       #93c5fd;
 }
 
+/* ══════════════════════════════════════════════════
+   DESIGN TOKENS — LIGHT MODE
+   WCAG 2.1 AA compliant (min 4.5:1 text contrast)
+   ══════════════════════════════════════════════════ */
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Gold darkened from #D1A14E → #7A5318 for WCAG AA on light backgrounds (ratio ~5.5:1) */
+  --color-primary:                    #7A5318;
+  --color-on-primary:                 #FFFFFF;
+  --color-primary-container:          #F0DFBE;
+  --color-on-primary-container:       #4A3010;
+
+  /* Surfaces: warm off-whites to avoid pure white fatigue */
+  --color-surface:                    #F5F4F2;
+  --color-surface-dim:                #EAE8E5;
+  --color-surface-container-lowest:   #FFFFFF;
+  --color-surface-container-low:      #ECEAE7;
+  --color-surface-container:          #E4E2DE;
+  --color-surface-container-high:     #D8D6D2;
+  --color-surface-container-highest:  #CCCAC6;
+
+  /* Text: near-black on warm white for max contrast */
+  --color-on-surface:                 #1C1B1A;
+  --color-on-surface-variant:         #3D3A36;
+  --color-outline:                    #5C5047;   /* 4.6:1 vs surface */
+  --color-outline-variant:            #B8B2AA;
+
+  --color-tertiary-container:         #EDE3DC;
+  --color-on-tertiary-container:      #3D2A1E;
+
+  --color-error:                      #8C0009;   /* darkened for contrast on light */
+  --color-error-container:            #FFDAD6;
+  --color-secondary:                  #4A5200;   /* darkened lime-green */
+  --color-success:                    #4A5200;
+  --color-warning:                    #7A5318;
+  --color-danger:                     #8C0009;
+  --color-info:                       #1A50A0;
+}
+
+/* ── Base body styles (use CSS vars) ──────────── */
 body {
   min-height: 100dvh;
-  background: #131314;
-  color: #e5e2e3;
+  background: var(--color-surface);
+  color: var(--color-on-surface);
   font-family: 'Manrope', sans-serif;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
+/* Select options adapt to theme */
 select option {
-  background-color: #1b1b1c;
-  color: #e5e2e3;
+  background-color: var(--color-surface-container-low);
+  color: var(--color-on-surface);
 }
 
-/* ── Scrollbar ─────────────────────────────── */
+/* ── Scrollbar ─────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(209,161,78,0.25); border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(209,161,78,0.5); }
 
-/* ── Matte Grain Texture ───────────────────── */
+/* ── Drawer — use design tokens ────────────────── */
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+}
+.drawer-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 520px; max-width: 90vw;
+  background: var(--color-surface-container-low);
+  border-left: 1px solid var(--color-outline-variant);
+  z-index: 51;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.drawer-panel.open { transform: translateX(0); }
+
+/* ── Matte Grain Texture ───────────────────────── */
 .matte-grain { position: relative; }
 .matte-grain::before {
   content: "";
@@ -38,20 +129,19 @@ select option {
   background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJhIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIxIi8+PC9zdmc+');
 }
 
-/* ── Gold accent utilities ─────────────────── */
+/* ── Gold accent utilities ─────────────────────── */
 .gold-accent-line {
   width: 48px;
   height: 2px;
-  background: #D1A14E;
+  background: var(--color-primary);
 }
-
 .gold-line {
   height: 1px;
-  background: linear-gradient(90deg, transparent, #D1A14E, transparent);
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
   opacity: 0.3;
 }
 
-/* ── Badge variants ────────────────────────── */
+/* ── Badge variants ────────────────────────────── */
 .badge {
   padding: 0.2rem 0.55rem;
   font-size: 0.6rem;
@@ -64,36 +154,41 @@ select option {
   align-items: center;
   gap: 0.3rem;
 }
-.badge-danger  { background: rgba(255,180,171,0.1); color: #ffb4ab; border-color: rgba(255,180,171,0.2); }
-.badge-warning { background: rgba(209,161,78,0.1);  color: #D1A14E; border-color: rgba(209,161,78,0.2); }
-.badge-success { background: rgba(195,204,140,0.1); color: #c3cc8c; border-color: rgba(195,204,140,0.2); }
-.badge-info    { background: rgba(147,197,253,0.1); color: #93c5fd; border-color: rgba(147,197,253,0.2); }
-.badge-muted   { background: rgba(155,142,135,0.1); color: #9b8e87; border-color: rgba(155,142,135,0.2); }
-.badge-orange  { background: rgba(251,146,60,0.12); color: #fb923c; border-color: rgba(251,146,60,0.25); }
+.badge-danger  { background: rgba(140,0,9,0.1);    color: var(--color-danger);    border-color: rgba(140,0,9,0.2); }
+.badge-warning { background: rgba(209,161,78,0.1);  color: var(--color-warning);   border-color: rgba(209,161,78,0.2); }
+.badge-success { background: rgba(195,204,140,0.1); color: var(--color-success);   border-color: rgba(195,204,140,0.2); }
+.badge-info    { background: rgba(147,197,253,0.1); color: var(--color-info);      border-color: rgba(147,197,253,0.2); }
+.badge-muted   { background: rgba(155,142,135,0.1); color: var(--color-outline);   border-color: rgba(155,142,135,0.2); }
+.badge-orange  { background: rgba(251,146,60,0.12); color: #fb923c;               border-color: rgba(251,146,60,0.25); }
 
-/* ── CIF Table ─────────────────────────────── */
+/* ── CIF Table ─────────────────────────────────── */
 .cif-table { width: 100%; border-collapse: collapse; }
 .cif-table th {
   text-align: left;
   padding: 0.75rem 0.75rem;
-  border-bottom: 1px solid rgba(79,69,63,0.3);
+  border-bottom: 1px solid var(--color-outline-variant);
   font-family: 'Inter', sans-serif;
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #9b8e87;
+  color: var(--color-outline);
   white-space: nowrap;
 }
 .cif-table td {
   padding: 0.75rem 0.75rem;
-  border-bottom: 1px solid rgba(79,69,63,0.1);
+  border-bottom: 1px solid var(--color-outline-variant);
   font-family: 'Manrope', sans-serif;
   font-size: 0.8rem;
 }
 .cif-table tbody tr { transition: background 0.15s; }
-.cif-table tbody tr:hover { background: rgba(79,69,63,0.05); }
+.cif-table tbody tr:hover { background: rgba(122,83,24,0.06); }
 
-/* ── Animations ────────────────────────────── */
+/* ── Logo inversion in light mode ─────────────── */
+[data-theme="light"] .logo-invert {
+  filter: invert(1) brightness(0.3);
+}
+
+/* ── Animations ────────────────────────────────── */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -112,35 +207,16 @@ select option {
   display: inline-block;
   width: 16px; height: 16px;
   border: 2px solid rgba(209,161,78,0.3);
-  border-top-color: #D1A14E;
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
 
-/* ── Sidebar transition ────────────────────── */
-.sidebar-expanded { width: 260px; }
+/* ── Sidebar transitions ───────────────────────── */
+.sidebar-expanded  { width: 260px; }
 .sidebar-collapsed { width: 72px; }
 .sidebar-transition { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
-/* ── Drawer ────────────────────────────────── */
-.drawer-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(4px);
-  z-index: 50;
-}
-.drawer-panel {
-  position: fixed; top: 0; right: 0; bottom: 0;
-  width: 520px; max-width: 90vw;
-  background: #1b1b1c;
-  border-left: 1px solid rgba(79,69,63,0.3);
-  z-index: 51;
-  overflow-y: auto;
-  transform: translateX(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.drawer-panel.open { transform: translateX(0); }
-
-/* ── Horas Pico bars ───────────────────────── */
+/* ── Horas Pico bars ───────────────────────────── */
 .horas-bar { transition: height 0.4s ease, background 0.3s ease; }
 .horas-bar:hover { filter: brightness(1.3); }

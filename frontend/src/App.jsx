@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { DataProvider } from './context/DataContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 import AppLayout from './layouts/AppLayout';
 import Dashboard from './pages/Dashboard';
@@ -37,7 +38,8 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   return (
-    <DataProvider>
+    <ThemeProvider>
+      <DataProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -75,6 +77,7 @@ export default function App() {
           </Route>
         </Routes>
       </BrowserRouter>
-    </DataProvider>
+      </DataProvider>
+    </ThemeProvider>
   );
 }
