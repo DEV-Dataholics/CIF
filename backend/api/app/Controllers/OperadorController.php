@@ -52,8 +52,29 @@ class OperadorController extends BaseController
 
     public function create(): ResponseInterface
     {
-        $data = $this->request->getJSON(true);
+        $raw = $this->request->getJSON(true);
+        $data = $raw;
+
+        // Mapear payload del frontend (camelCase) a base de datos (snake_case)
+        if (isset($raw['nombreCompleto'])) $data['nombre_completo'] = $raw['nombreCompleto'];
+        if (isset($raw['licencia'])) $data['licencia_mx'] = $raw['licencia'];
+        if (isset($raw['visa'])) $data['licencia_usa'] = $raw['visa'];
+        if (isset($raw['vigenciaLicencia'])) $data['licencia_mx_vencimiento'] = $raw['vigenciaLicencia'];
+        if (isset($raw['vigenciaVisa'])) $data['licencia_usa_vencimiento'] = $raw['vigenciaVisa'];
+
         $db   = $this->db();
+
+        // Si no mandan numero_operador desde el UI, lo auto-generamos
+        if (empty($data['numero_operador'])) {
+            $maxNum = $db->query("SELECT MAX(CAST(REPLACE(numero_operador, 'OP-', '') AS UNSIGNED)) AS max_n FROM operadores WHERE numero_operador LIKE 'OP-%'")->getRowArray();
+            $siguiente = ($maxNum['max_n'] ?? 0) + 1;
+            $data['numero_operador'] = 'OP-' . str_pad($siguiente, 4, '0', STR_PAD_LEFT);
+        }
+
+        // Si no mandan licencia_mx, ponemos un temporal para no romper la BD si está en un entorno relajado
+        if (empty($data['licencia_mx'])) {
+            $data['licencia_mx'] = 'PENDIENTE';
+        }
 
         // Validar requeridos
         $required = ['nombre_completo', 'numero_operador', 'licencia_mx'];
