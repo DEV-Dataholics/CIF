@@ -1,4 +1,4 @@
-﻿/** @type {import("tailwindcss").Config} */
+/** @type {import("tailwindcss").Config} */
 module.exports = {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
   darkMode: "class",
@@ -27,9 +27,13 @@ module.exports = {
         "error-container":          "var(--color-error-container)",
         secondary:                  "var(--color-secondary)",
         success:                    "var(--color-success)",
+        "on-success":               "var(--color-on-success)",
         warning:                    "var(--color-warning)",
+        "on-warning":               "var(--color-on-warning)",
         danger:                     "var(--color-danger)",
+        "on-danger":                "var(--color-on-danger)",
         info:                       "var(--color-info)",
+        "on-info":                  "var(--color-on-info)",
       },
       fontFamily: {
         headline: ["Noto Serif", "serif"],

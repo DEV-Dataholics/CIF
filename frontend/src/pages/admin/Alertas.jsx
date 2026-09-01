@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { Warning, WarningCircle, CheckCircle, SteeringWheel, Truck, Info, Package } from '@phosphor-icons/react';
 import { useData } from '../../context/DataContext';
 
@@ -69,81 +69,81 @@ export default function Alertas() {
     <div className="space-y-6 animate-in">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <span className="font-label text-primary text-[11px] uppercase tracking-[0.3em] mb-2 block">Administración</span>
+          <span className="font-label text-primary text-[11px] uppercase tracking-[0.3em] mb-2 block">AdministraciÃ³n</span>
           <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-3">
-            <Warning size={32} weight="fill" className="text-red-500" />
+            <Warning size={32} weight="fill" className="text-danger" />
             Centro de Alertas
           </h1>
           <p className="font-label text-xs uppercase tracking-widest text-outline mt-2">
-            Semáforo preventivo de vencimientos en Operadores y Flota (30, 60 y 90 días)
+            SemÃ¡foro preventivo de vencimientos en Operadores y Flota (30, 60 y 90 dÃ­as)
           </p>
         </div>
       </div>
 
       {alertas.length === 0 ? (
         <div className="bg-surface-container border border-outline-variant/30 p-12 text-center rounded-sm">
-          <CheckCircle size={48} className="text-green-500 mx-auto mb-4" />
+          <CheckCircle size={48} className="text-success mx-auto mb-4" />
           <h2 className="text-xl font-display font-bold text-on-surface">Todo en orden</h2>
-          <p className="text-on-surface-variant font-body">No hay documentos que venzan en los próximos 90 días.</p>
+          <p className="text-on-surface-variant font-body">No hay documentos que venzan en los prÃ³ximos 90 dÃ­as.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Columna Roja (Vencidos o < 30 días) */}
+          {/* Columna Roja (Vencidos o < 30 dÃ­as) */}
           <div className="space-y-4">
-            <h2 className="font-label text-[10px] font-bold uppercase tracking-widest text-red-500 flex items-center gap-2 border-b border-red-500/20 pb-2">
-              <WarningCircle size={16} /> Crítico (Vencido o &le; 30 días) ({rojos.length})
+            <h2 className="font-label text-[10px] font-bold uppercase tracking-widest text-danger flex items-center gap-2 border-b border-danger/20 pb-2">
+              <WarningCircle size={16} /> CrÃ­tico (Vencido o &le; 30 dÃ­as) ({rojos.length})
             </h2>
             {rojos.map((a, i) => (
-              <div key={i} className="bg-red-500/10 border-l-4 border-l-red-500 border-y border-r border-outline-variant/20 p-4 flex items-start gap-4">
+              <div key={i} className="bg-danger/10 border-l-4 border-l-danger border-y border-r border-outline-variant/20 p-4 flex items-start gap-4">
                 <div className="mt-1">
-                  <IconoAlerta type={a.type} className="text-red-400" />
+                  <IconoAlerta type={a.type} className="text-danger" />
                 </div>
                 <div>
                   <h3 className="font-display font-bold text-on-surface text-sm">{a.item}</h3>
-                  <p className="text-xs font-bold text-red-400 my-1">{a.name}</p>
+                  <p className="text-xs font-bold text-danger my-1">{a.name}</p>
                   <span className="text-[10px] text-on-surface-variant font-normal">
-                    {a.days < 0 ? `Venció hace ${Math.abs(a.days)} días` : `Vence en ${a.days} días`} ({a.date})
+                    {a.days < 0 ? `VenciÃ³ hace ${Math.abs(a.days)} dÃ­as` : `Vence en ${a.days} dÃ­as`} ({a.date})
                   </span>
                 </div>
               </div>
             ))}
-            {rojos.length === 0 && <p className="text-xs text-outline italic">No hay alertas críticas.</p>}
+            {rojos.length === 0 && <p className="text-xs text-outline italic">No hay alertas crÃ­ticas.</p>}
           </div>
 
-          {/* Columna Amarilla (31 a 60 días) */}
+          {/* Columna Amarilla (31 a 60 dÃ­as) */}
           <div className="space-y-4">
-            <h2 className="font-label text-[10px] font-bold uppercase tracking-widest text-yellow-500 flex items-center gap-2 border-b border-yellow-500/20 pb-2">
-              <Warning size={16} /> Preventivo (&le; 60 días) ({amarillos.length})
+            <h2 className="font-label text-[10px] font-bold uppercase tracking-widest text-warning flex items-center gap-2 border-b border-warning/20 pb-2">
+              <Warning size={16} /> Preventivo (&le; 60 dÃ­as) ({amarillos.length})
             </h2>
             {amarillos.map((a, i) => (
-              <div key={i} className="bg-yellow-500/10 border-l-4 border-l-yellow-500 border-y border-r border-outline-variant/20 p-4 flex items-start gap-4">
+              <div key={i} className="bg-warning/10 border-l-4 border-l-warning border-y border-r border-outline-variant/20 p-4 flex items-start gap-4">
                 <div className="mt-1">
-                  <IconoAlerta type={a.type} className="text-yellow-500" />
+                  <IconoAlerta type={a.type} className="text-warning" />
                 </div>
                 <div>
                   <h3 className="font-display font-bold text-on-surface text-sm">{a.item}</h3>
-                  <p className="text-xs font-bold text-yellow-500 my-1">{a.name}</p>
-                  <span className="text-[10px] text-on-surface-variant font-normal">Vence en {a.days} días ({a.date})</span>
+                  <p className="text-xs font-bold text-warning my-1">{a.name}</p>
+                  <span className="text-[10px] text-on-surface-variant font-normal">Vence en {a.days} dÃ­as ({a.date})</span>
                 </div>
               </div>
             ))}
             {amarillos.length === 0 && <p className="text-xs text-outline italic">No hay alertas en esta etapa.</p>}
           </div>
 
-          {/* Columna Verde (61 a 90 días) */}
+          {/* Columna Verde (61 a 90 dÃ­as) */}
           <div className="space-y-4">
-            <h2 className="font-label text-[10px] font-bold uppercase tracking-widest text-green-500 flex items-center gap-2 border-b border-green-500/20 pb-2">
-              <Info size={16} /> Informativo (&le; 90 días) ({verdes.length})
+            <h2 className="font-label text-[10px] font-bold uppercase tracking-widest text-success flex items-center gap-2 border-b border-success/20 pb-2">
+              <Info size={16} /> Informativo (&le; 90 dÃ­as) ({verdes.length})
             </h2>
             {verdes.map((a, i) => (
-              <div key={i} className="bg-green-500/10 border-l-4 border-l-green-500 border-y border-r border-outline-variant/20 p-4 flex items-start gap-4">
+              <div key={i} className="bg-success/10 border-l-4 border-l-success border-y border-r border-outline-variant/20 p-4 flex items-start gap-4">
                 <div className="mt-1">
-                  <IconoAlerta type={a.type} className="text-green-500" />
+                  <IconoAlerta type={a.type} className="text-success" />
                 </div>
                 <div>
                   <h3 className="font-display font-bold text-on-surface text-sm">{a.item}</h3>
-                  <p className="text-xs font-bold text-green-500 my-1">{a.name}</p>
-                  <span className="text-[10px] text-on-surface-variant font-normal">Vence en {a.days} días ({a.date})</span>
+                  <p className="text-xs font-bold text-success my-1">{a.name}</p>
+                  <span className="text-[10px] text-on-surface-variant font-normal">Vence en {a.days} dÃ­as ({a.date})</span>
                 </div>
               </div>
             ))}

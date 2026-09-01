@@ -167,7 +167,7 @@ export default function Accesos() {
   };
 
   return (
-    <div ref={fullscreenRef} className={`flex flex-col h-full bg-[#131314] text-[#e5e2e3] animate-in ${isFullscreen ? 'p-6 overflow-y-auto' : 'space-y-6'}`}>
+    <div ref={fullscreenRef} className={`flex flex-col h-full bg-surface text-on-surface animate-in ${isFullscreen ? 'p-6 overflow-y-auto' : 'space-y-6'}`}>
       
       {/* Header Nativo */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -203,7 +203,7 @@ export default function Accesos() {
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 flex-1 min-h-0">
         
         {/* COLUMNA IZQUIERDA: FORMULARIO */}
-        <div className="xl:col-span-7 bg-surface-container-low border border-outline-variant/20 rounded-xl flex flex-col shadow-lg shadow-black/50">
+        <div className="xl:col-span-7 bg-surface-container-low border border-outline-variant/20 rounded-xl flex flex-col shadow-lg">
           <div className={`p-4 text-center font-headline font-bold text-lg uppercase tracking-widest transition-colors rounded-t-xl ${tipo === 'entrada' ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
             Registro Rápido de {tipo}
           </div>
@@ -218,8 +218,8 @@ export default function Accesos() {
                   onClick={() => setTipo(t)}
                   className={`flex-1 py-4 text-base font-bold uppercase tracking-[0.2em] rounded-lg transition-all
                     ${tipo === t 
-                      ? (t === 'entrada' ? 'bg-success text-black shadow-md' : 'bg-danger text-white shadow-md') 
-                      : 'text-outline hover:bg-white/5'}`}
+                      ? (t === 'entrada' ? 'bg-success text-on-success shadow-md' : 'bg-danger text-on-danger shadow-md') 
+                      : 'text-on-surface hover:bg-surface-container-low hover:text-on-surface'}`}
                 >
                   {t}
                 </button>
@@ -309,7 +309,7 @@ export default function Accesos() {
 
               <button 
                 type="submit"
-                className={`w-full text-black font-headline text-xl font-bold uppercase tracking-widest py-6 rounded-xl hover:brightness-110 transition-all flex items-center justify-center gap-3 shadow-lg ${tipo === 'entrada' ? 'bg-success' : 'bg-danger text-white'}`}
+                className={`w-full font-headline text-xl font-bold uppercase tracking-widest py-6 rounded-xl hover:brightness-110 transition-all flex items-center justify-center gap-3 shadow-lg ${tipo === 'entrada' ? 'bg-success text-on-success' : 'bg-danger text-on-danger'}`}
               >
                 <CheckCircle size={28} weight="bold" /> 
                 Confirmar {tipo}
@@ -320,48 +320,44 @@ export default function Accesos() {
 
         {/* COLUMNA DERECHA: BITACORA */}
         <div className="xl:col-span-5 flex flex-col gap-6">
-          
-          {/* Tarjetas KPI */}
+        {/* COLUMNA DERECHA: BITACORA EN VIVO */}
+        <div className="xl:col-span-5 flex flex-col gap-6 min-h-0">
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-surface-container-low border-2 border-success/30 rounded-xl p-5 flex items-center justify-between shadow-md relative overflow-hidden">
-              <div className="absolute -right-4 -bottom-4 opacity-10"><DoorOpen size={100} /></div>
-              <div className="flex flex-col relative z-10">
-                <span className="font-label text-[10px] uppercase tracking-widest text-success font-bold mb-1">Entradas Hoy</span>
-                <span className="text-4xl md:text-5xl font-headline font-bold text-success">{entradas}</span>
-              </div>
+            <div className="bg-surface-container-low border border-outline-variant/20 p-4 rounded-xl shadow-lg">
+              <span className="font-label text-[10px] uppercase tracking-widest text-outline font-bold">Entradas Hoy</span>
+              <div className="font-headline text-4xl font-bold text-success mt-1">{stats.entradas}</div>
             </div>
-            <div className="bg-surface-container-low border-2 border-danger/30 rounded-xl p-5 flex items-center justify-between shadow-md relative overflow-hidden">
-              <div className="absolute -right-4 -bottom-4 opacity-10"><DoorOpen size={100} /></div>
-              <div className="flex flex-col relative z-10">
-                <span className="font-label text-[10px] uppercase tracking-widest text-danger font-bold mb-1">Salidas Hoy</span>
-                <span className="text-4xl md:text-5xl font-headline font-bold text-danger">{salidas}</span>
-              </div>
+            <div className="bg-surface-container-low border border-outline-variant/20 p-4 rounded-xl shadow-lg">
+              <span className="font-label text-[10px] uppercase tracking-widest text-outline font-bold">Salidas Hoy</span>
+              <div className="font-headline text-4xl font-bold text-danger mt-1">{stats.salidas}</div>
             </div>
           </div>
 
-          {/* Timeline Bitacora */}
-          <div className="bg-surface-container-low border border-outline-variant/20 rounded-xl flex-1 flex flex-col overflow-hidden shadow-lg shadow-black/50">
-            <div className="px-6 py-5 border-b border-outline-variant/20 flex flex-wrap justify-between items-center gap-3 bg-surface-container-highest/50">
-              <h3 className="font-headline font-bold text-lg flex items-center gap-2">Bitácora en Vivo</h3>
-              <div className="flex items-center gap-3">
+          <div className="bg-surface-container-low border border-outline-variant/20 rounded-xl flex-1 flex flex-col overflow-hidden shadow-lg">
+            <div className="p-4 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container">
+              <h2 className="font-headline font-bold text-lg text-on-surface">Bitácora en Vivo</h2>
+              <div className="flex gap-2">
                 <input 
                   type="date" 
                   value={filtroFecha} 
                   onChange={e => setFiltroFecha(e.target.value)}
-                  className="bg-surface border-2 border-outline-variant/30 rounded-lg text-sm font-bold px-3 py-2 text-primary outline-none focus:border-primary" 
+                  className="bg-surface text-on-surface border border-outline-variant/30 rounded px-2 py-1 text-sm outline-none"
                 />
-                <button onClick={exportExcel} className="flex items-center justify-center p-2 rounded-lg bg-surface border-2 border-outline-variant/30 hover:border-primary text-outline hover:text-primary transition-all">
+                <button onClick={exportExcel} className="bg-surface border border-outline-variant/30 p-1.5 rounded hover:border-primary transition-colors text-primary" title="Exportar a Excel">
                   <MicrosoftExcelLogo size={20} />
                 </button>
               </div>
             </div>
-            
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#131314]">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-surface-container-lowest">
               {bitacora.length === 0 ? (
-                <div className="text-center py-16 text-outline font-label uppercase tracking-widest opacity-50">Sin registros</div>
-              ) : bitacora.map(b => (
-                <div key={b.id} className="bg-surface-container-low border-l-4 rounded-lg p-4 flex flex-col gap-3 shadow-sm hover:brightness-110 transition-all cursor-default"
-                     style={{ borderLeftColor: b.tipoMov === 'ENTRADA' ? '#c3cc8c' : '#ffb4ab' }}>
+                <div className="h-full flex items-center justify-center text-outline font-label uppercase tracking-widest text-xs">Sin registros</div>
+              ) : (
+                bitacora.map(b => (
+                  <div 
+                    key={b.id} 
+                    className="bg-surface-container-low border border-outline-variant/20 p-3 rounded-lg flex items-center justify-between border-l-4"
+                    style={{ borderLeftColor: b.tipoMov === 'ENTRADA' ? 'var(--color-success)' : 'var(--color-danger)' }}
+                  >
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                       <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest ${b.tipoMov === 'ENTRADA' ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
