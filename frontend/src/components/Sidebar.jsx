@@ -172,7 +172,6 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           <div className="px-4 py-4 border-t border-outline-variant/10">
             <div className="flex items-center gap-3">
               <span className="text-xs font-body font-bold text-on-surface">v2.0</span>
-              <span className="text-[9px] font-label uppercase tracking-widest text-outline">Demo</span>
             </div>
           </div>
         )}
