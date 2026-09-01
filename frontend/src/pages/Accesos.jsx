@@ -351,16 +351,15 @@ export default function Accesos() {
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-surface-container-lowest">
               {bitacora.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-outline font-label uppercase tracking-widest text-xs">Sin registros</div>
-              ) : (
-                bitacora.map(b => (
-                  <div 
-                    key={b.id} 
-                    className="bg-surface-container-low border border-outline-variant/20 p-3 rounded-lg flex items-center justify-between border-l-4"
-                    style={{ borderLeftColor: b.tipoMov === 'ENTRADA' ? 'var(--color-success)' : 'var(--color-danger)' }}
-                  >
+              ) : bitacora.map(b => (
+                <div 
+                  key={b.id} 
+                  className="bg-surface-container-low border border-outline-variant/20 p-4 rounded-lg flex flex-col gap-3 shadow-sm hover:brightness-110 transition-all cursor-default border-l-4"
+                  style={{ borderLeftColor: b.tipoMov === 'ENTRADA' ? 'var(--color-success)' : 'var(--color-danger)' }}
+                >
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
-                      <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest ${b.tipoMov === 'ENTRADA' ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
+                      <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest ${b.tipoMov === 'ENTRADA' ? 'bg-success text-on-success' : 'bg-danger text-on-danger'}`}>
                         {b.tipoMov}
                       </span>
                       <span className="font-mono text-sm text-outline">{b.hora}</span>
@@ -374,14 +373,13 @@ export default function Accesos() {
                       <span>Caja: <strong className="text-on-surface">{b.caja || 'N/A'}</strong></span>
                     </span>
                   </div>
-                  <div className="text-xs font-bold text-outline-variant bg-surface-container-highest/30 px-3 py-2 rounded-md truncate mt-1">
-                    📍 {b.destino}
+                  <div className="text-xs font-bold text-outline-variant bg-surface-container-highest/30 px-3 py-2 rounded-md truncate mt-1 flex items-center gap-2">
+                    {b.destino}
                   </div>
                 </div>
               ))}
             </div>
           </div>
-
         </div>
       </div>
     </div>
