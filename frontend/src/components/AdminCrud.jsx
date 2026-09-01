@@ -135,19 +135,19 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
             {filtered.length === 0 ? (
               <tr><td colSpan={columns.filter(c => !c.hideInTable).length + 1} className="text-center py-16 text-outline font-label uppercase tracking-widest opacity-50">Sin resultados</td></tr>
             ) : filtered.map(row => (
-              <tr key={row.id} className="hover:bg-white/[0.02]">
+              <tr key={row.id} className="hover:bg-on-surface/[0.04] transition-colors">
                 {columns.filter(c => !c.hideInTable).map(c => (
                   <td key={c.key} className="whitespace-nowrap">
                     {c.render ? c.render(row[c.key], row) : (row[c.key] ?? '—')}
                   </td>
                 ))}
                 <td>
-                  <div className="flex items-center gap-1.5">
-                    <button onClick={() => handleEdit(row)} className="w-7 h-7 flex items-center justify-center border border-outline-variant/20 text-outline hover:text-primary hover:border-primary/40 transition-all">
-                      <PencilSimple size={12} />
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => handleEdit(row)} className="w-8 h-8 flex items-center justify-center rounded-md text-outline hover:text-primary hover:bg-primary/10 transition-all" title="Editar">
+                      <PencilSimple size={14} />
                     </button>
-                    <button onClick={() => handleDelete(row.id)} className="w-7 h-7 flex items-center justify-center border border-outline-variant/20 text-outline hover:text-danger hover:border-danger/40 transition-all">
-                      <Trash size={12} />
+                    <button onClick={() => handleDelete(row.id)} className="w-8 h-8 flex items-center justify-center rounded-md text-outline hover:text-danger hover:bg-danger/10 transition-all" title="Eliminar">
+                      <Trash size={14} />
                     </button>
                   </div>
                 </td>
