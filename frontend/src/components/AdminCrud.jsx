@@ -20,6 +20,7 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
   }, [data, search, columns]);
 
   const handleDelete = async (id) => {
+    if (!window.confirm('¿Confirmas que deseas eliminar este registro?')) return;
     try {
       if (crud && tableName) {
         await crud.remove(tableName, id);
@@ -28,7 +29,25 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
         setData(prev => prev.filter(r => r.id !== id));
       }
     } catch (err) {
-      alert("Error al eliminar: " + err.message);
+      // 409 = foreign key conflict: record has associated data, offer to deactivate instead
+      if (err.status === 409) {
+        const deactivate = window.confirm(
+          'No se puede eliminar porque este registro tiene datos asociados (viajes, bitácora, etc.).\n\n' +
+          '¿Deseas marcarlo como INACTIVO en su lugar?'
+        );
+        if (deactivate && crud && tableName) {
+          try {
+            await crud.update(tableName, id, { activo: false });
+            if (setData) {
+              setData(prev => prev.map(r => r.id === id ? { ...r, activo: false } : r));
+            }
+          } catch (err2) {
+            alert('Error al desactivar: ' + err2.message);
+          }
+        }
+      } else {
+        alert('Error al eliminar: ' + err.message);
+      }
     }
   };
 

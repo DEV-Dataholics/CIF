@@ -107,13 +107,21 @@ export const db = {
 
   // Delete a record
   remove: async (table, id) => {
-
-
     const response = await fetch(`${getEndpoint(table)}/${id}`, {
       method: 'DELETE',
       credentials: 'include'
     });
-    if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+    if (!response.ok) {
+      // Try to read the server's error message; don't crash if body is not JSON
+      let serverMsg = `HTTP Error ${response.status}`;
+      try {
+        const errData = await response.json();
+        serverMsg = errData.error || errData.mensaje || serverMsg;
+      } catch (_) {}
+      const err = new Error(serverMsg);
+      err.status = response.status;
+      throw err;
+    }
     return true;
   },
 
