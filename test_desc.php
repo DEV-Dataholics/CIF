@@ -1,0 +1,1 @@
+<?php error_reporting(E_ALL); ini_set("display_errors", 1); $mysqli = new mysqli("localhost", "noodluis_DEV_CIF", "25SRT[qJDe?S", "noodluis_CIF"); if ($mysqli->connect_error) die("Conn err"); $res = $mysqli->query("DESCRIBE destinos"); while ($r = $res->fetch_assoc()) { print_r($r); } ?>

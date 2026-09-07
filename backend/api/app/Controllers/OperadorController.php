@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Controllers;
 
@@ -71,7 +71,7 @@ class OperadorController extends BaseController
             $data['numero_operador'] = 'OP-' . str_pad($siguiente, 4, '0', STR_PAD_LEFT);
         }
 
-        // Si no mandan licencia_mx, ponemos un temporal para no romper la BD si está en un entorno relajado
+        // Si no mandan licencia_mx, ponemos un temporal para no romper la BD si estÃ¡ en un entorno relajado
         if (empty($data['licencia_mx'])) {
             $data['licencia_mx'] = 'PENDIENTE';
         }
@@ -84,10 +84,10 @@ class OperadorController extends BaseController
             }
         }
 
-        // Número de operador único
+        // NÃºmero de operador Ãºnico
         $existe = $db->table('operadores')->where('numero_operador', $data['numero_operador'])->countAllResults();
         if ($existe > 0) {
-            return $this->json(['ok' => false, 'error' => 'El número de operador ya existe.'], 409);
+            return $this->json(['ok' => false, 'error' => 'El nÃºmero de operador ya existe.'], 409);
         }
 
         // Crear usuario del sistema para el operador
@@ -187,51 +187,51 @@ class OperadorController extends BaseController
      */
     public function rapido(): ResponseInterface
     {
-        $data = $this->request->getJSON(true);
-        $nombre = trim($data['nombre_completo'] ?? '');
+        try {
+            $data = $this->request->getJSON(true);
+            $nombre = trim($data['nombre_completo'] ?? '');
 
-        if (empty($nombre)) {
-            return $this->json(['ok' => false, 'error' => 'El nombre del operador es requerido.'], 422);
+            if (empty($nombre)) {
+                return $this->json(['ok' => false, 'error' => 'El nombre del operador es requerido.'], 422);
+            }
+
+            $db = $this->db();
+
+            // Auto-generar numero_operador unico: OP-XXXX
+            $maxNum = $db->query("SELECT MAX(CAST(REPLACE(numero_operador, 'OP-', '') AS UNSIGNED)) AS max_n FROM operadores WHERE numero_operador LIKE 'OP-%'")->getRowArray();
+            $siguiente = ($maxNum['max_n'] ?? 0) + 1;
+            $numeroOperador = 'OP-' . str_pad($siguiente, 4, '0', STR_PAD_LEFT);
+
+            // Crear usuario del sistema (email/password minimos)
+            $email    = strtolower(str_replace(' ', '.', $numeroOperador)) . '@cif.mx';
+            $password = password_hash('cif2026', PASSWORD_BCRYPT);
+
+            $db->table('usuarios')->insert([
+                'nombre'   => $nombre,
+                'email'    => $email,
+                'password' => $password,
+                'rol'      => 'operador',
+                'activo'   => 1,
+            ]);
+            $usuarioId = $db->insertID();
+
+            // Insertar operador con datos minimos
+            $db->table('operadores')->insert([
+                'usuario_id'      => $usuarioId,
+                'numero_operador' => $numeroOperador,
+                'nombre_completo' => $nombre,
+                'licencia_mx'     => 'PENDIENTE',
+                'activo'          => 1,
+                'fecha_ingreso'   => date('Y-m-d'),
+            ]);
+            $operadorId = $db->insertID();
+
+            // Retornar el operador creado
+            $nuevo = $db->table('operadores')->where('id', $operadorId)->get()->getRowArray();
+            
+            return $this->json(['ok' => true, 'operador' => $nuevo]);
+        } catch (\Exception $e) {
+            return $this->json(['ok' => false, 'error' => 'Error al crear operador: ' . $e->getMessage()], 400);
         }
-
-        $db = $this->db();
-
-        // Auto-generar numero_operador unico: OP-XXXX
-        $maxNum = $db->query("SELECT MAX(CAST(REPLACE(numero_operador, 'OP-', '') AS UNSIGNED)) AS max_n FROM operadores WHERE numero_operador LIKE 'OP-%'")->getRowArray();
-        $siguiente = ($maxNum['max_n'] ?? 0) + 1;
-        $numeroOperador = 'OP-' . str_pad($siguiente, 4, '0', STR_PAD_LEFT);
-
-        // Crear usuario del sistema (email/password minimos)
-        $email    = strtolower(str_replace(' ', '.', $numeroOperador)) . '@cif.mx';
-        $password = password_hash('cif2026', PASSWORD_BCRYPT);
-
-        $db->table('usuarios')->insert([
-            'nombre'   => $nombre,
-            'email'    => $email,
-            'password' => $password,
-            'rol'      => 'operador',
-            'activo'   => 1,
-        ]);
-        $usuarioId = $db->insertID();
-
-        // Insertar operador con datos minimos
-        $db->table('operadores')->insert([
-            'usuario_id'      => $usuarioId,
-            'numero_operador' => $numeroOperador,
-            'nombre_completo' => $nombre,
-            'licencia_mx'     => 'PENDIENTE',
-            'activo'          => 1,
-            'fecha_ingreso'   => date('Y-m-d'),
-        ]);
-        $opId = $db->insertID();
-
-        // Devolver el operador recien creado para auto-seleccion inmediata
-        $operador = $db->table('operadores')->where('id', $opId)->get()->getRowArray();
-
-        return $this->json([
-            'ok'       => true,
-            'id'       => $opId,
-            'operador' => $operador,
-        ], 201);
     }
-}
+}

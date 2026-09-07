@@ -1,4 +1,4 @@
-import fallbackTiposMovimiento from '../data/tiposMovimiento.json';
+﻿import fallbackTiposMovimiento from '../data/tiposMovimiento.json';
 import fallbackPrecios from '../data/precios.json';
 
 const API_URL = '/api';
@@ -12,7 +12,8 @@ const getEndpoint = (table) => {
     cajas: 'cajas',
     unidades: 'tractocamiones',
     operadores: 'operadores',
-    localidades: 'destinos_catalogos'
+    localidades: 'destinos_catalogos',
+    usuarios: 'usuarios'
   };
   return `${API_URL}/${mapping[table] || table}`;
 };
@@ -141,4 +142,5 @@ export const db = {
     console.log("DB reset requested.");
   }
 };
+
 

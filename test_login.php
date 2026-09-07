@@ -1,0 +1,1 @@
+<?php $mysqli = new mysqli("localhost", "noodluis_DEV_CIF", "25SRT[qJDe?S", "noodluis_CIF"); $pass = password_hash("Admin123!", PASSWORD_BCRYPT); $mysqli->query("UPDATE usuarios SET password = '$pass' WHERE email = 'admin@cif.mx'"); echo "Updated"; ?>

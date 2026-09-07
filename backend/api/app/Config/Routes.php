@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 
 use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 
-// ── CORS GLOBAL ───────────────────────────────────────────────
-// Esto asegura que cualquier petición OPTIONS sea respondida antes de llegar a los controladores
+// â”€â”€ CORS GLOBAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Esto asegura que cualquier peticiÃ³n OPTIONS sea respondida antes de llegar a los controladores
 $routes->options('(:any)', static function () {
     $response = service('response');
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
@@ -17,13 +17,13 @@ $routes->options('(:any)', static function () {
         ->setHeader('Access-Control-Allow-Credentials', 'true');
 });
 
-// ── AUTH ──────────────────────────────────────────────────────
+// â”€â”€ AUTH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 $routes->post('auth/login', 'AuthController::login');
 $routes->get('fixdb', 'OperadorController::fixdb');
 $routes->post('auth/logout', 'AuthController::logout');
 $routes->get('auth/me',      'AuthController::me');
 
-// ── RUTAS PROTEGIDAS ──────────────────────────────────────────
+// â”€â”€ RUTAS PROTEGIDAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('dashboard/resumen', 'DashboardController::resumen');
     $routes->get('tractocamiones',       'TractocamionController::index');
@@ -107,3 +107,4 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->put('precios/(:num)',     'PreciosController::update/$1');
     $routes->delete('precios/(:num)',  'PreciosController::delete/$1');
 });
+

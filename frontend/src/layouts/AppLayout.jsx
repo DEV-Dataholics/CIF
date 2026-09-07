@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
+import ErrorBoundary from '../components/ErrorBoundary';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 
@@ -23,9 +24,10 @@ export default function AppLayout() {
           <TopBar />
         </div>
         <main className="p-6 lg:p-8 print:p-0">
-          <Outlet />
+          <ErrorBoundary><Outlet /></ErrorBoundary>
         </main>
       </div>
     </div>
   );
 }
+

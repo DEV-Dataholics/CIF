@@ -45,7 +45,11 @@ class CajaController extends BaseController
 
     public function create(): ResponseInterface
     {
-        $data = $this->request->getJSON(true);
+        $raw = $this->request->getJSON(true);
+        $data = $raw;
+
+        if (isset($raw['numeroCaja'])) $data['numero_caja'] = $raw['numeroCaja'];
+        if (isset($raw['placas'])) $data['placas_mx'] = $raw['placas'];
 
         $required = ['numero_caja', 'tipo', 'placas_mx'];
         foreach ($required as $f) {
@@ -57,7 +61,7 @@ class CajaController extends BaseController
         // Verificar que el número de caja no exista
         $existe = $this->db()->table('cajas')->where('numero_caja', $data['numero_caja'])->countAllResults();
         if ($existe > 0) {
-            return $this->json(['ok' => false, 'error' => 'El número de caja ya existe.'], 409);
+            return $this->json(['ok' => false, 'error' => 'El número de caja ya existe. (Registro Duplicado)'], 409);
         }
 
         $insert = [

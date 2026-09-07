@@ -184,7 +184,7 @@ export default function ReportesPrefacturacion() {
     wsData.push([]);
 
     tiposOrdenados.forEach(tipo => {
-      wsData.push([`${tipo}`]);
+      wsData.push([`${(tipo || "").toUpperCase()}`]);
       wsData.push(excelHeaders);
 
       grupos[tipo].forEach(m => {
@@ -199,7 +199,7 @@ export default function ReportesPrefacturacion() {
       const subtotal = grupos[tipo].reduce((acc, m) => acc + (m.costo || 0), 0);
       const costoIdx = columnsToExport.findIndex(c => c.key === 'costo');
       const subtotalRow = new Array(columnsToExport.length).fill('');
-      subtotalRow[0] = `Subtotal ${tipo}`;
+      subtotalRow[0] = `Subtotal ${(tipo || "").toUpperCase()}`;
       if (costoIdx !== -1) {
         subtotalRow[costoIdx] = subtotal;
       }
@@ -212,7 +212,7 @@ export default function ReportesPrefacturacion() {
     wsData.push(['RESUMEN DE TOTALES']);
     wsData.push(['Tipo Movimiento', 'Cantidad Viajes', 'Precio Unitario (USD)', 'Precio Total (USD)', 'Precio Total (MXN)']);
     resumen.filas.forEach(r => {
-      wsData.push([r.tipoMovimiento, r.cantidad, r.precioUnitario, r.totalUSD, r.totalUSD * tipoCambio]);
+      wsData.push([r.tipoMovimiento.toUpperCase(), r.cantidad, r.precioUnitario, r.totalUSD, r.totalUSD * tipoCambio]);
     });
     wsData.push(['TOTALES GENERALES', resumen.granTotalViajes, '', resumen.granTotalUSD, resumen.granTotalMXN]);
 
@@ -414,7 +414,7 @@ export default function ReportesPrefacturacion() {
               const badgeClass = TIPO_COLORS[tipo] || 'bg-surface-variant/40 text-outline border-outline-variant/30';
 
               return (
-                <div key={tipo} className="bg-surface border border-outline-variant/30 shadow-sm overflow-hidden">
+                <div key={(tipo || "").toUpperCase()} className="bg-surface border border-outline-variant/30 shadow-sm overflow-hidden">
                   <button
                     type="button"
                     onClick={() => toggleGroup(tipo)}
@@ -427,7 +427,7 @@ export default function ReportesPrefacturacion() {
                           : <CaretDown size={16} className="text-primary" />
                         }
                       </div>
-                      <h3 className="font-display font-bold text-base text-on-surface">{tipo}</h3>
+                      <h3 className="font-display font-bold text-base text-on-surface">{(tipo || "").toUpperCase()}</h3>
                       <span className={`px-3 py-0.5 text-[9px] font-label font-bold uppercase tracking-widest border rounded-full ${badgeClass}`}>
                         {getTipoDescription(tipo)}
                       </span>
@@ -475,8 +475,8 @@ export default function ReportesPrefacturacion() {
                 </thead>
                 <tbody>
                   {resumen.filas.map(r => (
-                    <tr key={r.tipoMovimiento} className="border-b border-outline-variant/10 hover:bg-surface-variant/20">
-                      <td className="py-3 px-4 font-bold">{r.tipoMovimiento}</td>
+                    <tr key={r.tipoMovimiento.toUpperCase()} className="border-b border-outline-variant/10 hover:bg-surface-variant/20">
+                      <td className="py-3 px-4 font-bold uppercase">{r.tipoMovimiento.toUpperCase()}</td>
                       <td className="py-3 px-4 text-right font-mono">{r.cantidad}</td>
                       <td className="py-3 px-4 text-right font-mono">{formatUSD(r.precioUnitario)}</td>
                       <td className="py-3 px-4 text-right font-mono text-success font-bold">{formatUSD(r.totalUSD)}</td>
@@ -551,8 +551,8 @@ export default function ReportesPrefacturacion() {
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {resumen.filas.map(r => (
-                  <tr key={r.tipoMovimiento} className="hover:bg-slate-50">
-                    <td className="py-2.5 px-4 font-bold text-slate-900">{r.tipoMovimiento}</td>
+                  <tr key={r.tipoMovimiento.toUpperCase()} className="hover:bg-slate-50">
+                    <td className="py-2.5 px-4 font-bold text-slate-900 uppercase">{r.tipoMovimiento.toUpperCase()}</td>
                     <td className="py-2.5 px-4 text-center font-mono font-bold text-slate-800">{r.cantidad}</td>
                     <td className="py-2.5 px-4 text-right font-mono text-slate-700">{formatUSD(r.precioUnitario)}</td>
                     <td className="py-2.5 px-4 text-right font-mono font-bold text-slate-900">{formatUSD(r.totalUSD)}</td>
@@ -589,7 +589,7 @@ export default function ReportesPrefacturacion() {
           const subtotalGroup = resumen.filas.find(r => r.tipoMovimiento === tipo)?.totalUSD || 0;
 
           return (
-            <div key={tipo} className="print-slide p-2 pt-3">
+            <div key={(tipo || "").toUpperCase()} className="print-slide p-2 pt-3">
               {/* Cabecera Oficial por Defecto en Cada Página / Slide */}
               <div className="flex items-center justify-between border-b-2 border-slate-900 pb-2 mb-3">
                 <div className="flex items-center gap-3">
@@ -611,7 +611,7 @@ export default function ReportesPrefacturacion() {
               {/* Encabezado del Grupo de Movimiento */}
               <div className="flex items-center justify-between bg-slate-100 border-2 border-slate-900 px-3 py-2 rounded mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm text-slate-900">{tipo}</span>
+                  <span className="font-bold text-sm text-slate-900">{(tipo || "").toUpperCase()}</span>
                   <span className="text-xs text-slate-600">({getTipoDescription(tipo)})</span>
                 </div>
                 <div className="flex items-center gap-4 text-xs font-mono">
@@ -653,8 +653,8 @@ export default function ReportesPrefacturacion() {
 
               {/* Pie de Página del Slide */}
               <div className="pt-2 border-t-2 border-slate-900 flex items-center justify-between text-[8.5pt] font-mono text-slate-700 mt-auto">
-                <div><strong>CIF Logistics Management System</strong> · Slide {idxSlide + 2} ({tipo})</div>
-                <div className="font-bold">Subtotal {tipo}: {formatUSD(subtotalGroup)} USD</div>
+                <div><strong>CIF Logistics Management System</strong> · Slide {idxSlide + 2} ({(tipo || "").toUpperCase()})</div>
+                <div className="font-bold">Subtotal {(tipo || "").toUpperCase()}: {formatUSD(subtotalGroup)} USD</div>
               </div>
             </div>
           );

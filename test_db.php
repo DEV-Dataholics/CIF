@@ -1,0 +1,1 @@
+<?php error_reporting(E_ALL); $mysqli = new mysqli("localhost", "noodluis_DEV_CIF", "25SRT[qJDe?S", "noodluis_CIF"); $res = $mysqli->query("SHOW TABLES"); while($row = $res->fetch_array()) { echo $row[0] . "\n"; } ?>
