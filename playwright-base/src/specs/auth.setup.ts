@@ -26,6 +26,12 @@ setup('authenticate', async ({ page }) => {
     throw e;
   }
 
+  
   // Guardar el estado
   await page.context().storageState({ path: authFile });
+
+  // Guardar también el sessionStorage, ya que la app lo usa para el auth state
+  const sessionState = await page.evaluate(() => JSON.stringify(sessionStorage));
+  require('fs').writeFileSync(path.join(__dirname, '../../.auth/session.json'), sessionState);
+
 });

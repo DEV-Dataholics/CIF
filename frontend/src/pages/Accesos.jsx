@@ -80,6 +80,7 @@ export default function Accesos() {
 
   const entradas = bitacora.filter((b) => b.tipoMov === "ENTRADA").length;
   const salidas = bitacora.filter((b) => b.tipoMov === "SALIDA").length;
+  const stats = { entradas, salidas };
 
   const unidadesFiltradas = useMemo(() => unidadesData, [unidadesData, tipo]);
   const cajasFiltradas = useMemo(() => cajasData, [cajasData, tipo]);

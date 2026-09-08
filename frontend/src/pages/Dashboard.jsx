@@ -9,11 +9,16 @@ export default function Dashboard() {
   const { movimientos, clientes, precios, resetDemo } = useData();
   
   // -- ESTADO FILTROS --
-  const [fechaInicio, setFechaInicio] = useState('2026-06-01');
-  const [fechaFin, setFechaFin] = useState('2026-06-30');
+  const today = new Date();
+  const lastMonth = new Date(today);
+  lastMonth.setMonth(today.getMonth() - 1);
+  const formatDate = (d) => d.toISOString().split('T')[0];
+
+  const [fechaInicio, setFechaInicio] = useState(formatDate(lastMonth));
+  const [fechaFin, setFechaFin] = useState(formatDate(today));
   
   const clientesList = useMemo(() => [...new Set(clientes.filter(c => c.activo).map(c => c.razonSocial))], [clientes]);
-  const [clienteSel, setClienteSel] = useState('DANHIL');
+  const [clienteSel, setClienteSel] = useState('TODOS');
   
   const [tipoCambio, setTipoCambio] = useState(17.2023);
   const [isOperacionesOpen, setIsOperacionesOpen] = useState(false);

@@ -15,14 +15,23 @@ export default function ConcentradoPrecios() {
 
   const stats = useMemo(() => {
     return clientes.map(c => {
-      const rutasDelCliente = (precios || []).filter(p => p.cliente === c.razonSocial || p.cliente === c.razon_social);
+      const clienteNombre = c.razonSocial || c.razon_social;
+      const rutasDelCliente = (precios || []).filter(p => {
+        const tm = tiposMovimiento?.find(t => t.id === p.tipo_mov_id || t.nombre === p.tipoMovimiento);
+        // Cascading dependency: if the movement is assigned to a specific client, it ONLY belongs to them.
+        // If it's NA, we fall back to checking if the price explicitly was set for this client.
+        if (tm && tm.clienteAsociado && tm.clienteAsociado !== 'NA') {
+            return tm.clienteAsociado === clienteNombre;
+        }
+        return p.cliente === clienteNombre;
+      });
       return {
-        cliente: c.razonSocial || c.razon_social,
+        cliente: clienteNombre,
         cantidad: rutasDelCliente.length,
         rutas: rutasDelCliente
       };
     }).sort((a, b) => a.cliente.localeCompare(b.cliente));
-  }, [clientes, precios]);
+  }, [clientes, precios, tiposMovimiento]);
 
   const toggleExpand = (clienteName) => {
     if (expandedClient === clienteName) {
@@ -284,7 +293,7 @@ export default function ConcentradoPrecios() {
               <div>
                 <label className="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-1">Tipo de Movimiento</label>
                 <SearchableSelect 
-                  options={tiposMovimiento?.map(tm => tm.nombre).filter(Boolean) || []}
+                  options={tiposMovimiento?.filter(tm => !manualForm.cliente || tm.clienteAsociado === manualForm.cliente || tm.clienteAsociado === 'NA' || !tm.clienteAsociado).map(tm => tm.nombre).filter(Boolean) || []}
                   value={manualForm.tipoMovimiento}
                   onChange={val => setManualForm({...manualForm, tipoMovimiento: val})}
                   placeholder="Seleccionar tipo..."

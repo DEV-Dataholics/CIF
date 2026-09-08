@@ -8,6 +8,14 @@ export default function TopBar() {
   const now = new Date();
   const fecha = now.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch(e) {}
+    sessionStorage.removeItem('cif_user');
+    window.location.href = '/login';
+  };
+
   return (
     <header className="sticky top-0 z-30 bg-surface-container-lowest/95 backdrop-blur-sm border-b border-outline-variant/10">
       <div className="flex items-center justify-between px-6 py-4">
@@ -48,7 +56,7 @@ export default function TopBar() {
           </div>
 
           {/* Logout */}
-          <button className="hidden sm:flex items-center gap-2 text-[10px] font-label uppercase tracking-widest text-outline hover:text-primary transition-colors border border-outline-variant/20 px-3 py-2 font-bold">
+          <button onClick={handleLogout} className="hidden sm:flex items-center gap-2 text-[10px] font-label uppercase tracking-widest text-outline hover:text-primary transition-colors border border-outline-variant/20 px-3 py-2 font-bold">
             <SignOut size={16} weight="light" />
             Salir
           </button>

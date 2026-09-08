@@ -580,14 +580,17 @@ export default function SuperCapturaWizard({ open, onClose }) {
                           />
                         </div>
                         <button 
-                          onClick={() => {
-                            const nueva = window.prompt("Número de caja nueva (Alta Rápida):");
-                            if(nueva && nueva.trim() !== '') {
-                              // Esto generará algo de deuda técnica sin placa/año, pero agiliza la captura
-                              crud.insert('cajas', { numero_caja: nueva.trim(), estatus: 'disponible', tipo_caja: 'Seca' });
-                              setCaja(nueva.trim());
-                            }
-                          }}
+                          onClick={async () => {
+                              const nueva = window.prompt("Numero de caja nueva (Alta Rapida):");
+                              if(nueva && nueva.trim() !== '') {
+                                try {
+                                  await crud.insert('cajas', { numero_caja: nueva.trim(), estatus: 'disponible', tipo: 'Seca', tipo_caja: 'Seca', placas_mx: 'PENDIENTE' });
+                                  setCaja(nueva.trim());
+                                } catch (e) {
+                                  alert("Error al guardar caja: " + e.message);
+                                }
+                              }
+                            }}
                           className="bg-surface-variant text-outline hover:text-primary transition-colors p-3 border border-outline-variant/30 rounded" title="Nueva Caja">
                           <Plus size={16} />
                         </button>

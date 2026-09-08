@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+﻿import { Page, Locator } from '@playwright/test';
 import { BasePage } from '../base/BasePage';
 
 export class CatalogosPage extends BasePage {
@@ -25,12 +25,12 @@ export class CatalogosPage extends BasePage {
   async iniciarCreacion() {
     await this.clickElement(this.btnAgregar);
     // Esperar a que el modal/drawer se abra
-    await this.page.waitForSelector('.modal, .drawer, form', { state: 'visible' });
+    await this.page.waitForSelector('.fixed.inset-0', { state: 'visible' });
   }
 
   async guardarYValidar() {
-    await this.clickElement('button[type="submit"]');
-    // Esperar a que el modal se cierre (indicador de éxito) o un toast de éxito
+    await this.clickElement(this.page.locator('button', { hasText: /Guardar Cambios|Crear Registro/i }));
+    // Esperar a que el modal se cierre (indicador de Ã©xito) o un toast de Ã©xito
     await this.page.waitForTimeout(1000); 
   }
 
@@ -40,11 +40,12 @@ export class CatalogosPage extends BasePage {
     const btnEliminar = this.tableRows.first().locator('button[title="Eliminar"], button:has(.ph-trash)');
     if (await btnEliminar.isVisible()) {
       await btnEliminar.click();
-      // Confirmar eliminación si hay modal
-      const btnConfirmar = this.page.locator('button', { hasText: /Sí|Confirmar|Eliminar/i }).last();
+      // Confirmar eliminaciÃ³n si hay modal
+      const btnConfirmar = this.page.locator('button', { hasText: /SÃ­|Confirmar|Eliminar/i }).last();
       if (await btnConfirmar.isVisible()) {
         await btnConfirmar.click();
       }
     }
   }
 }
+

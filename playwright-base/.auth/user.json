@@ -2,10 +2,10 @@
   "cookies": [
     {
       "name": "cif_session",
-      "value": "59436fd84e9cd6750e4de6e0cd983aae",
+      "value": "13fcf71810c161fb9caccef68e226cfa",
       "domain": "cif.dataholics.com.mx",
       "path": "/",
-      "expires": 1787644219.77155,
+      "expires": 1788830868.742289,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"
@@ -15,6 +15,10 @@
     {
       "origin": "https://cif.dataholics.com.mx",
       "localStorage": [
+        {
+          "name": "cif_theme",
+          "value": "light"
+        },
         {
           "name": "cif_sidebar_collapsed",
           "value": "false"

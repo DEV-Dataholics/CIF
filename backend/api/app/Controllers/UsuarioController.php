@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 namespace App\Controllers;
 use CodeIgniter\HTTP\ResponseInterface;
 
@@ -6,57 +6,57 @@ class UsuarioController extends BaseController
 {
     private function db() { return \Config\Database::connect(); }
     
-    private function json(array , int  = 200): ResponseInterface
+    private function json(array $data, int $status = 200): ResponseInterface
     {
-         = ->request->getHeaderLine('Origin') ?: '*';
-        return ->response->setHeader('Access-Control-Allow-Origin', )
+        $origin = $this->request->getHeaderLine('Origin') ?: '*';
+        return $this->response->setHeader('Access-Control-Allow-Origin', $origin)
                               ->setHeader('Access-Control-Allow-Credentials', 'true')
-                              ->setStatusCode()->setJSON();
+                              ->setStatusCode($status)->setJSON($data);
     }
 
     public function index(): ResponseInterface
     {
-         = ->db()->table('usuarios')->get()->getResultArray();
+        $users = $this->db()->table('usuarios')->get()->getResultArray();
         // Remove passwords before sending to frontend
-        foreach ( as &) { unset(['password']); }
-        return ->json(['ok' => true, 'data' => ]);
+        foreach ($users as &$u) { unset($u['password']); }
+        return $this->json(['ok' => true, 'data' => $users]);
     }
 
     public function create(): ResponseInterface
     {
-         = ->request->getJSON(true);
-        if (empty(['email']) || empty(['password'])) {
-            return ->json(['ok' => false, 'error' => 'Email y contraseña son requeridos'], 422);
+        $data = $this->request->getJSON(true);
+        if (empty($data['email']) || empty($data['password'])) {
+            return $this->json(['ok' => false, 'error' => 'Email y contraseña son requeridos'], 422);
         }
-        ['password'] = password_hash(['password'], PASSWORD_BCRYPT);
-        ['activo'] = isset(['activo']) ? (['activo'] ? 1 : 0) : 1;
-         = ->db()->table('usuarios')->insert(, true);
-        return ->json(['ok' => true, 'id' => ]);
+        $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
+        $data['activo'] = isset($data['activo']) ? ($data['activo'] ? 1 : 0) : 1;
+        $id = $this->db()->table('usuarios')->insert($data, true);
+        return $this->json(['ok' => true, 'id' => $id]);
     }
 
-    public function update(int ): ResponseInterface
+    public function update(int $id): ResponseInterface
     {
-         = ->request->getJSON(true);
-         = [];
-        if (isset(['nombre'])) ['nombre'] = ['nombre'];
-        if (isset(['email'])) ['email'] = ['email'];
-        if (isset(['rol'])) ['rol'] = ['rol'];
-        if (isset(['permiso'])) ['permiso'] = ['permiso'];
-        if (isset(['activo'])) ['activo'] = ['activo'] ? 1 : 0;
+        $raw = $this->request->getJSON(true);
+        $data = [];
+        if (isset($raw['nombre'])) $data['nombre'] = $raw['nombre'];
+        if (isset($raw['email'])) $data['email'] = $raw['email'];
+        if (isset($raw['rol'])) $data['rol'] = $raw['rol'];
+        if (isset($raw['permiso'])) $data['permiso'] = $raw['permiso'];
+        if (isset($raw['activo'])) $data['activo'] = $raw['activo'] ? 1 : 0;
         
-        if (!empty(['password'])) {
-            ['password'] = password_hash(['password'], PASSWORD_BCRYPT);
+        if (!empty($raw['password'])) {
+            $data['password'] = password_hash($raw['password'], PASSWORD_BCRYPT);
         }
         
-        if (!empty()) {
-            ->db()->table('usuarios')->where('id', )->update();
+        if (!empty($data)) {
+            $this->db()->table('usuarios')->where('id', $id)->update($data);
         }
-        return ->json(['ok' => true]);
+        return $this->json(['ok' => true]);
     }
 
-    public function delete(int ): ResponseInterface
+    public function delete(int $id): ResponseInterface
     {
-        ->db()->table('usuarios')->where('id', )->delete();
-        return ->json(['ok' => true]);
+        $this->db()->table('usuarios')->where('id', $id)->delete();
+        return $this->json(['ok' => true]);
     }
 }

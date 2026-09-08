@@ -42,7 +42,7 @@ const TIPO_COLORS = {
 };
 
 export default function ReportesPrefacturacion() {
-  const { movimientos, clientes, precios } = useData();
+  const { movimientos, clientes, precios, tiposMovimiento } = useData();
   
   // ── Filters ────────────────────────────────────────────────
   const [fi, setFi] = useState('2026-06-01');
@@ -105,15 +105,10 @@ export default function ReportesPrefacturacion() {
   }, [movimientos, filtrosAplicados.fi, filtrosAplicados.ff, filtrosAplicados.cli]);
 
   const tiposMovList = useMemo(() => {
-    const { fi: aFi, ff: aFf, cli: aCli } = filtrosAplicados;
-    const baseFiltered = movimientos.filter(r => {
-      if (aFi && r.fecha < aFi) return false;
-      if (aFf && r.fecha > aFf) return false;
-      if (aCli && r.cliente !== aCli) return false;
-      return true;
-    });
-    return [...new Set(baseFiltered.map(m => m.tipoMov).filter(Boolean))].sort();
-  }, [movimientos, filtrosAplicados.fi, filtrosAplicados.ff, filtrosAplicados.cli]);
+    const { cli: aCli } = filtrosAplicados;
+    if (!aCli) return [...new Set(tiposMovimiento?.map(t => t.nombre).filter(Boolean) || [])].sort();
+    return [...new Set(tiposMovimiento?.filter(t => t.clienteAsociado === aCli || t.clienteAsociado === 'NA').map(t => t.nombre).filter(Boolean) || [])].sort();
+  }, [tiposMovimiento, filtrosAplicados.cli]);
 
   // ── Price-enriched movements ──────────────────────────────
   const movimientosConPrecio = useMemo(() => {

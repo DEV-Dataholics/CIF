@@ -5,6 +5,14 @@ test.describe('Taller, Mantenimiento y Finanzas', () => {
   let taller: TallerPage;
 
   test.beforeEach(async ({ page }) => {
+    // --- INJECTED LOGIN ---
+    await page.goto('/login');
+    await page.fill('input[type="email"]', process.env.ADMIN_EMAIL || 'admin@cif.mx');
+    await page.fill('input[type="password"]', process.env.ADMIN_PASS || 'Admin123!');
+    await page.click('button[type="submit"]');
+    await page.waitForSelector('nav', { state: 'attached' });
+    // ----------------------
+
     taller = new TallerPage(page);
   });
 

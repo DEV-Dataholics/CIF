@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Controllers;
 
@@ -123,13 +123,16 @@ class OperadorController extends BaseController
 
         $id = $db->table('operadores')->insert($insert, true);
 
-        return $this->json([
+        $nuevo = $db->table('operadores')->where('id', $id)->get()->getRowArray();
+        $nuevo['nombreCompleto'] = $nuevo['nombre_completo'];
+        $nuevo['licencia'] = $nuevo['licencia_mx'];
+        
+        return $this->json(array_merge($nuevo, [
             'ok'        => true,
-            'id'        => $id,
             'usuario_id'=> $usuarioId,
             'email'     => $email,
             'password_inicial' => 'cif2026',
-        ], 201);
+        ]), 201);
     }
 
     public function update(int $id): \CodeIgniter\HTTP\ResponseInterface

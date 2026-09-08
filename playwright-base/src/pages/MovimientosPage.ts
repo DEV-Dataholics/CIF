@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from '@playwright/test';
+﻿import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from '../base/BasePage';
 
 export class MovimientosPage extends BasePage {
@@ -15,12 +15,12 @@ export class MovimientosPage extends BasePage {
 
   async abrirSuperCaptura() {
     await this.clickElement(this.btnSuperCaptura);
-    await expect(this.page.locator('h3', { hasText: /Captura/i })).toBeVisible({ timeout: 5000 });
+    await expect(this.page.locator('h2', { hasText: /Captura/i })).toBeVisible({ timeout: 5000 });
   }
 
   async llenarCartaPorte(origen: string, destino: string, peso: string) {
-    // Estos selectores dependerán de cómo implementaste los SearchableSelect
-    // Ejemplo básico:
+    // Estos selectores dependerÃ¡n de cÃ³mo implementaste los SearchableSelect
+    // Ejemplo bÃ¡sico:
     await this.page.locator('input[placeholder="Buscar origen..."]').fill(origen);
     await this.page.keyboard.press('Tab'); // Autocompletar
     
@@ -31,7 +31,7 @@ export class MovimientosPage extends BasePage {
   }
 
   async asignarUnidadYOperador() {
-    // Lógica para asignar un viaje (ejemplo)
+    // LÃ³gica para asignar un viaje (ejemplo)
     await this.page.locator('select[name="operador_id"]').selectOption({ index: 1 });
     await this.page.locator('select[name="tractocamion_id"]').selectOption({ index: 1 });
   }
@@ -43,3 +43,4 @@ export class MovimientosPage extends BasePage {
     }
   }
 }
+
