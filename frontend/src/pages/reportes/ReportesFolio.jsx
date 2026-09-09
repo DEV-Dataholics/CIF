@@ -27,8 +27,8 @@ export default function ReportesFolios() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-surface border border-outline-variant/30 p-6 rounded-sm">
+    <div className="space-y-6 animate-in">
+      <div className="bg-surface-container/60 border border-outline-variant p-6 rounded-2xl shadow-sm">
         <h1 className="text-xl font-display font-bold text-on-surface mb-2 flex items-center gap-2">
           <MagnifyingGlass size={24} className="text-primary" />
           Reporte de Folios (Auditoría)
@@ -38,7 +38,7 @@ export default function ReportesFolios() {
         </p>
       </div>
 
-      <div className="bg-surface border border-outline-variant/30 p-6 rounded-sm">
+      <div className="bg-surface-container/60 border border-outline-variant p-6 rounded-2xl shadow-sm">
         <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4 items-end">
           <div className="flex-1 w-full">
             <label className="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Ingresar Folio (Ej. V-10234 o ID 1)</label>
@@ -48,7 +48,7 @@ export default function ReportesFolios() {
               onChange={e => setSearchFolio(e.target.value)}
               placeholder="V-10234..."
               list="folios-list"
-              className="w-full bg-background border border-outline-variant/40 text-on-surface p-3 text-sm font-body outline-none focus:border-primary"
+              className="w-full bg-surface-container border border-outline-variant text-on-surface p-3 text-sm font-body rounded-xl outline-none focus:border-primary shadow-sm"
             />
             <datalist id="folios-list">
               {movData.map(m => (
@@ -56,14 +56,14 @@ export default function ReportesFolios() {
               ))}
             </datalist>
           </div>
-          <button type="submit" className="bg-primary text-on-primary font-label font-bold text-xs tracking-wider uppercase px-6 py-4 rounded-sm hover:bg-primary/90 transition-colors">
+          <button type="submit" className="bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label font-bold text-xs tracking-wider uppercase px-6 py-3.5 rounded-xl hover:brightness-105 shadow-md shadow-[#d1a14e]/20 transition-all active:scale-[0.99]">
             Buscar
           </button>
         </form>
       </div>
 
       {searchedFolio && !viaje && (
-        <div className="bg-red-500/10 border border-red-500/30 p-6 text-center text-red-500">
+        <div className="bg-red-500/10 border border-red-500/30 p-6 text-center text-red-500 rounded-2xl">
           No se encontró ningún viaje con el folio: {searchedFolio}
         </div>
       )}
@@ -72,53 +72,53 @@ export default function ReportesFolios() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Detalles Generales e Ingresos/Egresos */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-surface border border-outline-variant/30 p-6 rounded-sm shadow-sm">
-              <h2 className="font-display font-bold text-lg text-on-surface border-b border-outline-variant/30 pb-3 mb-4 flex items-center gap-2">
+            <div className="bg-surface-container/60 border border-outline-variant p-6 rounded-2xl shadow-sm">
+              <h2 className="font-display font-bold text-lg text-on-surface border-b border-outline-variant pb-3 mb-4 flex items-center gap-2">
                 <Info size={20} className="text-primary"/> Información General
               </h2>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between border-b border-outline-variant/10 pb-1">
+                <div className="flex justify-between border-b border-outline-variant/30 pb-2">
                   <span className="text-on-surface-variant font-bold">Cliente</span>
-                  <span className="text-on-surface text-right">{viaje.cliente}</span>
+                  <span className="text-on-surface text-right font-medium">{viaje.cliente}</span>
                 </div>
-                <div className="flex justify-between border-b border-outline-variant/10 pb-1">
+                <div className="flex justify-between border-b border-outline-variant/30 pb-2">
                   <span className="text-on-surface-variant font-bold">Operador</span>
-                  <span className="text-on-surface text-right">{viaje.operador}</span>
+                  <span className="text-on-surface text-right font-medium">{viaje.operador}</span>
                 </div>
-                <div className="flex justify-between border-b border-outline-variant/10 pb-1">
+                <div className="flex justify-between border-b border-outline-variant/30 pb-2">
                   <span className="text-on-surface-variant font-bold">Tractor</span>
-                  <span className="text-on-surface text-right">{viaje.tractor}</span>
+                  <span className="text-primary font-mono text-right font-bold">{viaje.tractor}</span>
                 </div>
-                <div className="flex justify-between border-b border-outline-variant/10 pb-1">
+                <div className="flex justify-between border-b border-outline-variant/30 pb-2">
                   <span className="text-on-surface-variant font-bold">Caja</span>
-                  <span className="text-on-surface text-right">{viaje.caja}</span>
+                  <span className="text-on-surface font-mono text-right">{viaje.caja}</span>
                 </div>
-                <div className="flex justify-between border-b border-outline-variant/10 pb-1">
+                <div className="flex justify-between border-b border-outline-variant/30 pb-2">
                   <span className="text-on-surface-variant font-bold">Tipo Mov.</span>
-                  <span className="text-on-surface text-right">{viaje.tipoMov}</span>
+                  <span className="text-on-surface text-right font-bold">{viaje.tipoMov}</span>
                 </div>
-                <div className="flex justify-between border-b border-outline-variant/10 pb-1">
+                <div className="flex justify-between border-b border-outline-variant/30 pb-2">
                   <span className="text-on-surface-variant font-bold">Fac/Pedimento</span>
-                  <span className="text-on-surface text-right">{viaje.facPedimento}</span>
+                  <span className="text-on-surface text-right font-mono">{viaje.facPedimento}</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-surface border border-outline-variant/30 p-6 rounded-sm shadow-sm">
-              <h2 className="font-display font-bold text-lg text-on-surface border-b border-outline-variant/30 pb-3 mb-4 flex items-center gap-2">
+            <div className="bg-surface-container/60 border border-outline-variant p-6 rounded-2xl shadow-sm">
+              <h2 className="font-display font-bold text-lg text-on-surface border-b border-outline-variant pb-3 mb-4 flex items-center gap-2">
                 <Receipt size={20} className="text-green-500"/> Finanzas del Viaje
               </h2>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-on-surface-variant font-bold text-sm">Costo Peaje:</span>
-                  <span className="text-red-400 font-bold">{viaje.peaje}</span>
+                  <span className="text-red-400 font-bold font-mono">{viaje.peaje}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-on-surface-variant font-bold text-sm">Facturado:</span>
                   {facturaRelacionada ? (
                     <div className="text-right">
-                      <span className="text-green-400 font-bold block">{formatCurrency(facturaRelacionada.monto)}</span>
-                      <span className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded mt-1 inline-block ${
+                      <span className="text-green-400 font-bold block font-mono">{formatCurrency(facturaRelacionada.monto)}</span>
+                      <span className={`text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full mt-1 inline-block font-bold ${
                         facturaRelacionada.estatus === 'pagada' ? 'bg-green-500/20 text-green-500' :
                         facturaRelacionada.estatus === 'vencida' ? 'bg-red-500/20 text-red-500' :
                         'bg-orange-500/20 text-orange-500'
@@ -135,8 +135,8 @@ export default function ReportesFolios() {
           </div>
 
           {/* Timeline */}
-          <div className="lg:col-span-2 bg-surface border border-outline-variant/30 p-6 rounded-sm shadow-sm">
-            <h2 className="font-display font-bold text-lg text-on-surface border-b border-outline-variant/30 pb-3 mb-6 flex items-center gap-2">
+          <div className="lg:col-span-2 bg-surface-container/60 border border-outline-variant p-6 rounded-2xl shadow-sm">
+            <h2 className="font-display font-bold text-lg text-on-surface border-b border-outline-variant pb-3 mb-6 flex items-center gap-2">
               <Clock size={20} className="text-primary"/> Línea de Tiempo
             </h2>
             

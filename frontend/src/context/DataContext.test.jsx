@@ -1,24 +1,19 @@
 import React from 'react';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DataProvider, useData } from './DataContext';
 import { db } from '../services/db';
-import { initializeDb } from '../services/dbInit';
 
 // Mock de las dependencias
 vi.mock('../services/db', () => ({
   db: {
     getAll: vi.fn(),
-    insert: vi.fn(),
-    update: vi.fn(),
-    deleteCliente: vi.fn(),
-    remove: vi.fn(),
-    setAll: vi.fn()
+    insert: vi.fn().mockResolvedValue({ id: 99 }),
+    update: vi.fn().mockResolvedValue({ status: 'updated' }),
+    deleteCliente: vi.fn().mockResolvedValue(true),
+    remove: vi.fn().mockResolvedValue(true),
+    setAll: vi.fn().mockResolvedValue([])
   }
-}));
-
-vi.mock('../services/dbInit', () => ({
-  initializeDb: vi.fn()
 }));
 
 const TestComponent = () => {
@@ -37,31 +32,37 @@ describe('DataContext y DataProvider', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     db.getAll.mockImplementation((table) => {
-      if (table === 'clientes') return [{ id: 1, razonSocial: 'CLIENTE 1' }];
-      if (table === 'facturas') return [{ id: 1, folio: 'F01', monto: 500 }];
-      return [];
+      if (table === 'clientes') return Promise.resolve([{ id: 1, razonSocial: 'CLIENTE 1', activo: true }]);
+      if (table === 'facturas') return Promise.resolve([{ id: 1, folio: 'F01', monto: 500 }]);
+      return Promise.resolve([]);
     });
   });
 
-  it('debería proveer los datos iniciales tras montar el provider', () => {
+  it('debería proveer los datos iniciales tras montar el provider', async () => {
     render(
       <DataProvider>
         <TestComponent />
       </DataProvider>
     );
-    expect(initializeDb).toHaveBeenCalled();
-    expect(screen.getByTestId('clientes-count')).toHaveTextContent('1');
-    expect(screen.getByTestId('facturas-count')).toHaveTextContent('1');
+
+    await waitFor(() => {
+      expect(screen.getByTestId('clientes-count')).toHaveTextContent('1');
+      expect(screen.getByTestId('facturas-count')).toHaveTextContent('1');
+    });
   });
 
-  it('addFacturaYCliente debería insertar factura y registrar nuevo cliente si no existe', () => {
+  it('addFacturaYCliente debería insertar factura y registrar nuevo cliente si no existe', async () => {
     render(
       <DataProvider>
         <TestComponent />
       </DataProvider>
     );
 
-    act(() => {
+    await waitFor(() => {
+      expect(screen.getByTestId('clientes-count')).toHaveTextContent('1');
+    });
+
+    await act(async () => {
       screen.getByText('Add Factura').click();
     });
 
@@ -69,19 +70,22 @@ describe('DataContext y DataProvider', () => {
     expect(db.insert).toHaveBeenCalledWith('clientes', expect.objectContaining({ razonSocial: 'CLIENTE TEST' }));
   });
 
-  it('crud.insert debería llamar al servicio db y luego recargar los datos', () => {
+  it('crud.insert debería llamar al servicio db y luego recargar los datos', async () => {
     render(
       <DataProvider>
         <TestComponent />
       </DataProvider>
     );
 
-    act(() => {
+    await waitFor(() => {
+      expect(screen.getByTestId('clientes-count')).toHaveTextContent('1');
+    });
+
+    await act(async () => {
       screen.getByText('Add Cliente CRUD').click();
     });
 
     expect(db.insert).toHaveBeenCalledWith('clientes', { razonSocial: 'NUEVO CLIENTE' });
-    // db.getAll es llamado varias veces cada que se refrescan los datos
     expect(db.getAll).toHaveBeenCalled();
   });
 });

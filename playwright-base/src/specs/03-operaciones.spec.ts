@@ -1,7 +1,7 @@
 ﻿import { test, expect } from '@playwright/test';
 import { MovimientosPage } from '../pages/MovimientosPage';
 
-test.describe('Operaciones (SÃºper Captura y Viajes)', () => {
+test.describe('Operaciones (Súper Captura y Viajes)', () => {
   let movs: MovimientosPage;
 
   test.beforeEach(async ({ page }) => {
@@ -17,16 +17,16 @@ test.describe('Operaciones (SÃºper Captura y Viajes)', () => {
     await movs.navigateTo('/movimientos');
   });
 
-  test('SÃºper Captura: El Wizard puede ser limpiado por el usuario', async ({ page }) => {
+  test('Súper Captura: El Wizard puede ser limpiado por el usuario', async ({ page }) => {
     await movs.abrirSuperCaptura();
     
-    // Simular escritura en un campo que sepamos que existe en la SÃºper Captura
+    // Simular escritura en un campo que sepamos que existe en la Súper Captura
     // Por ejemplo, cliente o referencia
     const refInput = page.locator('input[name="referencia_cliente"], input[placeholder*="Referencia"]');
     if (await refInput.isVisible()) {
       await refInput.fill('TEST-LIMPIEZA');
       
-      // Buscar botÃ³n de Limpiar
+      // Buscar botón de Limpiar
       const btnLimpiar = page.locator('button', { hasText: /Limpiar/i }).first();
       page.on('dialog', dialog => dialog.accept());
       await btnLimpiar.click();

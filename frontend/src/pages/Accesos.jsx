@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   DoorOpen,
   ClipboardText,
@@ -119,7 +119,7 @@ export default function Accesos() {
     }
   };
 
-  const handleConfirmar = (e) => {
+  const handleConfirmar = async (e) => {
     e.preventDefault();
 
     if (!selectedOperador) {
@@ -157,30 +157,36 @@ export default function Accesos() {
       fecha: filtroFecha || formatLocalDate(currentTime),
       hora: formatLocalTime(currentTime),
       usuario: "MIRIAM",
-      cliente: defaultCliente ? defaultCliente.razonSocial : "DANHIL",
+      cliente: defaultCliente ? (defaultCliente.razonSocial || defaultCliente.razon_social) : "DANHIL",
+      cliente_id: defaultCliente ? defaultCliente.id : null,
       clienteId: defaultCliente ? defaultCliente.id : 1,
       tipoMov: tipoMovimientoNombre,
       tipoMovId: tipoMovObj ? tipoMovObj.id : tipoMovimientoNombre,
+      tipo_movimiento: tipo === "entrada" ? "local_vacio" : "local_cargado",
       origen:
         tipoMovimientoNombre === "ENTRADA" ? destinoOrigen : "Caseta Principal",
       destino:
         tipoMovimientoNombre === "SALIDA" ? destinoOrigen : "Caseta Principal",
       operador: selectedOperador,
+      operador_id: operadorObj ? operadorObj.id : null,
       operadorId: operadorObj ? operadorObj.id : selectedOperador,
       tractor: selectedTractor,
+      tractocamion_id: tractorObj ? tractorObj.id : null,
       tractorId: tractorObj ? tractorObj.id : selectedTractor,
       caja: selectedCaja,
+      caja_id: cajaObj ? cajaObj.id : null,
       cajaId: cajaObj ? cajaObj.id : selectedCaja,
 
-      estatus: "Completo",
+      estatus: "entregado",
       salioOrigen: formatLocalTime(currentTime),
       valeFisico: String(Math.floor(10000 + Math.random() * 90000)),
+      folio_boleta: String(Math.floor(10000 + Math.random() * 90000)),
       foto: fotoSubida ? "captura_caseta.png" : "",
     };
 
     try {
-      crud.insert("movimientos", newMov);
-      alert(`Â¡${tipo.toUpperCase()} registrada y guardada exitosamente!`);
+      await crud.insert("movimientos", newMov);
+      alert(`¡${tipo.toUpperCase()} registrada y guardada exitosamente!`);
 
       // Limpiar el formulario
       setSelectedOperador("");
@@ -205,7 +211,7 @@ export default function Accesos() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <span className="font-label text-primary text-[11px] uppercase tracking-[0.3em] mb-1 block">
-            MÃ³dulo de Caseta
+            Módulo de Caseta
           </span>
           <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3">
             <DoorOpen size={36} weight="light" className="text-primary" />
@@ -214,8 +220,8 @@ export default function Accesos() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 bg-surface-container-high border border-outline-variant/30 px-5 py-3 rounded-lg shadow-md">
-            <Clock size={24} className="text-primary" />
+          <div className="flex items-center gap-3 bg-surface-container-low border border-outline-variant px-5 py-3 rounded-2xl shadow-xs">
+            <Clock size={24} weight="duotone" className="text-primary" />
             <div className="flex flex-col">
               <span className="font-mono text-xl font-bold text-on-surface leading-none">
                 {currentTime.toLocaleTimeString("es-MX", {
@@ -225,7 +231,7 @@ export default function Accesos() {
                   second: "2-digit",
                 })}
               </span>
-              <span className="font-label text-[10px] uppercase tracking-widest text-outline">
+              <span className="font-label text-[10px] uppercase tracking-wider text-outline font-semibold">
                 Hora Actual
               </span>
             </div>
@@ -233,7 +239,7 @@ export default function Accesos() {
 
           <button
             onClick={toggleFullscreen}
-            className="flex items-center gap-2 bg-surface border border-outline-variant/30 hover:border-primary px-4 py-3 rounded-lg text-xs font-label font-bold uppercase tracking-widest text-outline hover:text-primary transition-all h-full shadow-md"
+            className="flex items-center gap-2 bg-surface-container-low border border-outline-variant hover:border-primary px-4 py-3 rounded-2xl text-xs font-label font-bold uppercase tracking-wider text-outline hover:text-primary transition-all h-full shadow-xs"
           >
             {isFullscreen ? <CornersIn size={20} /> : <CornersOut size={20} />}
             {isFullscreen ? "Salir" : "Fullscreen"}
@@ -241,33 +247,33 @@ export default function Accesos() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 flex-1 min-h-0">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 flex-1 min-h-0">
         {/* COLUMNA IZQUIERDA: FORMULARIO */}
-        <div className="xl:col-span-7 bg-surface-container-low border border-outline-variant/20 rounded-xl flex flex-col shadow-lg">
+        <div className="xl:col-span-7 bg-surface-container-low border border-outline-variant rounded-2xl flex flex-col shadow-xs overflow-hidden">
           <div
-            className={`p-4 text-center font-headline font-bold text-lg uppercase tracking-widest transition-colors rounded-t-xl ${tipo === "entrada" ? "bg-success/20 text-success" : "bg-danger/20 text-danger"}`}
+            className={`p-4 text-center font-headline font-bold text-lg uppercase tracking-wider transition-colors ${tipo === "entrada" ? "bg-success/15 text-success border-b border-success/20" : "bg-danger/15 text-danger border-b border-danger/20"}`}
           >
-            Registro RÃ¡pido de {tipo}
+            Registro Rápido de {tipo}
           </div>
 
           <form
             onSubmit={handleConfirmar}
-            className="p-6 md:p-8 space-y-8 flex-1 flex flex-col overflow-y-auto"
+            className="p-6 md:p-8 space-y-6 flex-1 flex flex-col overflow-y-auto"
           >
             {/* Toggle Gigante */}
-            <div className="flex bg-surface-container-highest p-1.5 rounded-xl">
+            <div className="flex bg-surface-container p-1.5 rounded-2xl border border-outline-variant">
               {["entrada", "salida"].map((t) => (
                 <button
                   type="button"
                   key={t}
                   onClick={() => setTipo(t)}
-                  className={`flex-1 py-4 text-base font-bold uppercase tracking-[0.2em] rounded-lg transition-all
+                  className={`flex-1 py-3.5 text-sm font-bold uppercase tracking-[0.15em] rounded-xl transition-all
                     ${
                       tipo === t
                         ? t === "entrada"
-                          ? "bg-success text-on-success shadow-md"
-                          : "bg-danger text-on-danger shadow-md"
-                        : "text-on-surface hover:bg-surface-container-low hover:text-on-surface"
+                          ? "bg-success text-black font-extrabold shadow-md"
+                          : "bg-danger text-white font-extrabold shadow-md"
+                        : "text-outline hover:text-on-surface"
                     }`}
                 >
                   {t}
@@ -329,7 +335,7 @@ export default function Accesos() {
                     className="w-full bg-surface-container-high border-2 border-outline-variant/30 text-on-surface text-base md:text-lg p-4 rounded-xl outline-none focus:border-primary transition-colors appearance-none"
                   >
                     <option value="">-- Estado --</option>
-                    <option value="VacÃ­o">VacÃ­o</option>
+                    <option value="Vacío">Vacío</option>
                     <option value="Cargado">Cargado</option>
                   </select>
                 </div>
@@ -342,7 +348,7 @@ export default function Accesos() {
                     options={localidadesList}
                     value={destinoOrigen}
                     onChange={setDestinoOrigen}
-                    placeholder="Escribe ubicaciÃ³n..."
+                    placeholder="Escribe ubicación..."
                     className="w-full bg-surface-container-high border-2 border-outline-variant/30 text-on-surface text-base md:text-lg p-4 rounded-xl outline-none focus:border-primary transition-colors"
                   />
                 </div>
@@ -367,8 +373,8 @@ export default function Accesos() {
                 />
                 <span className="font-label text-sm uppercase tracking-widest font-bold">
                   {fotoSubida
-                    ? "Â¡FotografÃ­a Capturada!"
-                    : "Tomar FotografÃ­a"}
+                    ? "¡Fotografía Capturada!"
+                    : "Tomar Fotografía"}
                 </span>
                 <input
                   type="file"
@@ -394,16 +400,16 @@ export default function Accesos() {
           {/* COLUMNA DERECHA: BITACORA EN VIVO */}
           <div className="xl:col-span-5 flex flex-col gap-6 min-h-0">
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-surface-container-low border border-outline-variant/20 p-4 rounded-xl shadow-lg">
-                <span className="font-label text-[10px] uppercase tracking-widest text-outline font-bold">
+              <div className="bg-surface-container-low border border-outline-variant p-4 rounded-2xl shadow-xs">
+                <span className="font-label text-[10px] uppercase tracking-wider text-outline font-semibold">
                   Entradas Hoy
                 </span>
                 <div className="font-headline text-4xl font-bold text-success mt-1">
                   {stats.entradas}
                 </div>
               </div>
-              <div className="bg-surface-container-low border border-outline-variant/20 p-4 rounded-xl shadow-lg">
-                <span className="font-label text-[10px] uppercase tracking-widest text-outline font-bold">
+              <div className="bg-surface-container-low border border-outline-variant p-4 rounded-2xl shadow-xs">
+                <span className="font-label text-[10px] uppercase tracking-wider text-outline font-semibold">
                   Salidas Hoy
                 </span>
                 <div className="font-headline text-4xl font-bold text-danger mt-1">
@@ -412,28 +418,28 @@ export default function Accesos() {
               </div>
             </div>
 
-            <div className="bg-surface-container-low border border-outline-variant/20 rounded-xl flex-1 flex flex-col overflow-hidden shadow-lg">
-              <div className="p-4 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container">
-                <h2 className="font-headline font-bold text-lg text-on-surface">
-                  BitÃ¡cora en Vivo
+            <div className="bg-surface-container-low border border-outline-variant rounded-2xl flex-1 flex flex-col overflow-hidden shadow-xs">
+              <div className="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container/40">
+                <h2 className="font-headline font-bold text-base text-on-surface">
+                  Bitácora en Vivo
                 </h2>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <input
                     type="date"
                     value={filtroFecha}
                     onChange={(e) => setFiltroFecha(e.target.value)}
-                    className="bg-surface text-on-surface border border-outline-variant/30 rounded px-2 py-1 text-sm outline-none"
+                    className="bg-surface text-on-surface border border-outline-variant rounded-xl px-2.5 py-1 text-xs outline-none focus:border-primary font-mono"
                   />
                   <button
                     onClick={exportExcel}
-                    className="bg-surface border border-outline-variant/30 p-1.5 rounded hover:border-primary transition-colors text-primary"
+                    className="w-8 h-8 flex items-center justify-center bg-surface border border-outline-variant rounded-xl hover:border-primary transition-colors text-primary shadow-xs"
                     title="Exportar a Excel"
                   >
-                    <MicrosoftExcelLogo size={20} />
+                    <MicrosoftExcelLogo size={18} weight="bold" />
                   </button>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-surface-container-lowest">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-surface-container-lowest/50">
                 {bitacora.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-outline font-label uppercase tracking-widest text-xs">
                     Sin registros
@@ -442,7 +448,7 @@ export default function Accesos() {
                   bitacora.map((b) => (
                     <div
                       key={b.id}
-                      className="bg-surface-container-low border border-outline-variant/20 p-4 rounded-lg flex flex-col gap-3 shadow-sm hover:brightness-110 transition-all cursor-default border-l-4"
+                      className="bg-surface-container-low border border-outline-variant p-4 rounded-xl flex flex-col gap-3 shadow-xs hover:border-outline/50 transition-all cursor-default border-l-4"
                       style={{
                         borderLeftColor:
                           b.tipoMov === "ENTRADA"
@@ -453,7 +459,7 @@ export default function Accesos() {
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3">
                           <span
-                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest ${b.tipoMov === "ENTRADA" ? "bg-success text-on-success" : "bg-danger text-on-danger"}`}
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${b.tipoMov === "ENTRADA" ? "bg-success/20 text-success border border-success/30" : "bg-danger/20 text-danger border border-danger/30"}`}
                           >
                             {b.tipoMov}
                           </span>

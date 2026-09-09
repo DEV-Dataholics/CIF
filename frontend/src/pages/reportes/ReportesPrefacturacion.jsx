@@ -296,18 +296,18 @@ export default function ReportesPrefacturacion() {
               storageKey={STORAGE_KEY}
             />
             <button onClick={() => window.print()}
-              className="flex items-center gap-2 bg-surface border border-outline-variant/30 hover:border-primary text-primary font-label text-[10px] font-bold uppercase tracking-widest px-5 py-3 shadow-sm transition-all">
+              className="flex items-center gap-2 bg-surface-container border border-outline-variant hover:border-primary/50 text-primary font-label text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-xl shadow-sm transition-all">
               <Printer size={16} /> Imprimir / PDF
             </button>
             <button onClick={exportarExcel}
-              className="flex items-center gap-2 bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-5 py-3 hover:brightness-110 shadow-md transition-all">
+              className="flex items-center gap-2 bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-xl hover:brightness-105 shadow-md shadow-[#d1a14e]/20 transition-all active:scale-[0.99]">
               <MicrosoftExcelLogo size={16} weight="bold" /> Exportar Excel
             </button>
           </div>
         </div>
 
         {/* ── Filters ────────────────────────────────────────── */}
-        <div className="bg-surface-container-low border border-outline-variant/20 p-6">
+        <div className="bg-surface-container/60 border border-outline-variant rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4 text-primary">
             <Funnel size={18} weight="bold" />
             <h3 className="font-label font-bold text-xs uppercase tracking-widest">Filtros y Parámetros</h3>
@@ -315,13 +315,13 @@ export default function ReportesPrefacturacion() {
 
           {/* Row 1: Date + Client + TC */}
           <div className="flex flex-wrap items-end gap-5 mb-4">
-            <div className="flex items-center gap-3 bg-surface border border-outline-variant/30 p-1">
+            <div className="flex items-center gap-2 bg-surface-container border border-outline-variant rounded-xl p-1.5 shadow-sm">
               <div className="flex items-center gap-2 px-3 py-1">
                 <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">De:</label>
                 <input type="date" value={fi} onChange={e => setFi(e.target.value)}
                   className="bg-transparent text-sm font-bold text-primary outline-none" />
               </div>
-              <div className="w-[1px] h-6 bg-outline-variant/30" />
+              <div className="w-[1px] h-6 bg-outline-variant" />
               <div className="flex items-center gap-2 px-3 py-1">
                 <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">Hasta:</label>
                 <input type="date" value={ff} onChange={e => setFf(e.target.value)}
@@ -329,46 +329,46 @@ export default function ReportesPrefacturacion() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5">
               <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">Cliente:</label>
               <select value={cli} onChange={e => setCli(e.target.value)}
-                className="bg-surface border border-outline-variant/40 text-on-surface px-4 py-2 text-sm outline-none focus:border-primary min-w-[180px]">
+                className="bg-surface-container border border-outline-variant text-on-surface px-4 py-2.5 rounded-xl text-sm outline-none focus:border-primary min-w-[180px] shadow-sm">
                 <option value="">TODOS</option>
                 {clientesList.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5">
               <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">TC (MXN):</label>
               <input type="number" step="0.01" value={tipoCambio} onChange={e => setTipoCambio(parseFloat(e.target.value) || 0)}
-                className="bg-surface border border-outline-variant/40 text-on-surface px-4 py-2 text-sm font-mono outline-none focus:border-primary w-[100px]" />
+                className="bg-surface-container border border-outline-variant text-on-surface px-4 py-2.5 rounded-xl text-sm font-mono outline-none focus:border-primary w-[110px] shadow-sm" />
             </div>
           </div>
 
           {/* Row 2: Operator + TipoMov + Search */}
-          <div className="flex flex-wrap items-end gap-5 pt-3 border-t border-outline-variant/15">
-            <div className="flex flex-col gap-1">
+          <div className="flex flex-wrap items-end gap-5 pt-4 border-t border-outline-variant">
+            <div className="flex flex-col gap-1.5">
               <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">Operador:</label>
               <select value={filtroOperador} onChange={e => setFiltroOperador(e.target.value)}
-                className="bg-surface border border-outline-variant/40 text-on-surface px-4 py-2 text-sm outline-none focus:border-primary min-w-[200px]">
+                className="bg-surface-container border border-outline-variant text-on-surface px-4 py-2.5 rounded-xl text-sm outline-none focus:border-primary min-w-[200px] shadow-sm">
                 <option value="">TODOS</option>
                 {operadoresList.map(o => <option key={o} value={o}>{o}</option>)}
               </select>
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5">
               <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">Tipo Movimiento:</label>
               <select value={filtroTipoMov} onChange={e => setFiltroTipoMov(e.target.value)}
-                className="bg-surface border border-outline-variant/40 text-on-surface px-4 py-2 text-sm outline-none focus:border-primary min-w-[160px]">
+                className="bg-surface-container border border-outline-variant text-on-surface px-4 py-2.5 rounded-xl text-sm outline-none focus:border-primary min-w-[160px] shadow-sm">
                 <option value="">TODOS</option>
                 {tiposMovList.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
 
-            <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
+            <div className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
               <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">Buscar:</label>
-              <div className="flex items-center gap-2 bg-surface border border-outline-variant/40 px-3 py-2">
-                <MagnifyingGlass size={14} className="text-outline shrink-0" />
+              <div className="flex items-center gap-2 bg-surface-container border border-outline-variant rounded-xl px-3 py-2 shadow-sm">
+                <MagnifyingGlass size={16} className="text-outline shrink-0" />
                 <input type="text" value={busqueda} onChange={e => setBusqueda(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && setFiltrosAplicados({fi, ff, cli, filtroOperador, filtroTipoMov, busqueda})}
                   placeholder="Origen, destino, caja, folio..."
@@ -379,7 +379,7 @@ export default function ReportesPrefacturacion() {
             <div className="flex items-end pb-0.5">
               <button 
                 onClick={() => setFiltrosAplicados({fi, ff, cli, filtroOperador, filtroTipoMov, busqueda})}
-                className="bg-primary text-on-primary px-5 py-2 text-xs font-bold uppercase tracking-widest hover:brightness-110 flex items-center gap-2 h-[38px] shadow-sm">
+                className="bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:brightness-105 flex items-center gap-2 shadow-md shadow-[#d1a14e]/20 transition-all active:scale-[0.99]">
                 <MagnifyingGlass size={16} weight="bold" />
                 Buscar
               </button>
@@ -387,7 +387,7 @@ export default function ReportesPrefacturacion() {
 
             {hasExtraFilters && (
               <button onClick={clearFilters}
-                className="font-label text-[10px] uppercase tracking-widest text-danger hover:text-on-surface transition-colors font-bold underline pb-2">
+                className="font-label text-xs uppercase tracking-widest text-danger hover:text-red-400 transition-colors font-bold underline pb-2 px-2">
                 Limpiar filtros
               </button>
             )}
@@ -397,7 +397,7 @@ export default function ReportesPrefacturacion() {
         {/* ── Grouped Tables (Web) ───────────────────────────── */}
         <div className="space-y-4">
           {tiposOrdenados.length === 0 ? (
-            <div className="p-12 text-center text-outline font-body bg-surface border border-outline-variant/20">
+            <div className="p-12 text-center text-outline font-body bg-surface-container/60 border border-outline-variant rounded-2xl shadow-sm">
               <FileText size={40} className="mx-auto mb-3 opacity-30" />
               <p className="text-sm">No hay información para mostrar con los filtros actuales.</p>
             </div>
@@ -409,11 +409,11 @@ export default function ReportesPrefacturacion() {
               const badgeClass = TIPO_COLORS[tipo] || 'bg-surface-variant/40 text-outline border-outline-variant/30';
 
               return (
-                <div key={(tipo || "").toUpperCase()} className="bg-surface border border-outline-variant/30 shadow-sm overflow-hidden">
+                <div key={(tipo || "").toUpperCase()} className="bg-surface-container/60 border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
                   <button
                     type="button"
                     onClick={() => toggleGroup(tipo)}
-                    className="w-full bg-surface-variant/20 border-b border-outline-variant/30 px-5 py-3.5 flex items-center justify-between hover:bg-surface-variant/30 transition-colors cursor-pointer"
+                    className="w-full bg-surface-container-high border-b border-outline-variant px-5 py-3.5 flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
                       <div>
@@ -429,7 +429,7 @@ export default function ReportesPrefacturacion() {
                     </div>
                     <div className="flex items-center gap-4">
                       <span className="font-mono text-xs text-success font-bold">{formatUSD(subtotal)}</span>
-                      <span className="font-label text-[10px] uppercase tracking-widest text-outline bg-background px-3 py-1 rounded-full border border-outline-variant/20">
+                      <span className="font-label text-[10px] uppercase tracking-widest text-outline bg-surface-container px-3 py-1 rounded-full border border-outline-variant">
                         {count} {count === 1 ? 'viaje' : 'viajes'}
                       </span>
                     </div>
@@ -451,8 +451,8 @@ export default function ReportesPrefacturacion() {
 
         {/* ── Summary Table (Web) ────────────────────────────── */}
         {resumen.filas.length > 0 && (
-          <div className="bg-surface border border-primary/20 shadow-lg mt-8">
-            <div className="bg-primary/5 px-6 py-4 border-b border-primary/20">
+          <div className="bg-surface-container/60 border border-outline-variant rounded-2xl shadow-lg mt-8 overflow-hidden">
+            <div className="bg-surface-container-high px-6 py-4 border-b border-outline-variant">
               <h3 className="font-headline font-bold text-xl text-primary flex items-center gap-2">
                 Resumen de Operación
                 <span className="text-sm font-normal text-on-surface-variant font-body ml-2">({cli || 'TODOS'})</span>
@@ -462,30 +462,30 @@ export default function ReportesPrefacturacion() {
               <table className="w-full text-left font-body text-sm">
                 <thead>
                   <tr>
-                    <th className="py-3 px-4 font-label uppercase tracking-widest text-[10px] text-outline font-bold border-b border-outline-variant/30">Tipo Movimiento</th>
-                    <th className="py-3 px-4 text-right font-label uppercase tracking-widest text-[10px] text-outline font-bold border-b border-outline-variant/30">Cantidad</th>
-                    <th className="py-3 px-4 text-right font-label uppercase tracking-widest text-[10px] text-outline font-bold border-b border-outline-variant/30">Precio Unit. (USD)</th>
-                    <th className="py-3 px-4 text-right font-label uppercase tracking-widest text-[10px] text-primary font-bold border-b border-outline-variant/30">Precio Total (USD)</th>
+                    <th className="py-3 px-4 font-label uppercase tracking-widest text-[10px] text-outline font-bold border-b border-outline-variant">Tipo Movimiento</th>
+                    <th className="py-3 px-4 text-right font-label uppercase tracking-widest text-[10px] text-outline font-bold border-b border-outline-variant">Cantidad</th>
+                    <th className="py-3 px-4 text-right font-label uppercase tracking-widest text-[10px] text-outline font-bold border-b border-outline-variant">Precio Unit. (USD)</th>
+                    <th className="py-3 px-4 text-right font-label uppercase tracking-widest text-[10px] text-primary font-bold border-b border-outline-variant">Precio Total (USD)</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-outline-variant">
                   {resumen.filas.map(r => (
-                    <tr key={r.tipoMovimiento.toUpperCase()} className="border-b border-outline-variant/10 hover:bg-surface-variant/20">
-                      <td className="py-3 px-4 font-bold uppercase">{r.tipoMovimiento.toUpperCase()}</td>
-                      <td className="py-3 px-4 text-right font-mono">{r.cantidad}</td>
-                      <td className="py-3 px-4 text-right font-mono">{formatUSD(r.precioUnitario)}</td>
+                    <tr key={r.tipoMovimiento.toUpperCase()} className="hover:bg-surface-container/80 transition-colors">
+                      <td className="py-3 px-4 font-bold uppercase text-on-surface">{r.tipoMovimiento.toUpperCase()}</td>
+                      <td className="py-3 px-4 text-right font-mono text-on-surface">{r.cantidad}</td>
+                      <td className="py-3 px-4 text-right font-mono text-on-surface">{formatUSD(r.precioUnitario)}</td>
                       <td className="py-3 px-4 text-right font-mono text-success font-bold">{formatUSD(r.totalUSD)}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="bg-primary/5">
+                  <tr className="bg-primary/10 border-t border-outline-variant">
                     <td className="py-4 px-4 font-bold text-primary text-right uppercase tracking-widest text-xs">Totales</td>
-                    <td className="py-4 px-4 text-right font-mono font-bold text-lg">{resumen.granTotalViajes}</td>
+                    <td className="py-4 px-4 text-right font-mono font-bold text-lg text-on-surface">{resumen.granTotalViajes}</td>
                     <td className="py-4 px-4" />
                     <td className="py-4 px-4 text-right font-mono font-bold text-xl text-success">{formatUSD(resumen.granTotalUSD)}</td>
                   </tr>
-                  <tr className="bg-surface-variant/40">
+                  <tr className="bg-surface-container-high border-t border-outline-variant">
                     <td colSpan="3" className="py-4 px-4 font-bold text-on-surface text-right uppercase tracking-widest text-xs">
                       Total Equivalente en Pesos (TC: {tipoCambio})
                     </td>

@@ -30,7 +30,7 @@ export class CatalogosPage extends BasePage {
 
   async guardarYValidar() {
     await this.clickElement(this.page.locator('button', { hasText: /Guardar Cambios|Crear Registro/i }));
-    // Esperar a que el modal se cierre (indicador de Ã©xito) o un toast de Ã©xito
+    // Esperar a que el modal se cierre (indicador de éxito) o un toast de éxito
     await this.page.waitForTimeout(1000); 
   }
 
@@ -40,8 +40,8 @@ export class CatalogosPage extends BasePage {
     const btnEliminar = this.tableRows.first().locator('button[title="Eliminar"], button:has(.ph-trash)');
     if (await btnEliminar.isVisible()) {
       await btnEliminar.click();
-      // Confirmar eliminaciÃ³n si hay modal
-      const btnConfirmar = this.page.locator('button', { hasText: /SÃ­|Confirmar|Eliminar/i }).last();
+      // Confirmar eliminación si hay modal
+      const btnConfirmar = this.page.locator('button', { hasText: /Sí|Confirmar|Eliminar/i }).last();
       if (await btnConfirmar.isVisible()) {
         await btnConfirmar.click();
       }
