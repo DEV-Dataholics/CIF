@@ -27,11 +27,11 @@ const COLS = [
   { key: 'cliente', label: 'CLIENTE', render: (v) => <span className="font-semibold uppercase">{v}</span> },
   { key: 'fecha', label: 'FECHA REQUERIDA' },
   { key: 'llegoOrigen', label: 'LLEGO ORIGEN' },
-  { key: 'salioOrigen', label: 'SALIO ORIGEN' },
+  { key: 'salioOrigen', label: 'SíLIO ORIGEN' },
   { key: 'entradaMX', label: 'ENTRADA MX' },
-  { key: 'salidaMX', label: 'SALIDA MX' },
+  { key: 'salidaMX', label: 'SíLIDA MX' },
   { key: 'entradaAM', label: 'ENTRADA AM' },
-  { key: 'salidaAM', label: 'SALIDA AM' },
+  { key: 'salidaAM', label: 'SíLIDA AM' },
   { key: 'horaEntrega', label: 'HORA DE ENTREGA' }
 ];
 
@@ -84,27 +84,27 @@ export default function Reportes() {
           <p className="font-label text-xs uppercase tracking-widest text-outline mt-2">{filtered.length} registros encontrados</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <button onClick={exportExcel} className="flex items-center gap-2 bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-5 py-3 hover:brightness-110 transition-all shadow-md">
-            <MicrosoftExcelLogo size={14} weight="bold" /> Exportar a Excel
+          <button onClick={exportExcel} className="flex items-center gap-2 bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-xl hover:brightness-105 transition-all shadow-md shadow-[#d1a14e]/20 active:scale-[0.99]">
+            <MicrosoftExcelLogo size={16} weight="bold" /> Exportar a Excel
           </button>
           <ColumnEditor columns={COLS} visibleColumns={vis} onChange={v => { setVis(v); localStorage.setItem(SK, JSON.stringify(v)); }} storageKey={SK} />
         </div>
       </div>
 
-      {/* Contenedor de Filtros estilo Legacy Homologado */}
-      <div className="bg-surface-container-low border border-outline-variant/20 matte-grain p-6">
+      {/* Contenedor de Filtros */}
+      <div className="bg-surface-container/60 border border-outline-variant rounded-2xl p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-4 text-primary">
           <Funnel size={18} weight="bold" />
           <h3 className="font-label font-bold text-xs uppercase tracking-widest">Filtros de Reporte</h3>
         </div>
-        <div className="flex flex-wrap items-end gap-6">
+        <div className="flex flex-wrap items-end gap-5">
           {/* Rango de Fechas */}
-          <div className="flex items-center gap-3 bg-surface border border-outline-variant/30 p-1">
+          <div className="flex items-center gap-2 bg-surface-container border border-outline-variant rounded-xl p-1.5 shadow-sm">
             <div className="flex items-center gap-2 px-3 py-1">
               <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">De:</label>
               <input type="date" value={fi} onChange={e => setFi(e.target.value)} className="bg-transparent text-sm font-bold text-primary outline-none" />
             </div>
-            <div className="w-[1px] h-6 bg-outline-variant/30"></div>
+            <div className="w-[1px] h-6 bg-outline-variant"></div>
             <div className="flex items-center gap-2 px-3 py-1">
               <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">Hasta:</label>
               <input type="date" value={ff} onChange={e => setFf(e.target.value)} className="bg-transparent text-sm font-bold text-primary outline-none" />
@@ -112,18 +112,18 @@ export default function Reportes() {
           </div>
 
           {/* Selector de Cliente */}
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1.5">
             <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">CLIENTE:</label>
-            <select value={cli} onChange={e => setCli(e.target.value)} className="bg-surface border border-outline-variant/40 text-on-surface px-4 py-2 text-sm font-body outline-none focus:border-primary min-w-[200px]">
+            <select value={cli} onChange={e => setCli(e.target.value)} className="bg-surface-container border border-outline-variant text-on-surface px-4 py-2.5 rounded-xl text-sm font-body outline-none focus:border-primary min-w-[200px] shadow-sm">
               <option value="">-- SELECCIONAR --</option>
               {clientesList.map((c, i) => <option key={`${c}-${i}`} value={c}>{c}</option>)}
             </select>
           </div>
 
-          {/* Selector de Estatus (Opcional extra para el nuevo sistema) */}
-          <div className="flex flex-col gap-1">
+          {/* Selector de Estatus */}
+          <div className="flex flex-col gap-1.5">
             <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">ESTATUS:</label>
-            <select value={est} onChange={e => setEst(e.target.value)} className="bg-surface border border-outline-variant/40 text-on-surface px-4 py-2 text-sm font-body outline-none focus:border-primary min-w-[150px]">
+            <select value={est} onChange={e => setEst(e.target.value)} className="bg-surface-container border border-outline-variant text-on-surface px-4 py-2.5 rounded-xl text-sm font-body outline-none focus:border-primary min-w-[150px] shadow-sm">
               <option value="">TODOS</option>
               <option value="Completo">COMPLETO</option>
               <option value="En Ruta">EN RUTA</option>
@@ -133,11 +133,11 @@ export default function Reportes() {
 
           {/* Botones de acción del filtro */}
           <div className="flex items-center gap-3">
-            <button className="bg-surface border border-outline/30 hover:border-primary text-primary font-label text-[10px] font-bold uppercase tracking-widest px-6 py-2 transition-colors shadow-sm">
+            <button className="bg-surface-container border border-outline-variant hover:border-primary/50 text-primary font-label text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-xl transition-all shadow-sm">
               Generar Reporte
             </button>
             {(fi || ff || est || cli) && (
-              <button onClick={() => { setFi(''); setFf(''); setEst(''); setCli(''); }} className="font-label text-[10px] uppercase tracking-widest text-danger hover:text-red-400 font-bold underline">
+              <button onClick={() => { setFi(''); setFf(''); setEst(''); setCli(''); }} className="font-label text-xs uppercase tracking-widest text-danger hover:text-red-400 font-bold underline px-2">
                 Limpiar
               </button>
             )}

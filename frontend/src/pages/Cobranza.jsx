@@ -329,27 +329,27 @@ export default function Cobranza() {
 
       {/* Resumen por Cliente (Cards de Morosidad) */}
       <div className="space-y-3">
-        <h3 className="font-label text-[10px] font-bold uppercase tracking-widest text-primary">Resumen Morosidad por Cliente</h3>
+        <h3 className="font-label text-[10.5px] font-bold uppercase tracking-wider text-primary">Resumen Morosidad por Cliente</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {resumenClientes.map((c, idx) => (
-            <div key={idx} onClick={() => setClienteSeleccionado(c.cliente)} className={`cursor-pointer p-4 border transition-all ${clienteSeleccionado === c.cliente ? 'border-primary bg-primary/5 shadow-md' : 'border-outline-variant/20 bg-surface-container-low hover:border-primary/50'}`}>
+            <div key={idx} onClick={() => setClienteSeleccionado(c.cliente)} className={`cursor-pointer p-4.5 rounded-2xl border transition-all shadow-xs ${clienteSeleccionado === c.cliente ? 'border-primary bg-primary/10 shadow-primary/10' : 'border-outline-variant bg-surface-container-low hover:border-primary/40'}`}>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-bold text-on-surface uppercase text-sm truncate max-w-[180px]">{c.cliente}</span>
-                <span className="text-[10px] font-mono font-bold text-outline">{c.count} facturas</span>
+                <span className="text-[10.5px] font-mono font-bold text-outline">{c.count} facturas</span>
               </div>
-              <div className="text-lg font-headline font-bold text-on-surface mb-3">{fmt(c.total)}</div>
+              <div className="text-xl font-headline font-bold text-on-surface mb-3">{fmt(c.total)}</div>
               
-              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-outline-variant/10 text-center">
+              <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-outline-variant text-center">
                 <div>
-                  <span className="text-[8px] font-label uppercase text-success block">≤30 Días</span>
+                  <span className="text-[8.5px] font-label uppercase text-success font-semibold block">≤30 Días</span>
                   <span className="text-xs font-mono font-bold text-success">{fmt(c.atraso30)}</span>
                 </div>
                 <div>
-                  <span className="text-[8px] font-label uppercase text-warning block">31-90 Días</span>
+                  <span className="text-[8.5px] font-label uppercase text-warning font-semibold block">31-90 Días</span>
                   <span className="text-xs font-mono font-bold text-warning">{fmt(c.atraso60)}</span>
                 </div>
                 <div>
-                  <span className="text-[8px] font-label uppercase text-danger block">&gt;90 Días</span>
+                  <span className="text-[8.5px] font-label uppercase text-danger font-semibold block">&gt;90 Días</span>
                   <span className="text-xs font-mono font-bold text-danger">{fmt(c.atrasoMas90)}</span>
                 </div>
               </div>
@@ -360,44 +360,44 @@ export default function Cobranza() {
 
       {/* KPIs semáforo */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-surface-container-low border border-outline-variant/20 matte-grain p-5">
-          <div className="font-label text-[9px] uppercase tracking-widest text-outline mb-2">Total CxC</div>
+        <div className="bg-surface-container-low border border-outline-variant rounded-2xl p-5 shadow-xs hover:border-primary/40 transition-all">
+          <div className="font-label text-[10px] uppercase tracking-wider text-outline font-semibold mb-2">Total CxC</div>
           <div className="text-2xl font-headline font-bold text-primary">{fmt(stats.total)}</div>
-          <div className="font-label text-[9px] text-outline mt-1">{facturas.length} facturas</div>
+          <div className="font-label text-[10px] text-outline mt-1">{facturas.length} facturas</div>
         </div>
-        <div className="bg-success/5 border border-success/20 p-5">
-          <div className="font-label text-[9px] uppercase tracking-widest text-success mb-2">Pagadas</div>
+        <div className="bg-surface-container-low border border-outline-variant rounded-2xl p-5 shadow-xs hover:border-success/40 transition-all">
+          <div className="font-label text-[10px] uppercase tracking-wider text-success font-semibold mb-2">Pagadas</div>
           <div className="text-2xl font-headline font-bold text-success">{fmt(stats.pagada)}</div>
-          <div className="font-label text-[9px] text-outline mt-1">{stats.countPagada} facturas</div>
+          <div className="font-label text-[10px] text-outline mt-1">{stats.countPagada} facturas</div>
         </div>
-        <div className="bg-warning/5 border border-warning/20 p-5">
-          <div className="font-label text-[9px] uppercase tracking-widest text-warning mb-2">Pendientes</div>
+        <div className="bg-surface-container-low border border-outline-variant rounded-2xl p-5 shadow-xs hover:border-warning/40 transition-all">
+          <div className="font-label text-[10px] uppercase tracking-wider text-warning font-semibold mb-2">Pendientes</div>
           <div className="text-2xl font-headline font-bold text-warning">{fmt(stats.pendiente)}</div>
-          <div className="font-label text-[9px] text-outline mt-1">{stats.countPendiente} facturas</div>
+          <div className="font-label text-[10px] text-outline mt-1">{stats.countPendiente} facturas</div>
         </div>
-        <div className="bg-danger/5 border border-danger/20 p-5">
-          <div className="font-label text-[9px] uppercase tracking-widest text-danger mb-2">Vencidas (+60 días)</div>
+        <div className="bg-surface-container-low border border-outline-variant rounded-2xl p-5 shadow-xs hover:border-danger/40 transition-all">
+          <div className="font-label text-[10px] uppercase tracking-wider text-danger font-semibold mb-2">Vencidas (+60 días)</div>
           <div className="text-2xl font-headline font-bold text-danger">{fmt(stats.vencida)}</div>
-          <div className="font-label text-[9px] text-outline mt-1">{stats.countVencida} facturas</div>
+          <div className="font-label text-[10px] text-outline mt-1">{stats.countVencida} facturas</div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-surface-container-low border border-outline-variant/20 matte-grain p-4 space-y-4">
+      <div className="bg-surface-container-low border border-outline-variant rounded-2xl p-5 space-y-4 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="font-label text-[9px] uppercase tracking-widest text-outline">Estatus:</span>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="font-label text-[10px] uppercase tracking-wider text-outline font-semibold">Estatus:</span>
             {['todos','pendiente','vencida','pagada'].map(f => (
               <button key={f} onClick={() => setFiltro(f)}
-                className={`font-label text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 border transition-all
-                  ${filtro === f ? 'border-primary text-primary bg-primary/10' : 'border-outline-variant/30 text-outline hover:text-on-surface'}`}>
+                className={`font-label text-[10px] uppercase tracking-wider font-bold px-3.5 py-1.5 rounded-xl border transition-all
+                  ${filtro === f ? 'border-primary text-primary bg-primary/10 shadow-xs' : 'border-outline-variant text-outline hover:text-on-surface hover:bg-surface-container'}`}>
                 {f === 'todos' ? 'Todas' : f.charAt(0).toUpperCase() + f.slice(1) + 's'}
               </button>
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="font-label text-[9px] uppercase tracking-widest text-outline">Días de atraso:</span>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="font-label text-[10px] uppercase tracking-wider text-outline font-semibold">Días de atraso:</span>
             {[
               { value: 'todos', label: 'Todos' },
               { value: '30', label: '≤ 30 días' },
@@ -406,8 +406,8 @@ export default function Cobranza() {
               { value: '90mas', label: '> 90 días' }
             ].map(r => (
               <button key={r.value} onClick={() => setAtrasoRango(r.value)}
-                className={`font-label text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 border transition-all
-                  ${atrasoRango === r.value ? 'border-primary text-primary bg-primary/10' : 'border-outline-variant/30 text-outline hover:text-on-surface'}`}>
+                className={`font-label text-[10px] uppercase tracking-wider font-bold px-3.5 py-1.5 rounded-xl border transition-all
+                  ${atrasoRango === r.value ? 'border-primary text-primary bg-primary/10 shadow-xs' : 'border-outline-variant text-outline hover:text-on-surface hover:bg-surface-container'}`}>
                 {r.label}
               </button>
             ))}
@@ -415,9 +415,9 @@ export default function Cobranza() {
         </div>
 
         {/* Filtrado y Búsqueda por Cliente */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 pt-3 border-t border-outline-variant/10">
-          <div className="w-full sm:w-72 flex items-center gap-2 bg-background border border-outline-variant/20 px-3 py-2">
-            <MagnifyingGlass size={16} className="text-outline" />
+        <div className="flex flex-col sm:flex-row items-center gap-4 pt-3.5 border-t border-outline-variant">
+          <div className="w-full sm:w-80 flex items-center gap-2.5 bg-surface border border-outline-variant px-3.5 py-2 rounded-xl focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+            <MagnifyingGlass size={16} className="text-outline" weight="bold" />
             <input
               type="text"
               placeholder="Buscar por cliente o folio..."
@@ -428,11 +428,11 @@ export default function Cobranza() {
           </div>
 
           <div className="w-full sm:w-auto flex items-center gap-3 ml-auto">
-            <span className="font-label text-[9px] uppercase tracking-widest text-outline shrink-0">Filtrar Cliente:</span>
+            <span className="font-label text-[10px] uppercase tracking-wider text-outline font-semibold shrink-0">Filtrar Cliente:</span>
             <select
               value={clienteSeleccionado}
               onChange={e => setClienteSeleccionado(e.target.value)}
-              className="bg-background border border-outline-variant/20 text-on-surface px-4 py-2 text-xs outline-none focus:border-primary max-w-xs uppercase font-bold"
+              className="bg-surface border border-outline-variant text-on-surface px-4 py-2 text-xs rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 max-w-xs uppercase font-bold transition-all shadow-xs"
             >
               <option value="todos">Todos los Clientes</option>
               {clientesConFacturas.filter(c => c !== 'todos').map(c => (
@@ -440,34 +440,32 @@ export default function Cobranza() {
               ))}
             </select>
             {clienteSeleccionado !== 'todos' && (
-              <button onClick={() => setClienteSeleccionado('todos')} className="text-[10px] font-label uppercase text-danger font-bold hover:underline">Limpiar</button>
+              <button onClick={() => setClienteSeleccionado('todos')} className="text-[10px] font-label uppercase tracking-wider text-danger font-bold hover:underline px-2 py-1 rounded-lg hover:bg-danger/10">Limpiar</button>
             )}
           </div>
         </div>
       </div>
 
-      
       <div className="flex items-center justify-between mb-4 -mt-2">
         <div className="flex gap-2">
           {selectedIds.length > 0 && (
-            <button onClick={handleBulkDelete} className="flex items-center gap-2 bg-danger/10 text-danger hover:bg-danger/20 px-3 py-1.5 rounded text-xs font-bold uppercase tracking-widest border border-danger/20 transition-colors">
-              <Trash size={14} weight="bold" /> Eliminar ({selectedIds.length})
+            <button onClick={handleBulkDelete} className="flex items-center gap-2 bg-danger/10 text-danger hover:bg-danger/20 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border border-danger/30 transition-all shadow-xs">
+              <Trash size={15} weight="bold" /> Eliminar ({selectedIds.length})
             </button>
           )}
         </div>
-        <div className="flex gap-1 border border-outline-variant/30 rounded p-1 bg-surface">
-          <button onClick={() => setViewMode('list')} className={`p-1 rounded ${viewMode === 'list' ? 'bg-primary text-on-primary' : 'text-outline hover:text-on-surface'}`} title="Vista de Lista">
-            <List size={16} />
+        <div className="flex gap-1 border border-outline-variant rounded-xl p-1 bg-surface-container-low shadow-xs">
+          <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-primary text-black font-bold shadow-xs' : 'text-outline hover:text-on-surface'}`} title="Vista de Lista">
+            <List size={16} weight="bold" />
           </button>
-          <button onClick={() => setViewMode('cards')} className={`p-1 rounded ${viewMode === 'cards' ? 'bg-primary text-on-primary' : 'text-outline hover:text-on-surface'}`} title="Vista de Tarjetas">
-            <SquaresFour size={16} />
+          <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'cards' ? 'bg-primary text-black font-bold shadow-xs' : 'text-outline hover:text-on-surface'}`} title="Vista de Tarjetas">
+            <SquaresFour size={16} weight="bold" />
           </button>
         </div>
       </div>
 
       {/* Invoices UI */}
-
-      <div className="bg-surface-container-low border border-outline-variant/20 matte-grain">
+      <div className="bg-surface-container-low border border-outline-variant rounded-2xl overflow-hidden shadow-xs">
         {viewMode === "list" ? (
           <div className="overflow-x-auto">
           <table className="cif-table">
@@ -478,7 +476,7 @@ export default function Cobranza() {
             </thead>
             <tbody>
               {filtered.map(f => (
-                <tr key={f.id} className="hover:bg-white/[0.02]">
+                <tr key={f.id} className="hover:bg-surface-container-high/50 transition-colors">
                   <td className="text-center">
                       <input type="checkbox" checked={selectedIds.includes(f.id)} onChange={() => toggleSelection(f.id)} />
                     </td>
@@ -510,7 +508,7 @@ export default function Cobranza() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="text-center py-16 text-outline font-label uppercase tracking-widest opacity-50">
+                  <td colSpan={7} className="text-center py-16 text-outline font-label uppercase tracking-widest font-semibold">
                     No se encontraron facturas
                   </td>
                 </tr>
@@ -550,7 +548,7 @@ export default function Cobranza() {
         <Receipt size={24} className="text-primary flex-shrink-0" />
         <div>
           <div className="font-label text-[10px] uppercase tracking-widest text-primary font-bold mb-1">Carga de Facturas XML</div>
-          <p className="text-xs text-outline">Arrastra archivos XML del SAT aquí para extraer automáticamente la Fecha de Emisión, UUID, Receptor, Emisor y el Monto.</p>
+          <p className="text-xs text-outline">Arrastra archivos XML del SíT aquí para extraer automáticamente la Fecha de Emisión, UUID, Receptor, Emisor y el Monto.</p>
         </div>
         <label className="ml-auto cursor-pointer border border-dashed border-primary/40 px-5 py-3 font-label text-[10px] uppercase tracking-widest text-primary font-bold hover:bg-primary/10 transition-all">
           Subir XML

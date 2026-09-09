@@ -3,7 +3,7 @@
 // Desactivar el estado heredado para probar el login desde cero
 test.use({ storageState: { cookies: [], origins: [] } });
 
-test.describe('AutenticaciÃ³n y RBAC', () => {
+test.describe('Autenticación y RBAC', () => {
   test('Debe rechazar credenciales incorrectas', async ({ page }) => {
     await page.goto('/login');
     
@@ -16,12 +16,24 @@ test.describe('AutenticaciÃ³n y RBAC', () => {
     await expect(errorMsg).toBeVisible({ timeout: 5000 });
   });
 
-  test('Debe bloquear el acceso a rutas protegidas sin sesiÃ³n', async ({ page }) => {
+  test('Debe bloquear el acceso a rutas protegidas sin sesión', async ({ page }) => {
     // Intentar ir directo a movimientos
     await page.goto('/movimientos');
     
-    // DeberÃ­a redirigirnos al login
+    // Debería redirigirnos al login
     await expect(page).toHaveURL(/.*login/);
   });
 });
 
+
+test('Debe permitir cerrar sesión correctamente', async ({ page }) => {
+  await page.goto('/login');
+  await page.fill('input[type="email"]', 'admin@cif.mx');
+  await page.fill('input[type="password"]', 'Admin123!');
+  await page.click('button[type="submit"]');
+  
+  await expect(page).toHaveURL(/.*\/$/);
+  
+  await page.click('button:has-text("Salir")');
+  await expect(page).toHaveURL(/.*login/);
+});

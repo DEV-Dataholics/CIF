@@ -13,6 +13,7 @@ import Localidades from './pages/admin/Localidades';
 import Unidades from './pages/admin/Unidades';
 import Cajas from './pages/admin/Cajas';
 import UsuariosAdmin from './pages/admin/Usuarios';
+import AuditoriaAdmin from './pages/admin/Auditoria';
 import ConcentradoPrecios from './pages/admin/ConcentradoPrecios';
 import Peajes from './pages/admin/Peajes';
 import Alertas from './pages/admin/Alertas';
@@ -72,6 +73,7 @@ export default function App() {
             <Route path="/admin/cajas" element={<Cajas />} />
             <Route path="/admin/movimientos" element={<TiposMovimientoAdmin />} />
             <Route path="/admin/usuarios" element={<UsuariosAdmin />} />
+            <Route path="/admin/auditoria" element={<AuditoriaAdmin />} />
             <Route path="/admin/precios" element={<ConcentradoPrecios />} />
             <Route path="/admin/peajes" element={<Peajes />} />
           </Route>

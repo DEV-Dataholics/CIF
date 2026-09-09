@@ -155,7 +155,7 @@ class CobranzaController extends BaseController
     public function delete(int $id): \CodeIgniter\HTTP\ResponseInterface
     {
         try {
-            \Config\Database::connect()->table('cobranza')->where('id', $id)->delete();
+            \Config\Database::connect()->table('cobranza_facturas')->where('id', $id)->delete();
             return $this->json(['ok' => true]);
         } catch (\Exception $e) {
             return $this->json(['ok' => false, 'error' => 'No se puede eliminar porque esta asignado a otras tablas.'], 409);

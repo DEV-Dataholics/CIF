@@ -9,8 +9,7 @@ const columns = [
   { key: 'email', label: 'Email' },
   { key: 'password', label: 'Contraseña (Dejar en blanco para mantener actual)', hideInTable: true, render: () => '***' },
   { key: 'rol', label: 'Rol', formType: 'select', options: ['admin', 'operador', 'visor'], render: (v) => <span className="badge badge-info uppercase">{v}</span> },
-  { key: 'permiso', label: 'Permiso', formType: 'select', options: [1, 2, 3], render: (v) => <span className="font-mono font-bold text-primary">{v}</span> },
-  { key: 'activo', label: 'Estatus', formType: 'boolean', render: (v) => <span className={`badge ${v ? 'badge-success' : 'badge-muted'}`}>{v ? 'Activo' : 'Inactivo'}</span> },
+    { key: 'activo', label: 'Estatus', formType: 'boolean', render: (v) => <span className={`badge ${v ? 'badge-success' : 'badge-muted'}`}>{v ? 'Activo' : 'Inactivo'}</span> },
 ];
 
 export default function UsuariosAdmin() {

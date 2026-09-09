@@ -152,7 +152,7 @@ export default function ConcentradoPrecios() {
   };
 
   return (
-    <div className="h-full flex flex-col p-8 animate-in">
+    <div className="h-full flex flex-col animate-in">
       {/* Encabezado */}
       <div className="mb-8">
         <h2 className="text-primary font-label text-xs tracking-[0.2em] mb-2 uppercase">Administración</h2>
@@ -171,15 +171,15 @@ export default function ConcentradoPrecios() {
             />
             <button 
               onClick={() => fileInputRef.current.click()}
-              className="flex items-center gap-2 bg-surface border border-outline-variant/30 hover:border-primary text-primary font-label font-bold text-[10px] uppercase tracking-widest px-6 py-3 transition-all shadow-sm"
+              className="flex items-center gap-2 bg-surface-container border border-outline-variant hover:border-primary/50 text-primary font-label font-bold text-xs uppercase tracking-widest px-5 py-2.5 rounded-xl transition-all shadow-sm"
             >
-              <MicrosoftExcelLogo size={16} weight="bold" />
+              <MicrosoftExcelLogo size={18} weight="bold" />
               Importar Excel
             </button>
             <button onClick={() => {
               setManualForm({ cliente: '', tipoMovimiento: '', tarifa: '', fechaVigencia: new Date().toISOString().split('T')[0] });
               setShowManualModal(true);
-            }} className="bg-primary text-on-primary font-label font-bold text-[10px] uppercase tracking-widest px-6 py-3 hover:brightness-110 transition-all shadow-md">
+            }} className="flex items-center gap-2 bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label font-bold text-xs uppercase tracking-widest px-5 py-2.5 rounded-xl hover:brightness-105 transition-all shadow-md shadow-[#d1a14e]/20 active:scale-[0.99]">
               Añadir Tarifa Manual
             </button>
           </div>
@@ -188,48 +188,48 @@ export default function ConcentradoPrecios() {
 
       {/* Tabla agrupada por clientes */}
       <div className="overflow-auto flex-1 pb-10">
-        <div className="bg-surface border border-outline-variant/20 shadow-sm">
+        <div className="bg-surface-container/60 border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
           <table className="w-full text-left text-sm font-body">
-            <thead className="bg-background sticky top-0 z-10">
+            <thead className="bg-surface-container-high sticky top-0 z-10">
               <tr>
-                <th className="p-4 font-label uppercase tracking-widest text-xs text-outline font-bold border-b border-outline-variant/20">Clientes</th>
-                <th className="p-4 font-label uppercase tracking-widest text-xs text-outline font-bold border-b border-outline-variant/20 text-center w-32">Tarifas Activas</th>
-                <th className="p-4 font-label uppercase tracking-widest text-xs text-outline font-bold border-b border-outline-variant/20 text-center w-32">Acciones</th>
-                <th className="p-4 font-label uppercase tracking-widest text-xs text-outline font-bold border-b border-outline-variant/20 text-center w-32">Desglose</th>
+                <th className="p-4 font-label uppercase tracking-widest text-xs text-outline font-bold border-b border-outline-variant">Clientes</th>
+                <th className="p-4 font-label uppercase tracking-widest text-xs text-outline font-bold border-b border-outline-variant text-center w-32">Tarifas Activas</th>
+                <th className="p-4 font-label uppercase tracking-widest text-xs text-outline font-bold border-b border-outline-variant text-center w-32">Acciones</th>
+                <th className="p-4 font-label uppercase tracking-widest text-xs text-outline font-bold border-b border-outline-variant text-center w-32">Desglose</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-outline-variant">
               {stats.map((row, idx) => (
                 <React.Fragment key={idx}>
-                  <tr className={`border-b border-outline-variant/10 hover:bg-surface-variant/30 transition-colors ${expandedClient === row.cliente ? 'bg-surface-variant/20' : ''}`}>
+                  <tr className={`hover:bg-surface-container/50 transition-colors ${expandedClient === row.cliente ? 'bg-surface-container/80' : ''}`}>
                     <td className="p-4 font-bold text-on-surface uppercase">{row.cliente}</td>
                     <td className="p-4 text-center font-mono font-bold text-primary">{row.cantidad}</td>
                     <td className="p-4 text-center">
                       <button onClick={() => {
                         setManualForm({ cliente: row.cliente, tipoMovimiento: '', tarifa: '', fechaVigencia: new Date().toISOString().split('T')[0] });
                         setShowManualModal(true);
-                      }} className="text-outline hover:text-primary font-bold text-xl px-2 transition-colors">+</button>
+                      }} className="w-8 h-8 rounded-lg bg-surface-container border border-outline-variant text-outline hover:text-primary hover:border-primary/50 font-bold text-lg inline-flex items-center justify-center transition-colors">+</button>
                     </td>
                     <td className="p-4 text-center">
                       <button 
                         onClick={() => toggleExpand(row.cliente)}
-                        className="text-primary hover:text-primary/70 font-bold text-xl px-2 inline-flex items-center justify-center gap-1 transition-colors">
-                        {expandedClient === row.cliente ? <CaretUp size={20} /> : <CaretDown size={20} />}
+                        className="w-8 h-8 rounded-lg bg-surface-container border border-outline-variant text-primary hover:border-primary/50 font-bold text-lg inline-flex items-center justify-center gap-1 transition-colors">
+                        {expandedClient === row.cliente ? <CaretUp size={18} /> : <CaretDown size={18} />}
                       </button>
                     </td>
                   </tr>
 
                   {/* Fila de desglose (Drill-down) */}
                   {expandedClient === row.cliente && row.rutas.length > 0 && (
-                    <tr className="bg-background">
-                      <td colSpan={4} className="p-6 border-b border-outline-variant/30">
+                    <tr className="bg-background/50">
+                      <td colSpan={4} className="p-6 border-t border-b border-outline-variant">
                         <div className="border-l-4 border-primary pl-6">
                           <h4 className="text-primary font-label text-[10px] font-bold uppercase tracking-widest mb-4 flex items-center justify-between">
                             <span>Tarifas vigentes para {row.cliente}</span>
                           </h4>
                           <div className="grid gap-3">
                             {row.rutas.map(r => (
-                              <div key={r.id} className="flex items-center justify-between bg-surface p-4 border border-outline-variant/20 hover:border-primary/50 hover:shadow-sm transition-all">
+                              <div key={r.id} className="flex items-center justify-between bg-surface-container p-4 border border-outline-variant rounded-xl hover:border-primary/50 hover:shadow-sm transition-all">
                                 <div className="flex-1">
                                   <span className="font-label text-[9px] uppercase tracking-widest text-outline block mb-1">Tipo de Movimiento</span>
                                   <span className="font-bold text-sm text-on-surface uppercase">{r.tipoMovimiento}</span>
@@ -262,8 +262,8 @@ export default function ConcentradoPrecios() {
                     </tr>
                   )}
                   {expandedClient === row.cliente && row.rutas.length === 0 && (
-                    <tr className="bg-background">
-                      <td colSpan={4} className="p-6 border-b border-outline-variant/30 text-center text-outline text-sm font-body">
+                    <tr className="bg-background/50">
+                      <td colSpan={4} className="p-6 border-t border-b border-outline-variant text-center text-outline text-sm font-body">
                         No hay tarifas registradas para este cliente en el catálogo actual.
                       </td>
                     </tr>
@@ -277,7 +277,7 @@ export default function ConcentradoPrecios() {
       {/* Modal Manual */}
       {showManualModal && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface border border-outline-variant/30 shadow-2xl p-8 max-w-md w-full animate-in zoom-in-95">
+          <div className="bg-surface-container border border-outline-variant rounded-2xl shadow-2xl p-8 max-w-md w-full animate-in zoom-in-95">
             <h3 className="font-headline text-2xl font-bold mb-6 text-on-surface">Nueva Tarifa Manual</h3>
             <form onSubmit={handleManualSubmit} className="space-y-4">
               <div>
@@ -287,7 +287,7 @@ export default function ConcentradoPrecios() {
                   value={manualForm.cliente}
                   onChange={val => setManualForm({...manualForm, cliente: val})}
                   placeholder="Seleccionar cliente..."
-                  className="w-full bg-background border border-outline-variant/30 text-on-surface p-3 text-sm outline-none focus:border-primary"
+                  className="w-full bg-background border border-outline-variant rounded-xl text-on-surface p-3 text-sm outline-none focus:border-primary"
                 />
               </div>
               <div>
@@ -297,20 +297,20 @@ export default function ConcentradoPrecios() {
                   value={manualForm.tipoMovimiento}
                   onChange={val => setManualForm({...manualForm, tipoMovimiento: val})}
                   placeholder="Seleccionar tipo..."
-                  className="w-full bg-background border border-outline-variant/30 text-on-surface p-3 text-sm outline-none focus:border-primary"
+                  className="w-full bg-background border border-outline-variant rounded-xl text-on-surface p-3 text-sm outline-none focus:border-primary"
                 />
               </div>
               <div>
                 <label className="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-1">Tarifa (USD)</label>
-                <input type="number" step="0.01" required value={manualForm.tarifa} onChange={e => setManualForm({...manualForm, tarifa: e.target.value})} className="w-full bg-background border border-outline-variant/30 text-on-surface p-3 text-sm outline-none focus:border-primary" />
+                <input type="number" step="0.01" required value={manualForm.tarifa} onChange={e => setManualForm({...manualForm, tarifa: e.target.value})} className="w-full bg-background border border-outline-variant rounded-xl text-on-surface p-3 text-sm outline-none focus:border-primary" />
               </div>
               <div>
                 <label className="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-1">Fecha Vigencia</label>
-                <input type="date" required value={manualForm.fechaVigencia} onChange={e => setManualForm({...manualForm, fechaVigencia: e.target.value})} className="w-full bg-background border border-outline-variant/30 text-on-surface p-3 text-sm outline-none focus:border-primary" />
+                <input type="date" required value={manualForm.fechaVigencia} onChange={e => setManualForm({...manualForm, fechaVigencia: e.target.value})} className="w-full bg-background border border-outline-variant rounded-xl text-on-surface p-3 text-sm outline-none focus:border-primary" />
               </div>
               <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={() => setShowManualModal(false)} className="px-4 py-2 text-sm font-bold text-outline hover:text-danger">Cancelar</button>
-                <button type="submit" className="px-6 py-2 bg-primary text-on-primary font-bold text-sm shadow-md hover:brightness-110">Guardar Tarifa</button>
+                <button type="button" onClick={() => setShowManualModal(false)} className="px-4 py-2 text-sm font-bold text-outline hover:text-on-surface rounded-xl transition-colors">Cancelar</button>
+                <button type="submit" className="px-6 py-2.5 bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-bold text-sm rounded-xl shadow-md shadow-[#d1a14e]/20 hover:brightness-105 transition-all active:scale-[0.99]">Guardar Tarifa</button>
               </div>
             </form>
           </div>

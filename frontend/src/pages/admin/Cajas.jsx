@@ -24,9 +24,9 @@ const renderAlertas = (sct, mec) => {
 
 const columns = [
   { key: 'id', label: '#' },
-  { key: 'numeroCaja', label: 'Núm. Caja', render: (v) => <span className="font-mono font-bold">{v}</span> },
+  { key: 'numero_caja', label: 'Núm. Caja', render: (v) => <span className="font-mono font-bold">{v}</span> },
   { key: 'tipo', label: 'Tipo' },
-  { key: 'placas', label: 'Placas', render: (v) => <span className="font-mono text-outline">{v}</span> },
+  { key: 'placas_mx', label: 'Placas', render: (v) => <span className="font-mono text-outline">{v}</span> },
   { key: 'marca', label: 'Marca' },
   { key: 'modelo', label: 'Modelo' },
   { 

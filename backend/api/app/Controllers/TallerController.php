@@ -58,7 +58,8 @@ class TallerController extends BaseController
             'estatus'         => 'pendiente',
         ];
 
-        $id = $this->db()->table('solicitudes_taller')->insert($insert, true);
+        $id = $this->db()->table('solicitudes_taller')->insert($insert);
+        $id = $this->db()->insertID();
 
         // Si no puede operar → tracto pasa a en_taller automáticamente
         if (empty($data['puede_operar'])) {
@@ -161,7 +162,8 @@ class TallerController extends BaseController
             'estatus'              => 'abierta',
         ];
 
-        $id = $this->db()->table('ordenes_servicio_taller')->insert($insert, true);
+        $id = $this->db()->table('ordenes_servicio_taller')->insert($insert);
+        $id = $this->db()->insertID();
 
         // El tracto pasa a en_taller al abrir una orden
         $this->db()->table('tractocamiones')
@@ -246,7 +248,8 @@ class TallerController extends BaseController
             'fecha_creacion'  => date('Y-m-d H:i:s')
         ];
 
-        $id = $db->table('taller_checklists')->insert($insert, true);
+        $id = $db->table('taller_checklists')->insert($insert);
+        $id = $this->db()->insertID();
 
         // Get the inserted record to return it
         $row = $db->table('taller_checklists')->where('id', $id)->get()->getRowArray();

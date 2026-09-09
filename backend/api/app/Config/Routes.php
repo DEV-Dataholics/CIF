@@ -1,11 +1,11 @@
-﻿<?php
+<?php
 
 use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 
-// â”€â”€ CORS GLOBAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Esto asegura que cualquier peticiÃ³n OPTIONS sea respondida antes de llegar a los controladores
+// ── CORS GLOBAL ─────────────────────────────────────────────
+// Esto asegura que cualquier petición OPTIONS sea respondida antes de llegar a los controladores
 $routes->options('(:any)', static function () {
     $response = service('response');
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
@@ -15,6 +15,13 @@ $routes->options('(:any)', static function () {
         ->setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
         ->setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept')
         ->setHeader('Access-Control-Allow-Credentials', 'true');
+
+    // Usuarios CRUD Routes
+    $routes->get('usuarios',                   'UsuarioController::index');
+    $routes->post('usuarios',                  'UsuarioController::create');
+    $routes->put('usuarios/(:num)',            'UsuarioController::update/$1');
+    $routes->delete('usuarios/(:num)',         'UsuarioController::delete/$1');
+
 });
 
 // â”€â”€ AUTH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -26,6 +33,7 @@ $routes->get('auth/me',      'AuthController::me');
 // â”€â”€ RUTAS PROTEGIDAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('dashboard/resumen', 'DashboardController::resumen');
+    $routes->get('logs', 'AuditoriaController::index');
     $routes->get('tractocamiones',       'TractocamionController::index');
     $routes->get('tractocamiones/(:num)','TractocamionController::show/$1');
     $routes->post('tractocamiones',      'TractocamionController::create');
@@ -81,6 +89,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('cobranza',                   'CobranzaController::index');
     $routes->post('cobranza',                  'CobranzaController::create');
     $routes->put('cobranza/(:num)/pagar',      'CobranzaController::pagar/$1');
+    $routes->delete('cobranza/(:num)',         'CobranzaController::delete/$1');
 
     // Peajes CRUD Routes
     $routes->get('peajes',                    'PeajeController::index');
@@ -106,5 +115,11 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('precios',           'PreciosController::create');
     $routes->put('precios/(:num)',     'PreciosController::update/$1');
     $routes->delete('precios/(:num)',  'PreciosController::delete/$1');
+
+    // Usuarios CRUD Routes
+    $routes->get('usuarios',                   'UsuarioController::index');
+    $routes->post('usuarios',                  'UsuarioController::create');
+    $routes->put('usuarios/(:num)',            'UsuarioController::update/$1');
+    $routes->delete('usuarios/(:num)',         'UsuarioController::delete/$1');
 });
 

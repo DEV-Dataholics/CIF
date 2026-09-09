@@ -24,8 +24,8 @@ const renderAlertas = (sct, seg, mec) => {
 
 const columns = [
   { key: 'id', label: '#' },
-  { key: 'numeroEconomico', label: 'Núm. Eco', render: (v) => <span className="font-mono font-bold">{v}</span> },
-  { key: 'placas', label: 'Placas', render: (v) => <span className="font-mono text-outline">{v}</span> },
+  { key: 'numero_economico', label: 'Núm. Eco', render: (v) => <span className="font-mono font-bold">{v}</span> },
+  { key: 'placas_mx', label: 'Placas', render: (v) => <span className="font-mono text-outline">{v}</span> },
   { key: 'marca', label: 'Marca' },
   { key: 'modelo', label: 'Modelo' },
   { key: 'anio', label: 'Año' },
@@ -49,9 +49,9 @@ const columns = [
     }
   },
   { key: 'activo', label: 'Activo', formType: 'boolean', render: (v) => <span className={`badge ${v ? 'badge-success' : 'badge-muted'}`}>{v ? 'Sí' : 'No'}</span> },
-  { key: 'vigenciaSCT', label: 'Vigencia SCT', formType: 'date', hideInTable: true },
-  { key: 'vigenciaSeguro', label: 'Vigencia Seguro', formType: 'date', hideInTable: true },
-  { key: 'vigenciaMecanico', label: 'Vigencia Físico/Mecánico', formType: 'date', hideInTable: true }
+  { key: 'vencimiento_sct', label: 'Vigencia SCT', formType: 'date', hideInTable: true },
+  { key: 'vencimiento_poliza_mx', label: 'Vigencia Seguro', formType: 'date', hideInTable: true },
+  { key: 'vencimiento_mecanico', label: 'Vigencia Físico/Mecánico', formType: 'date', hideInTable: true }
 ];
 
 export default function Unidades() {

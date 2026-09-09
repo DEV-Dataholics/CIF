@@ -6,6 +6,19 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 class DashboardController extends BaseController
 {
+    
+
+    public function clr(): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $db = \Config\Database::connect();
+        $db->query("DELETE FROM clientes WHERE razon_social LIKE '%[TEST]%'");
+        $db->query("DELETE FROM operadores WHERE nombre_completo LIKE '%[TEST]%'");
+        $db->query("DELETE FROM destinos WHERE nombre LIKE '%[TEST]%'");
+        $db->query("DELETE FROM cajas WHERE numero_caja LIKE '%[TEST]%'");
+        $db->query("DELETE FROM tractocamiones WHERE numero_economico LIKE '%[TEST]%'");
+        return $this->response->setJSON(['ok' => true]);
+    }
+
     private function db() { return \Config\Database::connect(); }
 
     private function json(array $data): ResponseInterface

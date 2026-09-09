@@ -1,73 +1,97 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { db } from './db';
-import { initializeDb } from './dbInit';
 
-// Usaremos un entorno mockeado por jsdom para localStorage
-describe('Base de Datos Relacional Local (SSOT)', () => {
-  
+describe('Cliente HTTP Centralizado db.js (API CodeIgniter 4)', () => {
   beforeEach(() => {
-    localStorage.clear();
-    initializeDb();
+    vi.restoreAllMocks();
   });
 
-  afterEach(() => {
-    localStorage.clear();
+  it('debería consultar el endpoint correcto y desempaquetar la respuesta anidada de clientes', async () => {
+    const mockClientes = [{ id: 1, razon_social: 'TRANS MEX SA' }];
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: true, clientes: mockClientes })
+    });
+
+    const result = await db.getAll('clientes');
+    expect(global.fetch).toHaveBeenCalledWith('/api/clientes', { credentials: 'include' });
+    expect(result).toEqual(mockClientes);
   });
 
-  it('debería inicializar los catálogos maestros y mantener la tabla de movimientos purgada (TR-005)', () => {
-    const clientes = db.getAll('clientes');
-    const movimientos = db.getAll('movimientos');
-    
-    expect(clientes.length).toBeGreaterThan(0);
-    expect(movimientos.length).toBe(0);
+  it('debería consultar y desempaquetar la respuesta anidada de viajes en movimientos', async () => {
+    const mockViajes = [{ id: 10, tipo_movimiento: 'exportacion', estatus: 'en_transito' }];
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: true, viajes: mockViajes })
+    });
+
+    const result = await db.getAll('movimientos');
+    expect(global.fetch).toHaveBeenCalledWith('/api/viajes', { credentials: 'include' });
+    expect(result).toEqual(mockViajes);
   });
 
-  it('debería poder insertar y recuperar un nuevo registro', () => {
-    const nuevoCliente = { razonSocial: 'TEST CLIENT', activo: true };
-    const insertado = db.insert('clientes', nuevoCliente);
-    
-    expect(insertado).toHaveProperty('id');
-    expect(insertado.razonSocial).toBe('TEST CLIENT');
+  it('debería normalizar payloads camelCase a snake_case al insertar en movimientos', async () => {
+    let capturedBody = null;
+    vi.spyOn(global, 'fetch').mockImplementationOnce(async (url, opts) => {
+      capturedBody = JSON.parse(opts.body);
+      return {
+        ok: true,
+        status: 201,
+        json: async () => ({ ok: true, id: 99 })
+      };
+    });
 
-    const recuperado = db.getById('clientes', insertado.id);
-    expect(recuperado).toEqual(insertado);
+    const payload = {
+      operadorId: 5,
+      tractorId: 8,
+      cajaId: 3,
+      clienteId: 2,
+      tipoMov: 'EXPO PL',
+      valeFisico: 'VF-12345',
+      estatus: 'Completo'
+    };
+
+    const response = await db.insert('movimientos', payload);
+    expect(response).toHaveProperty('id', 99);
+    expect(capturedBody).toMatchObject({
+      operador_id: 5,
+      tractocamion_id: 8,
+      caja_id: 3,
+      cliente_id: 2,
+      tipo_movimiento: 'exportacion',
+      folio_boleta: 'VF-12345',
+      estatus: 'entregado'
+    });
   });
 
-  it('debería bloquear el borrado de un cliente si tiene viajes asociados (Integridad Referencial)', () => {
-    const clientes = db.getAll('clientes');
-    const clienteId = clientes[0].id;
+  it('debería enviar peticiones PUT para actualización con payload normalizado', async () => {
+    let capturedMethod = null;
+    let capturedUrl = null;
+    vi.spyOn(global, 'fetch').mockImplementationOnce(async (url, opts) => {
+      capturedMethod = opts.method;
+      capturedUrl = url;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ ok: true, status: 'updated' })
+      };
+    });
 
-    // Crear un viaje asociado para probar la restricción de integridad referencial
-    db.insert('movimientos', { clienteId, cliente: clientes[0].razonSocial, origen: 'Paso del Norte', destino: 'Juárez' });
-
-    expect(() => {
-      db.deleteCliente(clienteId);
-    }).toThrow(/Integridad Referencial: No se puede borrar el cliente/);
+    await db.update('cajas', 12, { numeroCaja: 'CJ-999', placas: 'TX-456' });
+    expect(capturedMethod).toBe('PUT');
+    expect(capturedUrl).toBe('/api/cajas/12');
   });
 
-  it('debería permitir borrar un cliente que NO tiene viajes asociados', () => {
-    // Insertamos cliente sin viajes
-    const clienteVacio = db.insert('clientes', { razonSocial: 'CLIENTE VACIO', activo: true });
-    
-    // Lo borramos
-    db.deleteCliente(clienteVacio.id);
-    
-    // Verificamos que no existe
-    const recuperado = db.getById('clientes', clienteVacio.id);
-    expect(recuperado).toBeNull();
-  });
+  it('debería enviar DELETE para eliminación y capturar errores 409 de integridad referencial', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      status: 409,
+      json: async () => ({ ok: false, error: 'Registro con dependencias asociadas' })
+    });
 
-  it('actualizar el nombre de un cliente se convierte en la única fuente de verdad', () => {
-    // Single Source of Truth demonstration
-    const clientes = db.getAll('clientes');
-    const cliente = clientes[0];
-    const nuevoNombre = 'NUEVO NOMBRE SA DE CV';
-    
-    db.update('clientes', cliente.id, { razonSocial: nuevoNombre });
-    
-    const actualizado = db.getById('clientes', cliente.id);
-    expect(actualizado.razonSocial).toBe(nuevoNombre);
-    // UI components relying on getById(clienteId) will immediately see "NUEVO NOMBRE SA DE CV"
+    await expect(db.remove('clientes', 1)).rejects.toThrow('Registro con dependencias asociadas');
   });
 });

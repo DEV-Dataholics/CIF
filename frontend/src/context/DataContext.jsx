@@ -97,7 +97,35 @@ export function DataProvider({ children }) {
         const c = dbClientes.find(cli => cli.id === m.clienteId || cli.id == m.cliente_id);
         const o = dbOperadores.find(op => op.id === m.operadorId || op.id == m.operador_id);
         const u = dbUnidades.find(un => un.id === m.tractorId || un.id == m.tractocamion_id);
-        const t = dbTiposMov.find(tm => tm.id === m.tipoMovId || tm.id == m.tipo_movimiento);
+        const rawTipo = String(m.tipo_movimiento || m.tipoMov || '').trim();
+        const rawTipoLower = rawTipo.toLowerCase();
+        const rawTipoSlug = rawTipoLower.replace(/[\s\/-]+/g, '_');
+
+        const t = (dbTiposMov || []).find(tm => {
+          if (tm.id === m.tipoMovId || tm.id == m.tipo_movimiento) return true;
+          if (!tm.nombre) return false;
+          const nomLower = tm.nombre.trim().toLowerCase();
+          if (nomLower === rawTipoLower) return true;
+          const nomSlug = nomLower.replace(/[\s\/-]+/g, '_');
+          if (nomSlug === rawTipoSlug) return true;
+          return false;
+        });
+
+        let tipoMovNombre = t ? t.nombre : rawTipo;
+        if (!t && rawTipo) {
+          const legacyMap = {
+            exportacion: 'EXPORTACION',
+            importacion: 'IMPORTACION',
+            local_cargado: 'LOCAL CARGADO',
+            local_vacio: 'LOCAL VACIO',
+            recoleccion: 'RECOLECCION',
+            interplanta: 'INTERPLANTA',
+            rampa: 'RAMPA',
+            reparto: 'REPARTO'
+          };
+          tipoMovNombre = legacyMap[rawTipoLower] || rawTipo.toUpperCase().replace(/_/g, ' ');
+        }
+
         const caja = dbCajas.find(cj => cj.id === m.cajaId || cj.id == m.caja_id);
         
         let fecha = m.fecha;
@@ -115,7 +143,8 @@ export function DataProvider({ children }) {
           cliente: c ? c.razonSocial || c.razon_social : m.cliente,
           operador: o ? o.nombreCompleto || o.nombre_completo : m.operador,
           tractor: u ? u.numeroEconomico || u.numero_economico : m.tractor,
-          tipoMov: t ? t.nombre : (m.tipoMov || m.tipo_movimiento),
+          tipoMov: tipoMovNombre,
+          tipoMovimiento: tipoMovNombre,
           caja: caja ? caja.numeroCaja || caja.numero_caja : m.caja,
           valeFisico: m.folio_boleta || m.valeFisico || ''
         };
@@ -178,13 +207,62 @@ export function DataProvider({ children }) {
     }
   };
 
+
+  // --- CALCULO CENTRALIZADO DE ALERTAS ---
+  const alertas = React.useMemo(() => {
+    const list = [];
+    const today = new Date();
+    
+    const checkVigencia = (fecha) => {
+      if (!fecha) return null;
+      const diffTime = new Date(fecha).getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays <= 30) return { status: 'rojo', days: diffDays };
+      if (diffDays <= 60) return { status: 'amarillo', days: diffDays };
+      if (diffDays <= 90) return { status: 'verde', days: diffDays };
+      return { status: 'ok', days: diffDays };
+    };
+
+    operadores.forEach(op => {
+      if (!op.activo) return;
+      const licFecha = op.licencia_mx_vencimiento || op.vigenciaLicencia;
+      const lic = checkVigencia(licFecha);
+      if (lic && lic.status !== 'ok') {
+        list.push({ type: 'operador', name: op.nombre_completo || op.nombreCompleto, item: 'Licencia MX', date: licFecha, ...lic });
+      }
+      const visaFecha = op.visa_vencimiento || op.vigenciaVisa;
+      const visa = checkVigencia(visaFecha);
+      if (visa && visa.status !== 'ok') {
+        list.push({ type: 'operador', name: op.nombre_completo || op.nombreCompleto, item: 'Visa/FAST', date: visaFecha, ...visa });
+      }
+    });
+
+    unidades.forEach(un => {
+      if (!un.activo) return;
+      const sctFecha = un.vencimiento_sct || un.vigenciaSCT;
+      const sct = checkVigencia(sctFecha);
+      if (sct && sct.status !== 'ok') {
+        list.push({ type: 'tracto', name: un.numero_economico || un.numeroEconomico, item: 'Permiso SCT', date: sctFecha, ...sct });
+      }
+      const seguroFecha = un.vencimiento_poliza_mx || un.vigenciaSeguro;
+      const seguro = checkVigencia(seguroFecha);
+      if (seguro && seguro.status !== 'ok') {
+        list.push({ type: 'tracto', name: un.numero_economico || un.numeroEconomico, item: 'Seguro MX', date: seguroFecha, ...seguro });
+      }
+    });
+
+    return list;
+  }, [operadores, unidades]);
+
   if (!dataLoaded) return null; // Esperar a inicializar
+
 
   return (
     <DataContext.Provider value={{
       clientes, facturas, movimientos, cajas, unidades, operadores, localidades, peajes, precios, tiposMovimiento,
       addFacturaYCliente, updateFacturaEstatus, resetDemo, crud,
-      setMovimientos, setCajas, setUnidades, setOperadores, setClientes, setLocalidades, setPeajes, setPrecios, setTiposMovimiento, refreshData
+      setMovimientos, setCajas, setUnidades, setOperadores, setClientes, setLocalidades, setPeajes, setPrecios, setTiposMovimiento, refreshData, alertas
     }}>
       {children}
     </DataContext.Provider>

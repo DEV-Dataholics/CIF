@@ -4,6 +4,7 @@ namespace Config;
 
 use CodeIgniter\Config\BaseConfig;
 use App\Filters\AuthFilter;
+use App\Filters\AuditFilter;
 
 class Filters extends BaseConfig
 {
@@ -16,12 +17,13 @@ class Filters extends BaseConfig
         'honeypot'      => \CodeIgniter\Filters\Honeypot::class,
         'invalidchars'  => \CodeIgniter\Filters\InvalidChars::class,
         'secureheaders' => \CodeIgniter\Filters\SecureHeaders::class,
-        'auth'          => AuthFilter::class,  // ← CIF: Agregado
+        'auth'          => AuthFilter::class,
+        'audit'         => AuditFilter::class,  // ← CIF: Agregado
     ];
 
     public array $globals = [
         'before' => [],
-        'after'  => ['toolbar'],
+        'after'  => ['toolbar', 'audit'],
     ];
 
     public array $methods = [];

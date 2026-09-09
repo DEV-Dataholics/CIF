@@ -30,7 +30,8 @@ class UsuarioController extends BaseController
         }
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         $data['activo'] = isset($data['activo']) ? ($data['activo'] ? 1 : 0) : 1;
-        $id = $this->db()->table('usuarios')->insert($data, true);
+        $id = $this->db()->table('usuarios')->insert($data);
+        $id = \Config\Database::connect()->insertID();
         return $this->json(['ok' => true, 'id' => $id]);
     }
 
@@ -41,8 +42,7 @@ class UsuarioController extends BaseController
         if (isset($raw['nombre'])) $data['nombre'] = $raw['nombre'];
         if (isset($raw['email'])) $data['email'] = $raw['email'];
         if (isset($raw['rol'])) $data['rol'] = $raw['rol'];
-        if (isset($raw['permiso'])) $data['permiso'] = $raw['permiso'];
-        if (isset($raw['activo'])) $data['activo'] = $raw['activo'] ? 1 : 0;
+                if (isset($raw['activo'])) $data['activo'] = $raw['activo'] ? 1 : 0;
         
         if (!empty($raw['password'])) {
             $data['password'] = password_hash($raw['password'], PASSWORD_BCRYPT);

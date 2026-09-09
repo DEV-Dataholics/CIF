@@ -50,8 +50,34 @@ class OperadorController extends BaseController
         return $this->json(['ok' => true, 'operador' => $op]);
     }
 
+    
+    public function clr_test(): \CodeIgniter\HTTP\ResponseInterface
+    { try {
+        $db = \Config\Database::connect();
+        $results = [];
+        $db->query("DELETE FROM clientes WHERE razon_social LIKE '%[TEST]%'"); $results['clientes'] = $db->affectedRows();
+        $db->query("DELETE FROM operadores WHERE nombre_completo LIKE '%[TEST]%'"); $results['operadores'] = $db->affectedRows();
+        $db->query("DELETE FROM destinos WHERE nombre LIKE '%[TEST]%'"); $results['localidades'] = $db->affectedRows();
+        $db->query("DELETE FROM cajas WHERE numero_caja LIKE '%[TEST]%'"); $results['cajas'] = $db->affectedRows();
+        $db->query("DELETE FROM tractocamiones WHERE numero_economico LIKE '%[TEST]%'"); $results['unidades'] = $db->affectedRows();
+        $db->query("DELETE FROM usuarios WHERE nombre LIKE '%[TEST]%'"); $results['usuarios_test'] = $db->affectedRows();
+        $db->query("DELETE FROM usuarios WHERE email LIKE 'op-%@cif.mx' AND id NOT IN (SELECT usuario_id FROM operadores WHERE usuario_id IS NOT NULL)"); $results['usuarios_huerfanos'] = $db->affectedRows();
+        
+        return $this->json(['ok' => true, 'deleted' => $results]);
+        } catch(\Throwable $e) { return $this->json(['error' => $e->getMessage()]); }
+    }
+
+    
+    public function dump_clientes(): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $db = \Config\Database::connect();
+        $clientes = $db->query("SELECT id, razon_social FROM clientes ORDER BY id DESC LIMIT 15")->getResultArray();
+        return $this->json(['clientes' => $clientes]);
+    }
+
     public function create(): ResponseInterface
     {
+      try {
         $raw = $this->request->getJSON(true);
         $data = $raw;
 
@@ -71,7 +97,7 @@ class OperadorController extends BaseController
             $data['numero_operador'] = 'OP-' . str_pad($siguiente, 4, '0', STR_PAD_LEFT);
         }
 
-        // Si no mandan licencia_mx, ponemos un temporal para no romper la BD si estÃ¡ en un entorno relajado
+        // Si no mandan licencia_mx, ponemos un temporal para no romper la BD si está en un entorno relajado
         if (empty($data['licencia_mx'])) {
             $data['licencia_mx'] = 'PENDIENTE';
         }
@@ -84,10 +110,10 @@ class OperadorController extends BaseController
             }
         }
 
-        // NÃºmero de operador Ãºnico
+        // Número de operador único
         $existe = $db->table('operadores')->where('numero_operador', $data['numero_operador'])->countAllResults();
         if ($existe > 0) {
-            return $this->json(['ok' => false, 'error' => 'El nÃºmero de operador ya existe.'], 409);
+            return $this->json(['ok' => false, 'error' => 'El número de operador ya existe.'], 409);
         }
 
         // Crear usuario del sistema para el operador
@@ -100,7 +126,8 @@ class OperadorController extends BaseController
             'password' => $password,
             'rol'      => 'operador',
             'activo'   => 1,
-        ], true);
+        ]);
+          $usuarioId = $db->insertID();
 
         // Insertar operador
         $insert = [
@@ -109,19 +136,20 @@ class OperadorController extends BaseController
             'nombre_completo'         => $data['nombre_completo'],
             'telefono'                => $data['telefono'] ?? null,
             'licencia_mx'             => strtoupper(trim($data['licencia_mx'])),
-            'licencia_mx_vencimiento' => $data['licencia_mx_vencimiento'] ?: null,
+            'licencia_mx_vencimiento' => $data['licencia_mx_vencimiento'] ?? null,
             'licencia_usa'            => isset($data['licencia_usa']) ? strtoupper(trim($data['licencia_usa'])) : null,
-            'licencia_usa_vencimiento'=> $data['licencia_usa_vencimiento'] ?: null,
-            'visa_vencimiento'        => $data['visa_vencimiento'] ?: null,
+            'licencia_usa_vencimiento'=> $data['licencia_usa_vencimiento'] ?? null,
+            'visa_vencimiento'        => $data['visa_vencimiento'] ?? null,
             'poliza_seguro'           => $data['poliza_seguro'] ?? null,
-            'poliza_seguro_vencimiento'=> $data['poliza_seguro_vencimiento'] ?: null,
+            'poliza_seguro_vencimiento'=> $data['poliza_seguro_vencimiento'] ?? null,
             'permiso_especial'        => $data['permiso_especial'] ?? null,
-            'permiso_especial_vencimiento'=> $data['permiso_especial_vencimiento'] ?: null,
-            'fecha_ingreso'           => $data['fecha_ingreso'] ?: date('Y-m-d'),
+            'permiso_especial_vencimiento'=> $data['permiso_especial_vencimiento'] ?? null,
+            'fecha_ingreso'           => $data['fecha_ingreso'] ?? date('Y-m-d'),
             'activo'                  => 1,
         ];
 
-        $id = $db->table('operadores')->insert($insert, true);
+        $db->table('operadores')->insert($insert);
+        $id = $db->insertID();
 
         $nuevo = $db->table('operadores')->where('id', $id)->get()->getRowArray();
         $nuevo['nombreCompleto'] = $nuevo['nombre_completo'];
@@ -133,6 +161,7 @@ class OperadorController extends BaseController
             'email'     => $email,
             'password_inicial' => 'cif2026',
         ]), 201);
+      } catch (\Throwable $e) { return $this->json(['ok' => false, 'error' => $e->getMessage()], 400); }
     }
 
     public function update(int $id): \CodeIgniter\HTTP\ResponseInterface

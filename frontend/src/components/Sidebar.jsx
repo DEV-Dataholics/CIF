@@ -20,6 +20,7 @@ const NAV_ITEMS = [
       { label: 'Cajas', icon: Package, path: '/admin/cajas' },
       { label: 'Movimientos', icon: ArrowsLeftRight, path: '/admin/movimientos' },
       { label: 'Usuarios', icon: Users, path: '/admin/usuarios' },
+      { label: 'Auditoría', icon: FileText, path: '/admin/auditoria' },
       { label: 'Concentrado Precios', icon: Money, path: '/admin/precios' },
       { label: 'Peajes', icon: RoadHorizon, path: '/admin/peajes' },
       { label: 'Cobranza', icon: CurrencyCircleDollar, path: '/admin/cobranza' },
@@ -53,21 +54,21 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   };
 
   const linkClasses = (isActive) =>
-    `flex items-center gap-3 px-4 py-3 text-xs font-label uppercase tracking-widest font-bold transition-all duration-200
+    `flex items-center gap-3 mx-2 px-3.5 py-2.5 text-xs font-label uppercase tracking-wider font-bold rounded-xl transition-all duration-200
      ${isActive
-      ? 'text-primary bg-primary/10 border-l-2 border-primary'
-      : 'text-outline hover:text-on-surface hover:bg-surface-container-high/50 border-l-2 border-transparent'}`;
+      ? 'text-primary bg-primary/10 border border-primary/25 shadow-xs shadow-primary/10'
+      : 'text-outline hover:text-on-surface hover:bg-surface-container-high/40 border border-transparent'}`;
 
   const renderItem = (item) => {
     if (item.isCTA) {
       return (
-        <div key={item.path} className="px-4 py-3">
+        <div key={item.path} className="px-2 py-2">
           <NavLink
             to={item.path}
             onClick={() => setMobileOpen(false)}
-            className={`flex items-center justify-center gap-2 w-full py-2.5 text-xs font-label uppercase tracking-widest font-bold rounded-lg transition-all
+            className={`flex items-center justify-center gap-2 w-full py-2.5 text-xs font-label uppercase tracking-widest font-bold rounded-xl transition-all duration-200
               ${collapsed ? 'px-0' : 'px-4'}
-              bg-primary text-on-primary hover:bg-primary/90 shadow-md shadow-primary/20 hover:shadow-lg`}
+              bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] hover:brightness-105 shadow-md shadow-[#d1a14e]/15 active:scale-[0.99]`}
             style={{ minHeight: '40px' }}
           >
             <item.icon size={18} weight="bold" className="flex-shrink-0" />
@@ -81,33 +82,33 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       const isExpanded = expandedSections[item.label];
       const hasActiveChild = item.children.some(c => location.pathname === c.path);
       return (
-        <div key={item.label}>
+        <div key={item.label} className="px-2 py-0.5">
           <button
             onClick={() => toggleSection(item.label)}
-            className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-label uppercase tracking-widest font-bold transition-all
-              ${hasActiveChild ? 'text-primary' : 'text-outline hover:text-on-surface'}`}
+            className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-label uppercase tracking-wider font-bold rounded-xl transition-all
+              ${hasActiveChild ? 'text-primary bg-primary/5' : 'text-outline hover:text-on-surface hover:bg-surface-container-high/30'}`}
           >
-            <item.icon size={18} weight="light" className="flex-shrink-0" />
+            <item.icon size={18} weight="regular" className="flex-shrink-0" />
             {!collapsed && (
               <>
                 <span className="flex-1 text-left">{item.label}</span>
-                {isExpanded ? <CaretDown size={12} /> : <CaretRight size={12} />}
+                {isExpanded ? <CaretDown size={12} weight="bold" /> : <CaretRight size={12} weight="bold" />}
               </>
             )}
           </button>
           {isExpanded && !collapsed && (
-            <div className="ml-4 border-l border-outline-variant/20 space-y-0.5">
+            <div className="ml-4 pl-2 my-1 border-l border-outline-variant/60 space-y-0.5">
               {item.children.map(child => (
                 <NavLink
                   key={child.path}
                   to={child.path}
                   onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center gap-2.5 pl-5 pr-4 py-2.5 text-[10px] font-label uppercase tracking-widest font-semibold transition-all
-                     ${isActive ? 'text-primary bg-primary/5' : 'text-outline hover:text-on-surface-variant'}`
+                    `flex items-center gap-2.5 px-3 py-2 text-[10.5px] font-label uppercase tracking-wider font-semibold rounded-lg transition-all
+                     ${isActive ? 'text-primary bg-primary/10 font-bold' : 'text-outline hover:text-on-surface hover:bg-surface-container-high/30'}`
                   }
                 >
-                  <child.icon size={14} weight="light" />
+                  <child.icon size={14} weight="regular" />
                   <span>{child.label}</span>
                 </NavLink>
               ))}
@@ -118,16 +119,17 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     }
 
     return (
-      <NavLink
-        key={item.path}
-        to={item.path}
-        end={item.path === '/'}
-        onClick={() => setMobileOpen(false)}
-        className={({ isActive }) => linkClasses(isActive)}
-      >
-        <item.icon size={18} weight="light" className="flex-shrink-0" />
-        {!collapsed && <span>{item.label}</span>}
-      </NavLink>
+      <div key={item.path} className="py-0.5">
+        <NavLink
+          to={item.path}
+          end={item.path === '/'}
+          onClick={() => setMobileOpen(false)}
+          className={({ isActive }) => linkClasses(isActive)}
+        >
+          <item.icon size={18} weight="regular" className="flex-shrink-0" />
+          {!collapsed && <span>{item.label}</span>}
+        </NavLink>
+      </div>
     );
   };
 
@@ -140,7 +142,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
       {/* Mobile hamburger */}
       <button
-        className="fixed top-5 left-4 z-50 lg:hidden w-10 h-10 flex items-center justify-center bg-surface-container-high border border-outline-variant/20 text-primary"
+        className="fixed top-5 left-4 z-50 lg:hidden w-10 h-10 flex items-center justify-center bg-surface-container-high border border-outline-variant rounded-xl text-primary shadow-lg"
         onClick={() => setMobileOpen(!mobileOpen)}
       >
         {mobileOpen ? <X size={20} /> : <List size={20} />}
@@ -148,30 +150,32 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-screen bg-surface-container-lowest border-r border-outline-variant/10 z-40 flex flex-col sidebar-transition
+        className={`fixed top-0 left-0 h-screen bg-surface-container-lowest border-r border-outline-variant z-40 flex flex-col sidebar-transition
           ${collapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Logo */}
-        <div className="px-4 py-6 border-b border-outline-variant/10 flex items-center justify-center">
+        <div className={`border-b border-outline-variant flex items-center justify-center transition-all duration-300 ${collapsed ? 'px-2 py-4' : 'px-5 py-6'}`}>
           <img
             src="/assets/LOGOCIF.png"
             alt="CIF Logística"
-            className={`object-contain transition-all duration-300 ${collapsed ? 'h-8' : 'h-16'}`}
-            style={{ filter: 'drop-shadow(0 0 8px rgba(209,161,78,0.2))' }}
+            width={collapsed ? 36 : 190}
+            className={`object-contain transition-all duration-300 ${collapsed ? 'h-7 w-auto' : 'w-full max-w-[190px] h-auto max-h-20'}`}
+            style={{ maxWidth: collapsed ? '36px' : '190px', width: '100%', height: 'auto', filter: 'drop-shadow(0 0 10px rgba(209,161,78,0.25))' }}
           />
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-2 space-y-1">
+        <nav className="flex-1 overflow-y-auto py-3 space-y-1">
           {NAV_ITEMS.map(renderItem)}
         </nav>
 
         {/* Version footer */}
         {!collapsed && (
-          <div className="px-4 py-4 border-t border-outline-variant/10">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-body font-bold text-on-surface">v2.0</span>
+          <div className="px-4 py-3.5 border-t border-outline-variant">
+            <div className="flex items-center justify-between text-xs text-outline font-medium">
+              <span>CIF Logística</span>
+              <span className="font-mono text-[11px] px-2 py-0.5 rounded-full bg-surface-container border border-outline-variant text-primary">v2.0</span>
             </div>
           </div>
         )}
@@ -179,7 +183,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         {/* Collapse toggle (desktop only) */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden lg:flex items-center justify-center py-3 border-t border-outline-variant/10 text-outline hover:text-primary transition-colors"
+          className="hidden lg:flex items-center justify-center py-3 border-t border-outline-variant text-outline hover:text-primary transition-colors"
         >
           <CaretRight size={16} className={`transition-transform ${collapsed ? '' : 'rotate-180'}`} />
         </button>

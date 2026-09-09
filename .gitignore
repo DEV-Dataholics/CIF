@@ -1,0 +1,32 @@
+# Logs & Temp
+*.log
+remote_log*.txt
+
+# Environments & Sensitive
+.env
+.env.*
+!.env.example
+
+# Gobernanza y Agentes locales (Dataholics - Prevenir contaminación en PRs / Forks)
+.agents/
+.agent/
+
+# Playwright & Testing
+playwright-base/.auth/
+playwright-base/test-results/
+playwright-base/playwright-report/
+playwright-base/blob-report/
+
+# Dependencies
+node_modules/
+**/node_modules/
+vendor/
+
+# Frontend build
+frontend/dist/
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

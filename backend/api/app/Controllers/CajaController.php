@@ -49,7 +49,9 @@ class CajaController extends BaseController
         $data = $raw;
 
         if (isset($raw['numeroCaja'])) $data['numero_caja'] = $raw['numeroCaja'];
+        if (isset($raw['numero_caja'])) $data['numero_caja'] = $raw['numero_caja'];
         if (isset($raw['placas'])) $data['placas_mx'] = $raw['placas'];
+        if (isset($raw['placas_mx'])) $data['placas_mx'] = $raw['placas_mx'];
 
         $required = ['numero_caja', 'tipo', 'placas_mx'];
         foreach ($required as $f) {
@@ -73,7 +75,8 @@ class CajaController extends BaseController
             'activo'       => 1,
         ];
 
-        $id = $this->db()->table('cajas')->insert($insert, true);
+        $id = $this->db()->table('cajas')->insert($insert);
+        $id = $this->db()->insertID();
         return $this->json(['ok' => true, 'id' => $id], 201);
     }
 
@@ -82,8 +85,10 @@ class CajaController extends BaseController
         $raw = $this->request->getJSON(true);
         $data = [];
         if (isset($raw['numeroCaja'])) $data['numero_caja'] = $raw['numeroCaja'];
+        if (isset($raw['numero_caja'])) $data['numero_caja'] = $raw['numero_caja'];
         if (isset($raw['tipo'])) $data['tipo'] = $raw['tipo'];
         if (isset($raw['placas'])) $data['placas_mx'] = $raw['placas'];
+        if (isset($raw['placas_mx'])) $data['placas_mx'] = $raw['placas_mx'];
         if (isset($raw['estatus'])) $data['estatus'] = $raw['estatus'];
         if (isset($raw['activo'])) $data['activo'] = $raw['activo'] ? 1 : 0;
         

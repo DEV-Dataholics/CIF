@@ -41,12 +41,24 @@ export default function Movimientos() {
     { key: 'hora', label: 'Hora', render: (v) => <span className="font-mono text-primary font-bold">{v}</span> },
     { key: 'usuario', label: 'Usuario' },
     { key: 'cliente', label: 'Cliente', render: (v) => <span className="font-semibold">{v}</span> },
-    { key: 'tipoMov', label: 'Tipo Mov', render: (v) => (
-      <span className={`badge ${v === 'ENTRADA' ? 'badge-success' : 'badge-danger'}`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${v === 'ENTRADA' ? 'bg-success' : 'bg-danger'}`} />
-        {v}
-      </span>
-    )},
+    { key: 'tipoMov', label: 'Tipo Mov', render: (v) => {
+      if (!v || v === '—') {
+        return <span className="text-outline font-mono text-xs">—</span>;
+      }
+      const upper = String(v).toUpperCase();
+      const isSuccess = upper.includes('ENTRA') || upper.includes('IMPO') || upper.includes('LOCAL') || upper.includes('CARGADO');
+      const isWarning = upper.includes('EXPO') || upper.includes('SALIDA');
+      const isInfo = upper.includes('INTER') || upper.includes('RAMPA') || upper.includes('RECOL');
+      const badgeClass = isSuccess ? 'badge-success' : isWarning ? 'badge-warning' : isInfo ? 'badge-info' : 'badge-muted';
+      const dotClass = isSuccess ? 'bg-success' : isWarning ? 'bg-warning' : isInfo ? 'bg-info' : 'bg-outline';
+
+      return (
+        <span className={`badge ${badgeClass}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
+          {upper}
+        </span>
+      );
+    }},
     { key: 'origen', label: 'Origen' },
     { key: 'destino', label: 'Destino' },
     { key: 'clasificacion', label: 'Clasif.', render: (v) => <span className="font-bold text-outline">{v}</span> },
@@ -212,9 +224,9 @@ export default function Movimientos() {
           <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={() => setWizardOpen(true)}
-              className="flex items-center gap-2 bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-5 py-3 hover:brightness-110 transition-all shadow-md"
+              className="flex items-center gap-2 bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label text-[10.5px] font-bold uppercase tracking-wider px-5 py-3 rounded-xl hover:brightness-105 transition-all shadow-md shadow-[#d1a14e]/15 active:scale-[0.99]"
             >
-              <Plus size={14} weight="bold" />
+              <Plus size={16} weight="bold" />
               Súper Captura
             </button>
             <ColumnEditor
@@ -227,34 +239,36 @@ export default function Movimientos() {
         </div>
 
         {/* Filters & Buscador por Folio/Fecha */}
-        <div className="bg-surface-container-low border border-outline-variant/20 matte-grain px-5 py-4 flex flex-wrap items-center gap-4">
-          <Funnel size={16} className="text-primary" />
+        <div className="bg-surface-container-low border border-outline-variant rounded-2xl p-4 shadow-xs flex flex-wrap items-center gap-3.5">
+          <div className="w-8 h-8 rounded-lg bg-surface-container border border-outline-variant flex items-center justify-center text-primary">
+            <Funnel size={16} weight="duotone" />
+          </div>
 
-          <div className="flex items-center gap-2 bg-surface border border-outline-variant/40 px-3 py-1.5 focus-within:border-primary">
-            <label className="font-label text-[9px] uppercase tracking-widest text-outline font-bold">Buscar Folio/Fecha:</label>
+          <div className="flex items-center gap-2 bg-surface border border-outline-variant rounded-xl px-3 py-1.5 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+            <label className="font-label text-[9.5px] uppercase tracking-wider text-outline font-bold">Buscar:</label>
             <input
               type="text"
               value={busquedaRapida}
               onChange={e => setBusquedaRapida(e.target.value)}
-              placeholder="Escribe folio, fecha..."
-              className="bg-transparent text-xs font-mono font-bold text-primary outline-none w-44"
+              placeholder="Folio, fecha, cliente..."
+              className="bg-transparent text-xs font-mono font-bold text-primary outline-none w-48 placeholder:text-outline/40"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="font-label text-[9px] uppercase tracking-widest text-outline">Desde</label>
+            <label className="font-label text-[9.5px] uppercase tracking-wider text-outline font-semibold">Desde</label>
             <input type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)}
-              className="bg-surface border border-outline-variant/30 text-xs font-label font-bold px-3 py-2 text-primary outline-none focus:border-primary" />
+              className="bg-surface border border-outline-variant rounded-xl text-xs font-label font-bold px-3 py-1.5 text-primary outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
           </div>
           <div className="flex items-center gap-2">
-            <label className="font-label text-[9px] uppercase tracking-widest text-outline">Hasta</label>
+            <label className="font-label text-[9.5px] uppercase tracking-wider text-outline font-semibold">Hasta</label>
             <input type="date" value={fechaFin} onChange={e => setFechaFin(e.target.value)}
-              className="bg-surface border border-outline-variant/30 text-xs font-label font-bold px-3 py-2 text-primary outline-none focus:border-primary" />
+              className="bg-surface border border-outline-variant rounded-xl text-xs font-label font-bold px-3 py-1.5 text-primary outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
           </div>
           <div className="flex items-center gap-2">
-            <label className="font-label text-[9px] uppercase tracking-widest text-outline">Estatus</label>
+            <label className="font-label text-[9.5px] uppercase tracking-wider text-outline font-semibold">Estatus</label>
             <select value={filtroEstatus} onChange={e => setFiltroEstatus(e.target.value)}
-              className="bg-surface border border-outline-variant/30 text-xs font-label font-bold px-3 py-2 text-on-surface outline-none focus:border-primary">
+              className="bg-surface border border-outline-variant rounded-xl text-xs font-label font-bold px-3 py-1.5 text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
               <option value="">Todos</option>
               <option value="Completo">Completo</option>
               <option value="En Ruta">En Ruta</option>
@@ -264,7 +278,7 @@ export default function Movimientos() {
           {(fechaInicio || fechaFin || filtroEstatus || busquedaRapida) && (
             <button
               onClick={() => { setFechaInicio(''); setFechaFin(''); setFiltroEstatus(''); setBusquedaRapida(''); }}
-              className="font-label text-[10px] uppercase tracking-widest text-danger hover:text-on-surface transition-colors font-bold underline"
+              className="font-label text-[10px] uppercase tracking-wider text-danger hover:text-danger/80 transition-colors font-bold px-2.5 py-1 rounded-lg hover:bg-danger/10"
             >
               Limpiar filtros
             </button>
@@ -579,11 +593,11 @@ export default function Movimientos() {
                     }
                   }
                 }}
-                className="font-label text-xs uppercase tracking-widest font-bold text-danger hover:text-white hover:bg-danger px-4 py-2 mr-auto"
+                className="font-label text-xs uppercase tracking-widest font-bold text-danger hover:bg-danger/10 px-4 py-2 rounded-xl mr-auto transition-colors"
               >
                 Eliminar Captura
               </button>
-              <button onClick={() => setEditRow(null)} className="font-label text-xs uppercase tracking-widest font-bold text-outline hover:text-on-surface px-4 py-2">
+              <button onClick={() => setEditRow(null)} className="font-label text-xs uppercase tracking-widest font-bold text-outline hover:text-on-surface px-4 py-2 rounded-xl transition-colors">
                 Cancelar
               </button>
               <button 
@@ -601,7 +615,7 @@ export default function Movimientos() {
                     operador_id: oId,
                     tractocamion_id: tId,
                     caja_id: cjId,
-                    tipo_movimiento: editRow.tipoMov ? editRow.tipoMov.toLowerCase().replace(' ', '_') : editRow.tipo_movimiento,
+                    tipo_movimiento: editRow.tipoMov || editRow.tipo_movimiento || 'local_cargado',
                     origen: editRow.origen,
                     destino: editRow.destino,
                     via_cruce: editRow.puente || '',
@@ -635,7 +649,7 @@ export default function Movimientos() {
                     alert("Error al actualizar: " + err.message);
                   }
                 }}
-                className="bg-primary text-on-primary font-label text-xs uppercase tracking-widest font-bold px-6 py-2 shadow-md hover:brightness-110"
+                className="bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label text-xs uppercase tracking-widest font-bold px-6 py-2.5 rounded-xl shadow-md shadow-[#d1a14e]/20 hover:brightness-105 active:scale-[0.99]"
               >
                 Guardar Cambios
               </button>

@@ -83,7 +83,8 @@ class ViajeController extends BaseController
             $insert['cliente_id'] = null;
         }
 
-        $id = $this->db()->table('viajes')->insert($insert, true);
+        $id = $this->db()->table('viajes')->insert($insert);
+        $id = $this->db()->insertID();
         $this->db()->table('tractocamiones')->where('id', $data['tractocamion_id'])->update(['estatus' => 'en_ruta']);
 
         // F1.4: Sincronizar caja → en_viaje
@@ -187,7 +188,8 @@ class ViajeController extends BaseController
             'created_by'      => $userId,
         ];
 
-        $id = $db->table('viajes')->insert($insert, true);
+        $id = $db->table('viajes')->insert($insert);
+        $id = $this->db()->insertID();
         $this->asignarPuntos($insert + ['id' => $id]);
 
         return $this->json(['ok' => true, 'mensaje' => 'Registrado']);

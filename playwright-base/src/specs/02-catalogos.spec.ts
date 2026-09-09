@@ -1,7 +1,7 @@
 ﻿import { test, expect } from '@playwright/test';
 import { CatalogosPage } from '../pages/CatalogosPage';
 
-test.describe('CatÃ¡logos Core (CRUD)', () => {
+test.describe('Catálogos Core (CRUD)', () => {
   let catalogos: CatalogosPage;
 
   test.beforeEach(async ({ page }) => {
@@ -22,12 +22,12 @@ test.describe('CatÃ¡logos Core (CRUD)', () => {
 
     await catalogos.irA('/admin/operadores');
     
-    // Asumimos que la pÃ¡gina cargÃ³ si el botÃ³n de agregar estÃ¡
+    // Asumimos que la página cargó si el botón de agregar está
     await expect(catalogos.btnAgregar).toBeVisible();
 
     await catalogos.iniciarCreacion();
     
-    // Llenar campos requeridos genÃ©ricos
+    // Llenar campos requeridos genéricos
     const modal = page.locator('.fixed.inset-0').first();
     await modal.locator('xpath=.//label[normalize-space(text())="Nombre Completo"]/following-sibling::input').fill(nombreOperador);
     await modal.locator('xpath=.//label[normalize-space(text())="Licencia"]/following-sibling::input').fill('LIC-TEST-123');
@@ -42,17 +42,17 @@ test.describe('CatÃ¡logos Core (CRUD)', () => {
     await catalogos.eliminarUltimo(nombreOperador);
   });
 
-  test('Cajas: Validar semaforizaciÃ³n visual de vigencias', async ({ page }) => {
+  test('Cajas: Validar semaforización visual de vigencias', async ({ page }) => {
     await catalogos.irA('/admin/cajas');
     
-    // Revisar si existen Ã­conos de alerta en la tabla
+    // Revisar si existen íconos de alerta en la tabla
     const tabla = page.locator('table');
     await expect(tabla).toBeVisible();
     
-    // Verificamos que se renderice correctamente la columna de alertas (Ã­conos svg)
+    // Verificamos que se renderice correctamente la columna de alertas (íconos svg)
     // No exigimos que haya rojas, pero que el componente no haya crasheado
     const iconos = page.locator('svg[title*="vencer"], svg[title*="orden"], svg[title*="vencido"]');
-    // Si la tabla no estÃ¡ vacÃ­a, deberÃ­amos ver al menos un Ã­cono
+    // Si la tabla no está vacía, deberíamos ver al menos un ícono
     if (await catalogos.tableRows.count() > 0) {
        await expect(iconos.first()).toBeVisible();
     }

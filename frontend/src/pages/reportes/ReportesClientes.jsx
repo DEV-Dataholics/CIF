@@ -103,11 +103,10 @@ export default function ReportesClientes() {
     XLSX.writeFile(wb, `Pre_Factura_${selectedCliente || 'Todos'}_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
-  return (
-    <div className="space-y-6 animate-in">
+  return (    <div className="space-y-6 animate-in">
       {/* Explicación del Reporte */}
-      <div className="bg-surface border border-outline-variant/30 p-6 rounded-sm">
-        <div className="flex justify-between items-start">
+      <div className="bg-surface-container/60 border border-outline-variant p-6 rounded-2xl shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-display font-bold text-on-surface mb-2 flex items-center gap-2">
               <FileText size={24} className="text-primary" />
@@ -121,11 +120,11 @@ export default function ReportesClientes() {
             <button 
               onClick={exportExcel} 
               disabled={!selectedCliente}
-              className="flex items-center gap-2 bg-surface border border-outline-variant/30 text-primary font-label text-[10px] font-bold uppercase tracking-widest px-5 py-3 hover:bg-surface-variant transition-all disabled:opacity-50"
+              className="flex items-center gap-2 bg-surface-container border border-outline-variant hover:border-primary/50 text-primary font-label text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-xl shadow-sm transition-all disabled:opacity-50"
             >
-              <MicrosoftExcelLogo size={14} weight="bold" /> Exportar Excel
+              <MicrosoftExcelLogo size={16} weight="bold" /> Exportar Excel
             </button>
-            <button className="flex items-center gap-2 bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-5 py-3 hover:brightness-110 transition-all shadow-md">
+            <button className="flex items-center gap-2 bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-xl hover:brightness-105 shadow-md shadow-[#d1a14e]/20 transition-all active:scale-[0.99]">
               Imprimir Reporte (PDF)
             </button>
           </div>
@@ -133,26 +132,26 @@ export default function ReportesClientes() {
       </div>
 
       {/* Filtros */}
-      <div className="bg-surface-container-low border border-outline-variant/20 matte-grain p-6">
+      <div className="bg-surface-container/60 border border-outline-variant rounded-2xl p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-4 text-primary">
           <Funnel size={18} weight="bold" />
           <h3 className="font-label font-bold text-xs uppercase tracking-widest">Filtros (Obligatorio Cliente)</h3>
         </div>
-        <div className="flex flex-wrap items-end gap-6">
-          <div className="flex flex-col gap-1">
+        <div className="flex flex-wrap items-end gap-5">
+          <div className="flex flex-col gap-1.5">
             <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">CLIENTE *</label>
-            <select value={selectedCliente} onChange={e => setSelectedCliente(e.target.value)} className="bg-surface border border-primary/40 text-on-surface px-4 py-2 text-sm font-body outline-none focus:border-primary min-w-[200px]">
+            <select value={selectedCliente} onChange={e => setSelectedCliente(e.target.value)} className="bg-surface-container border border-outline-variant text-on-surface px-4 py-2.5 rounded-xl text-sm font-body outline-none focus:border-primary min-w-[220px] shadow-sm">
               <option value="">-- SELECCIONAR CLIENTE --</option>
               {clientesList.map((c, i) => <option key={`${c}-${i}`} value={c}>{c}</option>)}
             </select>
           </div>
 
-          <div className="flex items-center gap-3 bg-surface border border-outline-variant/30 p-1">
+          <div className="flex items-center gap-2 bg-surface-container border border-outline-variant rounded-xl p-1.5 shadow-sm">
             <div className="flex items-center gap-2 px-3 py-1">
               <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">De:</label>
               <input type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} className="bg-transparent text-sm font-bold text-primary outline-none" />
             </div>
-            <div className="w-[1px] h-6 bg-outline-variant/30"></div>
+            <div className="w-[1px] h-6 bg-outline-variant"></div>
             <div className="flex items-center gap-2 px-3 py-1">
               <label className="font-label text-[10px] font-bold uppercase tracking-widest text-outline">Hasta:</label>
               <input type="date" value={fechaFin} onChange={e => setFechaFin(e.target.value)} className="bg-transparent text-sm font-bold text-primary outline-none" />
@@ -161,7 +160,7 @@ export default function ReportesClientes() {
 
           <div className="flex items-center gap-3">
             {(fechaInicio || fechaFin || selectedCliente) && (
-              <button onClick={() => { setFechaInicio(''); setFechaFin(''); setSelectedCliente(''); }} className="font-label text-[10px] uppercase tracking-widest text-danger hover:text-red-400 font-bold underline">
+              <button onClick={() => { setFechaInicio(''); setFechaFin(''); setSelectedCliente(''); }} className="font-label text-xs uppercase tracking-widest text-danger hover:text-red-400 font-bold underline px-2">
                 Limpiar Filtros
               </button>
             )}
@@ -174,26 +173,26 @@ export default function ReportesClientes() {
         <div className="space-y-6">
           
           {/* Listado Agrupado Dual */}
-          <div className="bg-surface border border-outline-variant/30 shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-outline-variant/30 bg-surface-variant/20 flex justify-between items-center">
+          <div className="bg-surface-container/60 border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-outline-variant bg-surface-container-high flex justify-between items-center">
               <h2 className="font-display font-bold text-lg text-on-surface">Detalle Operativo</h2>
               <span className="font-label text-[10px] uppercase tracking-widest font-bold text-outline">Total Viajes: {resumen.totalViajesGlobal}</span>
             </div>
             
-            <div className="p-6 space-y-8 h-[500px] overflow-y-auto">
+            <div className="p-6 space-y-6 h-[500px] overflow-y-auto">
               {Object.keys(groupedData).length === 0 ? (
                 <div className="text-center text-outline font-body py-10">No hay movimientos registrados para estos filtros.</div>
               ) : (
                 Object.keys(groupedData).map(operador => (
-                  <div key={operador} className="border border-outline-variant/20 rounded-md overflow-hidden">
+                  <div key={operador} className="border border-outline-variant rounded-xl overflow-hidden shadow-sm">
                     {/* Header Operador */}
-                    <div className="bg-surface-container border-b border-outline-variant/20 p-3 px-4 flex items-center gap-3">
+                    <div className="bg-surface-container-high border-b border-outline-variant p-3 px-4 flex items-center gap-3">
                       <Users size={18} className="text-primary" />
                       <h3 className="font-bold text-sm text-on-surface uppercase">{operador}</h3>
                     </div>
                     
                     {/* Body Tipos de Movimiento */}
-                    <div className="p-4 space-y-6 bg-background">
+                    <div className="p-4 space-y-6 bg-surface-container/30">
                       {Object.keys(groupedData[operador]).sort().map(tipo => {
                         const grupoTipo = groupedData[operador][tipo];
                         return (
@@ -202,31 +201,31 @@ export default function ReportesClientes() {
                               <h4 className="font-label text-xs uppercase tracking-widest font-bold text-primary pl-2 border-l-2 border-primary">
                                 {tipo}
                               </h4>
-                              <span className="font-mono text-xs font-bold text-success bg-success/10 px-2 py-1 rounded">
+                              <span className="font-mono text-xs font-bold text-success bg-success/10 px-2.5 py-1 rounded-full border border-success/20">
                                 Tarifa: ${grupoTipo.tarifaUSD.toFixed(2)} USD
                               </span>
                             </div>
                             
-                            <table className="w-full text-left text-xs font-body border border-outline-variant/20">
-                              <thead className="bg-surface">
+                            <table className="w-full text-left text-xs font-body border border-outline-variant rounded-lg overflow-hidden">
+                              <thead className="bg-surface-container-high">
                                 <tr>
-                                  <th className="p-2 border-b border-outline-variant/20 font-bold">Fecha</th>
-                                  <th className="p-2 border-b border-outline-variant/20 font-bold">Tractor</th>
-                                  <th className="p-2 border-b border-outline-variant/20 font-bold">Caja</th>
-                                  <th className="p-2 border-b border-outline-variant/20 font-bold">Vale Físico</th>
-                                  <th className="p-2 border-b border-outline-variant/20 font-bold">Sello</th>
-                                  <th className="p-2 border-b border-outline-variant/20 font-bold">Origen / Destino</th>
+                                  <th className="p-2.5 border-b border-outline-variant font-bold">Fecha</th>
+                                  <th className="p-2.5 border-b border-outline-variant font-bold">Tractor</th>
+                                  <th className="p-2.5 border-b border-outline-variant font-bold">Caja</th>
+                                  <th className="p-2.5 border-b border-outline-variant font-bold">Vale Físico</th>
+                                  <th className="p-2.5 border-b border-outline-variant font-bold">Sello</th>
+                                  <th className="p-2.5 border-b border-outline-variant font-bold">Origen / Destino</th>
                                 </tr>
                               </thead>
-                              <tbody>
+                              <tbody className="divide-y divide-outline-variant">
                                 {grupoTipo.viajes.map((mov, i) => (
-                                  <tr key={i} className="hover:bg-surface-variant/20 transition-colors">
-                                    <td className="p-2 border-b border-outline-variant/10 font-mono">{mov.fecha} {mov.hora}</td>
-                                    <td className="p-2 border-b border-outline-variant/10 font-mono">{mov.tractor}</td>
-                                    <td className="p-2 border-b border-outline-variant/10 font-mono">{mov.caja}</td>
-                                    <td className="p-2 border-b border-outline-variant/10 font-mono">{mov.facPedimento || mov.numVoucher}</td>
-                                    <td className="p-2 border-b border-outline-variant/10">{mov.sello}</td>
-                                    <td className="p-2 border-b border-outline-variant/10 truncate max-w-[200px]" title={`${mov.origen} -> ${mov.destino}`}>
+                                  <tr key={i} className="hover:bg-surface-container/60 transition-colors">
+                                    <td className="p-2.5 font-mono text-on-surface">{mov.fecha} {mov.hora}</td>
+                                    <td className="p-2.5 font-mono text-primary font-bold">{mov.tractor}</td>
+                                    <td className="p-2.5 font-mono text-on-surface">{mov.caja}</td>
+                                    <td className="p-2.5 font-mono text-on-surface">{mov.facPedimento || mov.numVoucher}</td>
+                                    <td className="p-2.5 text-on-surface">{mov.sello}</td>
+                                    <td className="p-2.5 text-on-surface truncate max-w-[200px]" title={`${mov.origen} -> ${mov.destino}`}>
                                       {mov.origen} &rarr; {mov.destino}
                                     </td>
                                   </tr>
@@ -245,19 +244,19 @@ export default function ReportesClientes() {
 
           {/* Cuadro de Resumen Final */}
           {Object.keys(groupedData).length > 0 && (
-            <div className="bg-surface border border-outline-variant/30 shadow-md">
-              <div className="p-4 border-b border-outline-variant/30 flex items-center gap-2">
+            <div className="bg-surface-container/60 border border-outline-variant rounded-2xl shadow-md overflow-hidden">
+              <div className="p-4 border-b border-outline-variant bg-surface-container-high flex items-center gap-2">
                 <Calculator size={20} className="text-primary" />
                 <h2 className="font-display font-bold text-lg text-on-surface">Resumen de Pre-Facturación</h2>
               </div>
               <div className="p-6">
                 <table className="w-full text-left text-sm font-body mb-6">
-                  <thead className="bg-surface-container">
+                  <thead className="bg-surface-container-high">
                     <tr>
-                      <th className="p-3 font-label uppercase tracking-widest text-xs font-bold border-b border-outline-variant/20">Tipo de Movimiento</th>
-                      <th className="p-3 font-label uppercase tracking-widest text-xs font-bold border-b border-outline-variant/20 text-center">Cantidad de Viajes</th>
-                      <th className="p-3 font-label uppercase tracking-widest text-xs font-bold border-b border-outline-variant/20 text-right">Costo Unitario (USD)</th>
-                      <th className="p-3 font-label uppercase tracking-widest text-xs font-bold border-b border-outline-variant/20 text-right">Costo Total (USD)</th>
+                      <th className="p-3 font-label uppercase tracking-widest text-xs font-bold border-b border-outline-variant">Tipo de Movimiento</th>
+                      <th className="p-3 font-label uppercase tracking-widest text-xs font-bold border-b border-outline-variant text-center">Cantidad de Viajes</th>
+                      <th className="p-3 font-label uppercase tracking-widest text-xs font-bold border-b border-outline-variant text-right">Costo Unitario (USD)</th>
+                      <th className="p-3 font-label uppercase tracking-widest text-xs font-bold border-b border-outline-variant text-right">Costo Total (USD)</th>
                     </tr>
                   </thead>
                   <tbody>

@@ -45,18 +45,18 @@ export default function DataTable({ columns, data, visibleColumns, pageSize = 15
   const activeCols = columns.filter(c => actualVisibleColumns.includes(c.key));
 
   return (
-    <div className="bg-surface-container-low border border-outline-variant/20 matte-grain print:bg-white print:border-none print:shadow-none">
+    <div className="bg-surface-container-low border border-outline-variant rounded-2xl shadow-xs overflow-hidden print:bg-white print:border-none print:shadow-none">
       {/* Search bar */}
-      <div className="px-5 py-3 border-b border-outline-variant/20 flex items-center gap-3 print:hidden">
-        <MagnifyingGlass size={16} className="text-outline" />
+      <div className="px-6 py-3.5 border-b border-outline-variant flex items-center gap-3 bg-surface-container/30 print:hidden">
+        <MagnifyingGlass size={16} className="text-outline" weight="bold" />
         <input
           type="text"
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(0); }}
           placeholder="Buscar en tabla..."
-          className="flex-1 bg-transparent text-sm font-body text-on-surface placeholder:text-outline/50 outline-none"
+          className="flex-1 bg-transparent text-sm font-body text-on-surface placeholder:text-outline/70 outline-none"
         />
-        <span className="font-label text-[9px] uppercase tracking-widest text-outline">
+        <span className="font-label text-[10px] uppercase tracking-wider text-outline font-semibold">
           {sorted.length} registros
         </span>
       </div>
@@ -64,7 +64,7 @@ export default function DataTable({ columns, data, visibleColumns, pageSize = 15
       {/* Table */}
       <div className="overflow-x-auto print:overflow-visible">
         <table className="cif-table">
-          <thead>
+          <thead className="bg-surface-container/40">
             <tr>
               {activeCols.map(col => (
                 <th
@@ -72,20 +72,20 @@ export default function DataTable({ columns, data, visibleColumns, pageSize = 15
                   onClick={() => handleSort(col.key)}
                   className="cursor-pointer select-none hover:text-primary transition-colors print:text-black print:border-black"
                 >
-                  <span className="inline-flex items-center gap-1">
+                  <span className="inline-flex items-center gap-1.5">
                     {col.label}
                     {sortKey === col.key && (
-                      sortDir === 'asc' ? <CaretUp size={10} /> : <CaretDown size={10} />
+                      sortDir === 'asc' ? <CaretUp size={11} weight="bold" /> : <CaretDown size={11} weight="bold" />
                     )}
                   </span>
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="print:hidden">
+          <tbody className="print:hidden divide-y divide-outline-variant">
             {paged.length === 0 ? (
               <tr>
-                <td colSpan={activeCols.length} className="text-center py-16 text-outline font-label uppercase tracking-widest opacity-50">
+                <td colSpan={activeCols.length} className="text-center py-16 text-outline font-label uppercase tracking-widest font-semibold">
                   Sin resultados
                 </td>
               </tr>
@@ -93,7 +93,7 @@ export default function DataTable({ columns, data, visibleColumns, pageSize = 15
               paged.map((row, i) => (
                 <tr
                   key={row.id || i}
-                  className={onRowClick ? 'cursor-pointer' : ''}
+                  className={`hover:bg-surface-container/50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
                   onClick={() => onRowClick?.(row)}
                 >
                   {activeCols.map(col => (
@@ -116,7 +116,7 @@ export default function DataTable({ columns, data, visibleColumns, pageSize = 15
               sorted.map((row, i) => (
                 <tr key={row.id || i}>
                   {activeCols.map(col => (
-                    <td key={col.key} className="whitespace-nowrap text-xs py-1 border-b border-outline-variant/20 print:text-black">
+                    <td key={col.key} className="whitespace-nowrap text-xs py-1 border-b border-outline-variant print:text-black">
                       {col.render ? col.render(row[col.key], row) : (row[col.key] ?? '—')}
                     </td>
                   ))}
@@ -129,24 +129,24 @@ export default function DataTable({ columns, data, visibleColumns, pageSize = 15
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="px-5 py-3 border-t border-outline-variant/20 flex items-center justify-between print:hidden">
-          <span className="font-label text-[9px] uppercase tracking-widest text-outline">
+        <div className="px-6 py-3.5 border-t border-outline-variant flex items-center justify-between bg-surface-container/30 print:hidden">
+          <span className="font-label text-[10px] uppercase tracking-wider text-outline font-semibold">
             Página {page + 1} de {totalPages}
           </span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPage(p => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="w-8 h-8 flex items-center justify-center border border-outline-variant/20 text-outline hover:text-primary hover:border-primary/40 transition-all disabled:opacity-30"
+              className="w-8 h-8 rounded-lg flex items-center justify-center border border-outline-variant text-outline hover:text-primary hover:border-primary/40 hover:bg-surface-container transition-all disabled:opacity-30"
             >
-              <CaretLeft size={14} />
+              <CaretLeft size={14} weight="bold" />
             </button>
             <button
               onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="w-8 h-8 flex items-center justify-center border border-outline-variant/20 text-outline hover:text-primary hover:border-primary/40 transition-all disabled:opacity-30"
+              className="w-8 h-8 rounded-lg flex items-center justify-center border border-outline-variant text-outline hover:text-primary hover:border-primary/40 hover:bg-surface-container transition-all disabled:opacity-30"
             >
-              <CaretRight size={14} />
+              <CaretRight size={14} weight="bold" />
             </button>
           </div>
         </div>

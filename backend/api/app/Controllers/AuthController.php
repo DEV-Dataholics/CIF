@@ -40,7 +40,20 @@ class AuthController extends BaseController
             return $this->json(['ok' => false, 'mensaje' => 'Credenciales inválidas.'], 401);
         }
 
+        
         $db->table('usuarios')->where('id', $usuario['id'])->update(['ultimo_acceso' => date('Y-m-d H:i:s')]);
+        
+        // Registrar Auditoria
+        $db->table('auditoria_logs')->insert([
+            'usuario_id'  => $usuario['id'],
+            'accion'      => 'LOGIN',
+            'entidad'     => 'auth',
+            'registro_id' => $usuario['id'],
+            'detalles'    => json_encode(['email' => $email]),
+            'ip_address'  => $this->request->getIPAddress(),
+            'creado_en'   => date('Y-m-d H:i:s')
+        ]);
+
 
         $session = session();
         $session->regenerate(true);

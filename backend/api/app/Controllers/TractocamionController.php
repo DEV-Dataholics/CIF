@@ -36,8 +36,22 @@ class TractocamionController extends BaseController
 
     public function create(): ResponseInterface
     {
-        $data = $this->request->getJSON(true);
-        $id   = \Config\Database::connect()->table('tractocamiones')->insert($data, true);
+        
+        $raw = $this->request->getJSON(true);
+        $data = [];
+        if (isset($raw['numeroEconomico'])) $data['numero_economico'] = $raw['numeroEconomico'];
+        if (isset($raw['numero_economico'])) $data['numero_economico'] = $raw['numero_economico'];
+        if (isset($raw['placas'])) $data['placas_mx'] = $raw['placas'];
+        if (isset($raw['placas_mx'])) $data['placas_mx'] = $raw['placas_mx'];
+        if (isset($raw['marca'])) $data['marca'] = $raw['marca'];
+        if (isset($raw['modelo'])) $data['modelo'] = $raw['modelo'];
+        if (isset($raw['anio'])) $data['anio'] = $raw['anio'];
+        if (isset($raw['estatus'])) $data['estatus'] = $raw['estatus'];
+        if (isset($raw['activo'])) $data['activo'] = $raw['activo'] ? 1 : 0;
+        
+        $id = \Config\Database::connect()->table('tractocamiones')->insert($data);
+
+        $id = \Config\Database::connect()->insertID();
         return $this->json(['ok' => true, 'id' => $id], 201);
     }
 
@@ -46,7 +60,9 @@ class TractocamionController extends BaseController
         $raw = $this->request->getJSON(true);
         $data = [];
         if (isset($raw['numeroEconomico'])) $data['numero_economico'] = $raw['numeroEconomico'];
+        if (isset($raw['numero_economico'])) $data['numero_economico'] = $raw['numero_economico'];
         if (isset($raw['placas'])) $data['placas_mx'] = $raw['placas'];
+        if (isset($raw['placas_mx'])) $data['placas_mx'] = $raw['placas_mx'];
         if (isset($raw['marca'])) $data['marca'] = $raw['marca'];
         if (isset($raw['modelo'])) $data['modelo'] = $raw['modelo'];
         if (isset($raw['anio'])) $data['anio'] = $raw['anio'];
