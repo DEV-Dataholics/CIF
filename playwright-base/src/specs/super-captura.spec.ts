@@ -1,6 +1,6 @@
 ﻿import { test, expect } from '@playwright/test';
 
-test.describe('SÃºper Captura Wizard', () => {
+test.describe('Súper Captura Wizard', () => {
 
   test.beforeEach(async ({ page }) => {
     // --- INJECTED LOGIN ---
@@ -19,15 +19,15 @@ test.describe('SÃºper Captura Wizard', () => {
   });
 
   test('Debe abrirse correctamente y no crashear por bucles infinitos', async ({ page }) => {
-    // 1. Navegar a la pÃ¡gina de movimientos (asume que auth.setup ya nos logueÃ³)
+    // 1. Navegar a la página de movimientos (asume que auth.setup ya nos logueó)
     await page.goto('/movimientos');
     
-    // 2. Esperar a que la pÃ¡gina cargue y hacer click en SÃºper Captura
+    // 2. Esperar a que la página cargue y hacer click en Súper Captura
     const btnAbrir = page.locator('button', { hasText: /Captura/i }).first();
     await btnAbrir.waitFor({ state: 'visible' });
     await btnAbrir.click();
 
-    // 3. Validar que el Wizard se abre viendo su tÃ­tulo
+    // 3. Validar que el Wizard se abre viendo su título
     const wizardTitle = page.locator('h2', { hasText: /Captura/i });
     await expect(wizardTitle).toBeVisible({ timeout: 5000 });
 

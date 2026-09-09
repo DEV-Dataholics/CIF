@@ -71,7 +71,7 @@ class OperadorController extends BaseController
             $data['numero_operador'] = 'OP-' . str_pad($siguiente, 4, '0', STR_PAD_LEFT);
         }
 
-        // Si no mandan licencia_mx, ponemos un temporal para no romper la BD si estÃ¡ en un entorno relajado
+        // Si no mandan licencia_mx, ponemos un temporal para no romper la BD si está en un entorno relajado
         if (empty($data['licencia_mx'])) {
             $data['licencia_mx'] = 'PENDIENTE';
         }
@@ -84,10 +84,10 @@ class OperadorController extends BaseController
             }
         }
 
-        // NÃºmero de operador Ãºnico
+        // Número de operador único
         $existe = $db->table('operadores')->where('numero_operador', $data['numero_operador'])->countAllResults();
         if ($existe > 0) {
-            return $this->json(['ok' => false, 'error' => 'El nÃºmero de operador ya existe.'], 409);
+            return $this->json(['ok' => false, 'error' => 'El número de operador ya existe.'], 409);
         }
 
         // Crear usuario del sistema para el operador

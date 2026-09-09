@@ -103,15 +103,15 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
         </div>
           <button
           onClick={handleAdd}
-          className="flex items-center gap-2 bg-primary text-on-primary font-label text-[10px] font-bold uppercase tracking-widest px-5 py-3 hover:brightness-110 transition-all"
+          className="flex items-center gap-2 bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label text-[10.5px] font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl hover:brightness-105 transition-all shadow-md shadow-[#d1a14e]/15 active:scale-[0.99]"
         >
-          <Plus size={14} weight="bold" /> Agregar
+          <Plus size={16} weight="bold" /> Agregar
         </button>
       </div>
 
       {/* Search */}
-      <div className="bg-surface-container-low border border-outline-variant/20 matte-grain px-5 py-3 flex items-center gap-3">
-        <MagnifyingGlass size={16} className="text-outline" />
+      <div className="bg-surface-container-low border border-outline-variant rounded-2xl px-5 py-3.5 flex items-center gap-3 shadow-xs">
+        <MagnifyingGlass size={16} className="text-outline" weight="bold" />
         <input
           type="text"
           value={search}
@@ -119,62 +119,64 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
           placeholder="Buscar..."
           className="flex-1 bg-transparent text-sm font-body text-on-surface placeholder:text-outline/50 outline-none"
         />
-        <span className="font-label text-[9px] uppercase tracking-widest text-outline">{filtered.length} registros</span>
+        <span className="font-label text-[10px] uppercase tracking-wider text-outline font-semibold">{filtered.length} registros</span>
       </div>
 
       {/* Table */}
-      <div className="bg-surface-container-low border border-outline-variant/20 matte-grain overflow-x-auto">
-        <table className="cif-table">
-          <thead>
-            <tr>
-              {columns.filter(c => !c.hideInTable).map(c => <th key={c.key}>{c.label}</th>)}
-              <th className="w-20">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan={columns.filter(c => !c.hideInTable).length + 1} className="text-center py-16 text-outline font-label uppercase tracking-widest opacity-50">Sin resultados</td></tr>
-            ) : filtered.map(row => (
-              <tr key={row.id} className="hover:bg-on-surface/[0.04] transition-colors">
-                {columns.filter(c => !c.hideInTable).map(c => (
-                  <td key={c.key} className="whitespace-nowrap">
-                    {c.render ? c.render(row[c.key], row) : (row[c.key] ?? '—')}
-                  </td>
-                ))}
-                <td>
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => handleEdit(row)} className="w-8 h-8 flex items-center justify-center rounded-md text-outline hover:text-primary hover:bg-primary/10 transition-all" title="Editar">
-                      <PencilSimple size={14} />
-                    </button>
-                    <button onClick={() => handleDelete(row.id)} className="w-8 h-8 flex items-center justify-center rounded-md text-outline hover:text-danger hover:bg-danger/10 transition-all" title="Eliminar">
-                      <Trash size={14} />
-                    </button>
-                  </div>
-                </td>
+      <div className="bg-surface-container-low border border-outline-variant rounded-2xl overflow-hidden shadow-xs">
+        <div className="overflow-x-auto">
+          <table className="cif-table">
+            <thead className="bg-surface-container/40">
+              <tr>
+                {columns.filter(c => !c.hideInTable).map(c => <th key={c.key}>{c.label}</th>)}
+                <th className="w-24 text-center">Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-outline-variant">
+              {filtered.length === 0 ? (
+                <tr><td colSpan={columns.filter(c => !c.hideInTable).length + 1} className="text-center py-16 text-outline font-label uppercase tracking-widest opacity-60">Sin resultados</td></tr>
+              ) : filtered.map(row => (
+                <tr key={row.id} className="hover:bg-surface-container/50 transition-colors">
+                  {columns.filter(c => !c.hideInTable).map(c => (
+                    <td key={c.key} className="whitespace-nowrap">
+                      {c.render ? c.render(row[c.key], row) : (row[c.key] ?? '—')}
+                    </td>
+                  ))}
+                  <td>
+                    <div className="flex items-center justify-center gap-1.5">
+                      <button onClick={() => handleEdit(row)} className="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant text-outline hover:text-primary hover:border-primary/40 hover:bg-surface-container transition-all shadow-xs" title="Editar">
+                        <PencilSimple size={14} weight="bold" />
+                      </button>
+                      <button onClick={() => handleDelete(row.id)} className="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant text-outline hover:text-danger hover:border-danger/40 hover:bg-danger/10 transition-all shadow-xs" title="Eliminar">
+                        <Trash size={14} weight="bold" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Modal */}
       {showModal && createPortal(
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-surface-container border border-outline-variant/30 max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between">
-              <h3 className="font-headline font-bold text-base">{editRow ? 'Editar' : 'Agregar'} {title}</h3>
-              <button onClick={() => setShowModal(false)} className="text-outline hover:text-primary"><X size={18} /></button>
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+          <div className="bg-surface-container-low border border-outline-variant rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between bg-surface-container/40">
+              <h3 className="font-headline font-bold text-base text-on-surface">{editRow ? 'Editar' : 'Agregar'} {title}</h3>
+              <button onClick={() => setShowModal(false)} className="w-7 h-7 rounded-lg flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container transition-colors"><X size={16} weight="bold" /></button>
             </div>
             <div className="p-6 space-y-4">
               {columns.filter(c => c.key !== 'id' && !c.hideInForm).map(c => (
-                <div key={c.key}>
-                  <label className="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">{c.label}</label>
+                <div key={c.key} className="space-y-1.5">
+                  <label className="block font-label text-[10.5px] uppercase tracking-wider text-outline font-semibold">{c.label}</label>
                   
                   {c.formType === 'select' ? (
                     <select
                       value={formData[c.key] || ''}
                       onChange={e => setFormData(prev => ({ ...prev, [c.key]: e.target.value }))}
-                      className="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 text-sm font-body outline-none focus:border-primary"
+                      className="w-full bg-surface border border-outline-variant text-on-surface p-3 text-sm font-body rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-xs"
                     >
                       <option value="">— Seleccionar —</option>
                       {c.options?.map(opt => (
@@ -187,7 +189,7 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
                     <select
                       value={formData[c.key] !== undefined ? String(formData[c.key]) : 'true'}
                       onChange={e => setFormData(prev => ({ ...prev, [c.key]: e.target.value === 'true' }))}
-                      className="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 text-sm font-body outline-none focus:border-primary"
+                      className="w-full bg-surface border border-outline-variant text-on-surface p-3 text-sm font-body rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-xs"
                     >
                       <option value="true">Sí (Activo)</option>
                       <option value="false">No (Inactivo)</option>
@@ -197,14 +199,14 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
                       type={c.formType || 'text'}
                       value={formData[c.key] || ''}
                       onChange={e => setFormData(prev => ({ ...prev, [c.key]: e.target.value }))}
-                      className="w-full bg-surface border border-outline-variant/40 text-on-surface p-3 text-sm font-body outline-none focus:border-primary"
+                      className="w-full bg-surface border border-outline-variant text-on-surface p-3 text-sm font-body rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-xs"
                     />
                   )}
                 </div>
               ))}
               <button
                 onClick={handleSave}
-                className="w-full bg-primary text-on-primary font-label text-xs font-bold uppercase tracking-widest py-3 hover:brightness-110 transition-all mt-4"
+                className="w-full bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label text-xs font-bold uppercase tracking-wider py-3.5 rounded-xl hover:brightness-105 transition-all mt-4 shadow-md shadow-[#d1a14e]/15 active:scale-[0.99]"
               >
                 {editRow ? 'Guardar Cambios' : 'Crear Registro'}
               </button>

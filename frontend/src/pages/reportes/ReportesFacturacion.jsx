@@ -58,8 +58,8 @@ export default function ReportesFacturacion() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="bg-surface border border-outline-variant/30 p-6 rounded-sm">
+    <div className="space-y-6 animate-in">
+      <div className="bg-surface-container/60 border border-outline-variant p-6 rounded-2xl shadow-sm">
         <h1 className="text-xl font-display font-bold text-on-surface mb-2 flex items-center gap-2">
           <CurrencyDollar size={24} className="text-primary" />
           Reporte de Facturación y Cobranza
@@ -71,33 +71,39 @@ export default function ReportesFacturacion() {
 
       {/* Tarjetas Globales */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-surface border-l-4 border-l-blue-500 border border-outline-variant/30 p-6 shadow-sm">
+        <div className="bg-surface-container/60 border border-outline-variant rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
-            <Receipt size={24} className="text-blue-500" />
+            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
+              <Receipt size={22} />
+            </div>
             <h3 className="font-label text-xs uppercase tracking-wider text-outline font-bold">Total Facturado (Histórico)</h3>
           </div>
           <p className="text-4xl font-display font-bold text-on-surface">{formatCurrency(stats.facturado)}</p>
         </div>
         
-        <div className="bg-surface border-l-4 border-l-green-500 border border-outline-variant/30 p-6 shadow-sm">
+        <div className="bg-surface-container/60 border border-outline-variant rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
-            <CurrencyDollar size={24} className="text-green-500" />
+            <div className="p-2 rounded-lg bg-green-500/10 text-green-500">
+              <CurrencyDollar size={22} />
+            </div>
             <h3 className="font-label text-xs uppercase tracking-wider text-outline font-bold">Total Pagado</h3>
           </div>
-          <p className="text-4xl font-display font-bold text-on-surface">{formatCurrency(stats.pagado)}</p>
+          <p className="text-4xl font-display font-bold text-green-500">{formatCurrency(stats.pagado)}</p>
         </div>
         
-        <div className="bg-surface border-l-4 border-l-red-500 border border-outline-variant/30 p-6 shadow-sm">
+        <div className="bg-surface-container/60 border border-outline-variant rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
-            <WarningCircle size={24} className="text-red-500" />
+            <div className="p-2 rounded-lg bg-red-500/10 text-red-500">
+              <WarningCircle size={22} />
+            </div>
             <h3 className="font-label text-xs uppercase tracking-wider text-outline font-bold">Por Cobrar (Pendiente / Vencido)</h3>
           </div>
-          <p className="text-4xl font-display font-bold text-on-surface text-red-500">{formatCurrency(stats.pendiente)}</p>
+          <p className="text-4xl font-display font-bold text-red-500">{formatCurrency(stats.pendiente)}</p>
         </div>
       </div>
 
       {/* Filtros para la tabla */}
-      <div className="bg-surface border border-outline-variant/30 p-6 rounded-sm flex flex-col md:flex-row gap-6">
+      <div className="bg-surface-container/60 border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col md:flex-row gap-6">
         <div className="flex-1">
           <label className="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Filtrar por Cliente</label>
           <input 
@@ -106,7 +112,7 @@ export default function ReportesFacturacion() {
             onChange={e => setSelectedCliente(e.target.value)}
             placeholder="— Todos los Clientes —"
             list="clientes-fact-list"
-            className="w-full bg-background border border-outline-variant/40 text-on-surface p-3 text-sm font-body outline-none focus:border-primary"
+            className="w-full bg-surface-container border border-outline-variant text-on-surface p-3 text-sm font-body rounded-xl outline-none focus:border-primary shadow-sm"
           />
           <datalist id="clientes-fact-list">
             {clientesList.map(c => <option key={c} value={c} />)}
@@ -117,7 +123,7 @@ export default function ReportesFacturacion() {
           <select 
             value={selectedEstatus} 
             onChange={e => setSelectedEstatus(e.target.value)}
-            className="w-full bg-background border border-outline-variant/40 text-on-surface p-3 text-sm font-body outline-none focus:border-primary"
+            className="w-full bg-surface-container border border-outline-variant text-on-surface p-3 text-sm font-body rounded-xl outline-none focus:border-primary shadow-sm"
           >
             <option value="">— Todos los Estatus —</option>
             <option value="pagada">Pagada</option>
@@ -128,8 +134,8 @@ export default function ReportesFacturacion() {
       </div>
 
       {/* Tabla de Facturas */}
-      <div className="bg-surface border border-outline-variant/30 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-outline-variant/30 flex justify-between items-center">
+      <div className="bg-surface-container/60 border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-outline-variant bg-surface-container-high flex justify-between items-center">
           <h2 className="font-display font-bold text-lg text-on-surface">Detalle de Facturas</h2>
         </div>
         <DataTable 

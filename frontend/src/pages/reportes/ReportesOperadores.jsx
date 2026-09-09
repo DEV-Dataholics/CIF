@@ -32,8 +32,8 @@ export default function ReportesOperadores() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="bg-surface border border-outline-variant/30 p-6 rounded-sm">
+    <div className="space-y-6 animate-in">
+      <div className="bg-surface-container/60 border border-outline-variant p-6 rounded-2xl shadow-sm">
         <h1 className="text-xl font-display font-bold text-on-surface mb-2 flex items-center gap-2">
           <SteeringWheel size={24} className="text-primary" />
           Reporte de Operadores
@@ -43,7 +43,7 @@ export default function ReportesOperadores() {
         </p>
       </div>
 
-      <div className="bg-surface border border-outline-variant/30 p-6 rounded-sm">
+      <div className="bg-surface-container/60 border border-outline-variant p-6 rounded-2xl shadow-sm">
         <label className="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">Seleccionar Operador</label>
         <input 
           type="text"
@@ -51,7 +51,7 @@ export default function ReportesOperadores() {
           onChange={e => setSelectedOperador(e.target.value)}
           placeholder="— Buscar o Seleccionar —"
           list="operadores-list"
-          className="w-full md:w-1/3 bg-background border border-outline-variant/40 text-on-surface p-3 text-sm font-body outline-none focus:border-primary"
+          className="w-full md:w-1/3 bg-surface-container border border-outline-variant text-on-surface p-3 text-sm font-body rounded-xl outline-none focus:border-primary shadow-sm"
         />
         <datalist id="operadores-list">
           {operadoresList.map(o => <option key={o} value={o} />)}
@@ -61,33 +61,39 @@ export default function ReportesOperadores() {
       {selectedOperador && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-surface border-l-4 border-l-primary border border-outline-variant/30 p-6 shadow-sm">
+            <div className="bg-surface-container/60 border border-outline-variant rounded-2xl p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
-                <SteeringWheel size={24} className="text-primary" />
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                  <SteeringWheel size={22} />
+                </div>
                 <h3 className="font-label text-xs uppercase tracking-wider text-outline font-bold">Total de Viajes</h3>
               </div>
               <p className="text-4xl font-display font-bold text-on-surface">{stats.totalViajes}</p>
             </div>
             
-            <div className="bg-surface border-l-4 border-l-green-500 border border-outline-variant/30 p-6 shadow-sm">
+            <div className="bg-surface-container/60 border border-outline-variant rounded-2xl p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
-                <Checks size={24} className="text-green-500" />
+                <div className="p-2 rounded-lg bg-green-500/10 text-green-500">
+                  <Checks size={22} />
+                </div>
                 <h3 className="font-label text-xs uppercase tracking-wider text-outline font-bold">Viajes Completos</h3>
               </div>
-              <p className="text-4xl font-display font-bold text-on-surface">{stats.completados}</p>
+              <p className="text-4xl font-display font-bold text-green-500">{stats.completados}</p>
             </div>
             
-            <div className="bg-surface border-l-4 border-l-orange-500 border border-outline-variant/30 p-6 shadow-sm">
+            <div className="bg-surface-container/60 border border-outline-variant rounded-2xl p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
-                <Truck size={24} className="text-orange-500" />
+                <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500">
+                  <Truck size={22} />
+                </div>
                 <h3 className="font-label text-xs uppercase tracking-wider text-outline font-bold">En Ruta Actual</h3>
               </div>
-              <p className="text-4xl font-display font-bold text-on-surface">{stats.enRuta}</p>
+              <p className="text-4xl font-display font-bold text-orange-500">{stats.enRuta}</p>
             </div>
           </div>
 
-          <div className="bg-surface border border-outline-variant/30 shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-outline-variant/30">
+          <div className="bg-surface-container/60 border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-outline-variant bg-surface-container-high">
               <h2 className="font-display font-bold text-lg text-on-surface">Historial del Operador</h2>
             </div>
             <DataTable 

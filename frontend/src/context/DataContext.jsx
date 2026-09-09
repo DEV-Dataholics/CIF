@@ -97,7 +97,35 @@ export function DataProvider({ children }) {
         const c = dbClientes.find(cli => cli.id === m.clienteId || cli.id == m.cliente_id);
         const o = dbOperadores.find(op => op.id === m.operadorId || op.id == m.operador_id);
         const u = dbUnidades.find(un => un.id === m.tractorId || un.id == m.tractocamion_id);
-        const t = dbTiposMov.find(tm => tm.id === m.tipoMovId || tm.id == m.tipo_movimiento);
+        const rawTipo = String(m.tipo_movimiento || m.tipoMov || '').trim();
+        const rawTipoLower = rawTipo.toLowerCase();
+        const rawTipoSlug = rawTipoLower.replace(/[\s\/-]+/g, '_');
+
+        const t = (dbTiposMov || []).find(tm => {
+          if (tm.id === m.tipoMovId || tm.id == m.tipo_movimiento) return true;
+          if (!tm.nombre) return false;
+          const nomLower = tm.nombre.trim().toLowerCase();
+          if (nomLower === rawTipoLower) return true;
+          const nomSlug = nomLower.replace(/[\s\/-]+/g, '_');
+          if (nomSlug === rawTipoSlug) return true;
+          return false;
+        });
+
+        let tipoMovNombre = t ? t.nombre : rawTipo;
+        if (!t && rawTipo) {
+          const legacyMap = {
+            exportacion: 'EXPORTACION',
+            importacion: 'IMPORTACION',
+            local_cargado: 'LOCAL CARGADO',
+            local_vacio: 'LOCAL VACIO',
+            recoleccion: 'RECOLECCION',
+            interplanta: 'INTERPLANTA',
+            rampa: 'RAMPA',
+            reparto: 'REPARTO'
+          };
+          tipoMovNombre = legacyMap[rawTipoLower] || rawTipo.toUpperCase().replace(/_/g, ' ');
+        }
+
         const caja = dbCajas.find(cj => cj.id === m.cajaId || cj.id == m.caja_id);
         
         let fecha = m.fecha;
@@ -115,7 +143,8 @@ export function DataProvider({ children }) {
           cliente: c ? c.razonSocial || c.razon_social : m.cliente,
           operador: o ? o.nombreCompleto || o.nombre_completo : m.operador,
           tractor: u ? u.numeroEconomico || u.numero_economico : m.tractor,
-          tipoMov: t ? t.nombre : (m.tipoMov || m.tipo_movimiento),
+          tipoMov: tipoMovNombre,
+          tipoMovimiento: tipoMovNombre,
           caja: caja ? caja.numeroCaja || caja.numero_caja : m.caja,
           valeFisico: m.folio_boleta || m.valeFisico || ''
         };

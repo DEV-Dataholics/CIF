@@ -15,13 +15,21 @@ export default function SearchableSelect({
   const wrapperRef = useRef(null);
   const listRef = useRef(null);
 
+  const getOptionLabel = (option) => {
+    if (typeof option === 'object' && option !== null) {
+      return option.label ?? option.nombre ?? option.name ?? option.tipo_movimiento ?? '';
+    }
+    return String(option ?? '');
+  };
+
   const filteredOptions = (options || []).filter(option =>
-    (option || '').toLowerCase().includes((searchTerm || '').toLowerCase())
+    getOptionLabel(option).toLowerCase().includes(String(searchTerm || '').toLowerCase())
   );
 
   const handleSelect = (option) => {
-    setSearchTerm(option);
-    onChange(option);
+    const label = getOptionLabel(option);
+    setSearchTerm(label);
+    onChange(label);
     setIsOpen(false);
     setFocusedIndex(-1);
   };
@@ -38,7 +46,7 @@ export default function SearchableSelect({
         if (isOpen && filteredOptions.length > 0 && searchTerm) {
           const matched = (focusedIndex >= 0 && focusedIndex < filteredOptions.length)
             ? filteredOptions[focusedIndex]
-            : (filteredOptions.find(o => o.toLowerCase() === searchTerm.toLowerCase()) || filteredOptions[0]);
+            : (filteredOptions.find(o => getOptionLabel(o).toLowerCase() === searchTerm.toLowerCase()) || filteredOptions[0]);
           handleSelect(matched);
         } else {
           setIsOpen(false);
@@ -132,7 +140,7 @@ export default function SearchableSelect({
           onKeyDown={handleKeyDown}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className={`w-full bg-background text-on-surface outline-none focus:border-primary transition-colors ${className.includes('border') ? '' : 'border-2 border-outline-variant/30'} ${className.match(/\bp-|\bpy-|\bpl-|\bpx-/) ? '' : 'py-4 pl-4'} ${className} !pr-10`}
+          className={`w-full bg-surface-container text-on-surface outline-none focus:border-primary transition-colors ${className.includes('rounded') ? '' : 'rounded-xl'} ${className.includes('border') ? '' : 'border border-outline-variant'} ${className.match(/\bp-|\bpy-|\bpl-|\bpx-/) ? '' : 'py-3.5 pl-4'} ${className} !pr-10`}
         />
         <div 
           className="absolute right-4 top-1/2 -translate-y-1/2 text-outline cursor-pointer"
@@ -143,7 +151,7 @@ export default function SearchableSelect({
       </div>
 
       {isOpen && (
-        <div ref={listRef} className="absolute z-50 w-full mt-1 bg-surface-container-high border border-outline-variant/30 shadow-xl max-h-60 overflow-y-auto rounded-b-md">
+        <div ref={listRef} className="absolute z-50 w-full mt-1.5 bg-surface-container border border-outline-variant shadow-2xl max-h-60 overflow-y-auto rounded-xl divide-y divide-outline-variant/20 backdrop-blur-md">
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option, index) => (
               <div
@@ -152,10 +160,10 @@ export default function SearchableSelect({
                 className={`p-3 text-sm cursor-pointer transition-colors ${
                   value === option || focusedIndex === index
                     ? 'bg-primary/20 text-primary font-bold' 
-                    : 'text-on-surface hover:bg-surface-variant/50'
+                    : 'text-on-surface hover:bg-surface-container-high'
                 }`}
               >
-                {option}
+                {getOptionLabel(option)}
               </div>
             ))
           ) : (

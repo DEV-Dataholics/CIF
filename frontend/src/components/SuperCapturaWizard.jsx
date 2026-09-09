@@ -135,9 +135,9 @@ function Stepper({ step }) {
         return (
           <div key={s.num} className="flex items-center">
             <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-              isActive ? 'bg-primary text-on-primary shadow-lg scale-105' :
+              isActive ? 'bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] shadow-md shadow-[#d1a14e]/20 scale-105' :
               isDone ? 'bg-primary/20 text-primary' :
-              'bg-surface-variant/40 text-outline'
+              'bg-surface-container-highest text-outline'
             }`}>
               <Icon size={18} weight={isActive ? 'fill' : 'regular'} />
               <span className="font-label text-[10px] font-bold uppercase tracking-widest">{s.label}</span>
@@ -191,6 +191,76 @@ export default function SuperCapturaWizard({ open, onClose }) {
   const [routes, setRoutes] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [routeError, setRouteError] = useState('');
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  // ── Quick Add Modal State & Handlers ──────────────────────
+  const [quickAdd, setQuickAdd] = useState({
+    open: false,
+    title: '',
+    label: '',
+    placeholder: '',
+    field: '',
+    table: '',
+    value: '',
+    loading: false,
+    error: ''
+  });
+
+  const openQuickAdd = (field, table, title, label, placeholder = '') => {
+    setQuickAdd({
+      open: true,
+      title,
+      label,
+      placeholder: placeholder || `Escribe el valor para ${label.toLowerCase()}...`,
+      field,
+      table,
+      value: '',
+      loading: false,
+      error: ''
+    });
+  };
+
+  const handleSaveQuickAdd = async (e) => {
+    if (e) e.preventDefault();
+    const val = quickAdd.value.trim();
+    if (!val) {
+      setQuickAdd(prev => ({ ...prev, error: `El campo es requerido.` }));
+      return;
+    }
+
+    setQuickAdd(prev => ({ ...prev, loading: true, error: '' }));
+    try {
+      if (quickAdd.table === 'localidades') {
+        await crud.insert('localidades', { nombre: val, tipo: 'ciudad', ciudad: 'Juárez' });
+        if (quickAdd.field === 'origen') {
+          setRouteForm(p => ({ ...p, origen: val }));
+        } else if (quickAdd.field === 'destino') {
+          setRouteForm(p => ({ ...p, destino: val }));
+        }
+      } else if (quickAdd.table === 'operadores') {
+        const res = await fetch('/api/operadores/rapido', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ nombre_completo: val })
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Error al crear operador');
+        if (refreshData) await refreshData();
+        handleOperadorChange(val);
+      } else if (quickAdd.table === 'cajas') {
+        await crud.insert('cajas', { numero_economico: val, estatus: 'disponible' });
+        setCaja(val);
+      } else if (quickAdd.table === 'clientes') {
+        await crud.insert('clientes', { razon_social: val, activo: 1 });
+        setCliente(val);
+      }
+
+      setQuickAdd({ open: false, title: '', label: '', placeholder: '', field: '', table: '', value: '', loading: false, error: '' });
+    } catch (err) {
+      setQuickAdd(prev => ({ ...prev, loading: false, error: err.message || 'Error al guardar registro.' }));
+    }
+  };
 
   // ── LocalStorage Draft Persistence ────────────────────────
   useEffect(() => {
@@ -246,16 +316,19 @@ export default function SuperCapturaWizard({ open, onClose }) {
 
   const filteredTiposMovimiento = useMemo(() => {
     if (!tiposMovimiento || tiposMovimiento.length === 0) return [];
-    if (!cliente) return tiposMovimiento;
+    const getTypeName = t => typeof t === 'object' && t !== null ? (t.nombre ?? t.tipo_movimiento ?? t.nombreTipo ?? '') : String(t);
+    const rawList = tiposMovimiento.map(getTypeName).filter(Boolean);
+    if (!cliente) return [...new Set(rawList)];
     const clientUpper = cliente.trim().toUpperCase();
     
     // Show types specific to this client OR marked as general (NA/TODOS)
     const filtered = tiposMovimiento.filter(t => {
-      const associated = (t.clienteAsociado || '').trim().toUpperCase();
+      const associated = (typeof t === 'object' ? (t.clienteAsociado || t.cliente_asociado || '') : '').trim().toUpperCase();
       return associated === clientUpper || associated === 'NA' || associated === 'TODOS' || associated === '';
-    });
+    }).map(getTypeName).filter(Boolean);
+    
     // If no client-specific types, fall back to showing ALL types
-    return filtered.length > 0 ? filtered : tiposMovimiento;
+    return filtered.length > 0 ? [...new Set(filtered)] : [...new Set(rawList)];
   }, [tiposMovimiento, cliente]);
 
   // ── Auto-suggest when operator changes ────────────────────
@@ -390,17 +463,14 @@ export default function SuperCapturaWizard({ open, onClose }) {
         const tractorId  = tractorObj?.id   ? parseInt(tractorObj.id, 10)  : toId(tractor);
         const cajaId     = cajaObj?.id      ? parseInt(cajaObj.id, 10)     : null;
 
-        // tipo_movimiento: send the slug (snake_case), not the display label
-        const tipoMovSlug = r.tipoMov
-          .toLowerCase()
-          .trim()
-          .replace(/\s+/g, '_');
+        // tipo_movimiento: guardar el nombre exacto del catálogo
+        const tipoMovVal = r.tipoMov || 'local_cargado';
 
         const payload = {
           cliente_id: clienteId,
           operador_id: operadorId,
           tractocamion_id: tractorId,
-          tipo_movimiento: tipoMovSlug,
+          tipo_movimiento: tipoMovVal,
           caja_id: cajaId,
           origen: r.origen,
           destino: r.destino,
@@ -424,6 +494,7 @@ export default function SuperCapturaWizard({ open, onClose }) {
 
   // ── Reset wizard ──────────────────────────────────────────
   const resetWizard = (keepOpen = false) => {
+    localStorage.removeItem('cif_supercaptura_draft');
     setStep(1);
     setOperador(''); setTractor(''); setCaja(''); setCliente('');
     setRouteForm({ origen: '', destino: '', tipoMov: '', caja: '', horaSalida: '', valeFisico: '', puente: '' });
@@ -434,37 +505,40 @@ export default function SuperCapturaWizard({ open, onClose }) {
     if (!keepOpen) onClose();
   };
 
+  const handleConfirmClear = () => {
+    resetWizard(true);
+    setShowClearConfirm(false);
+  };
+
   if (!open) return null;
 
   // ══════════════════════════════════════════════════════════
   //  RENDER
   // ══════════════════════════════════════════════════════════
   return createPortal(
-    <div className="fixed inset-0 z-50 bg-background/98 backdrop-blur-md flex flex-col animate-in">
+    <div className="fixed inset-0 z-50 bg-surface flex flex-col animate-in">
 
       {/* ── Top bar ──────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-8 py-4 border-b border-outline-variant/20 bg-surface/80 backdrop-blur shrink-0">
+      <div className="flex items-center justify-between px-8 py-4 border-b border-outline-variant bg-surface-container-low shrink-0">
         <div className="flex items-center gap-3">
-          <Sparkle size={22} weight="fill" className="text-primary" />
-          <h2 className="font-headline text-lg font-bold tracking-tight">Súper Captura</h2>
-          <span className="font-label text-[9px] uppercase tracking-widest text-outline bg-surface-variant/50 px-3 py-1 rounded-full">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            <Sparkle size={20} weight="fill" />
+          </div>
+          <h2 className="font-headline text-lg font-bold tracking-tight text-on-surface">Súper Captura</h2>
+          <span className="font-label text-[10px] uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full font-bold">
             Wizard
           </span>
         </div>
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => {
-              if (window.confirm('¿Estás seguro de limpiar la captura? Se perderá todo el progreso no guardado.')) {
-                localStorage.removeItem('cif_supercaptura_draft');
-                resetWizard(true);
-              }
-            }} 
-            className="flex items-center gap-2 font-label text-[10px] uppercase tracking-widest text-outline hover:text-danger border border-transparent hover:border-danger/30 px-3 py-1.5 transition-colors shadow-sm bg-surface"
+            type="button"
+            onClick={() => setShowClearConfirm(true)} 
+            className="flex items-center gap-2 font-label text-xs uppercase tracking-widest text-outline hover:text-danger border border-outline-variant hover:border-danger/30 px-4 py-2 rounded-xl transition-all shadow-sm bg-surface hover:bg-danger/5"
             title="Borrar borrador e iniciar de cero"
           >
             <Trash size={16} /> Limpiar Captura
           </button>
-          <button onClick={() => onClose()} className="p-2 text-outline hover:text-danger hover:bg-danger/10 rounded transition-colors" title="Guardar borrador y cerrar">
+          <button onClick={() => onClose()} className="p-2 text-outline hover:text-danger hover:bg-danger/10 rounded-xl transition-colors" title="Guardar borrador y cerrar">
             <X size={20} />
           </button>
         </div>
@@ -483,13 +557,13 @@ export default function SuperCapturaWizard({ open, onClose }) {
           {step === 1 && (
             <div className="space-y-8 animate-in">
               <div className="text-center mb-8">
-                <h3 className="font-headline text-2xl font-bold">¿Quién opera?</h3>
+                <h3 className="font-headline text-2xl font-bold text-on-surface">¿Quién opera?</h3>
                 <p className="font-body text-sm text-outline mt-2">
                   Selecciona al operador. El sistema sugerirá su equipo y cliente habitual.
                 </p>
               </div>
 
-              <div className="bg-surface border border-outline-variant/20 p-8 space-y-6 shadow-sm">
+              <div className="bg-surface-container-low border border-outline-variant rounded-2xl p-8 space-y-6 shadow-sm">
                 {/* Operador y Fecha de Trabajo */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
@@ -503,30 +577,13 @@ export default function SuperCapturaWizard({ open, onClose }) {
                           value={operador}
                           onChange={handleOperadorChange}
                           placeholder="Escribe o selecciona un operador..."
-                          className="text-base font-body"
+                          className="text-base font-body rounded-xl border-outline-variant"
                         />
                       </div>
                       <button 
-                        onClick={async () => {
-                          const nuevo = window.prompt("Nombre del nuevo operador:");
-                          if(nuevo && nuevo.trim() !== '') {
-                            try {
-                              const res = await fetch('/api/operadores/rapido', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                credentials: 'include',
-                                body: JSON.stringify({ nombre_completo: nuevo.trim() })
-                              });
-                              const result = await res.json();
-                              if (!res.ok) throw new Error(result.error || 'Error al crear operador');
-                              if (refreshData) await refreshData();
-                              handleOperadorChange(nuevo.trim());
-                            } catch (e) {
-                              alert("Error al guardar operador: " + e.message);
-                            }
-                          }
-                        }}
-                        className="bg-primary/10 text-primary hover:bg-primary hover:text-on-primary transition-colors p-4 border-2 border-primary/20 rounded font-bold" title="Nuevo Operador">
+                        type="button"
+                        onClick={() => openQuickAdd('operador', 'operadores', 'Nuevo Operador', 'Nombre Completo', 'Ej. Juan Pérez')}
+                        className="bg-primary/10 text-primary hover:bg-primary hover:text-on-primary transition-colors p-3.5 border border-primary/30 rounded-xl font-bold" title="Nuevo Operador">
                         <Plus size={20} />
                       </button>
                     </div>
@@ -542,7 +599,7 @@ export default function SuperCapturaWizard({ open, onClose }) {
                         setFechaBloque(e.target.value);
                         setRouteForm(p => ({...p, fecha: e.target.value}));
                       }}
-                      className="w-full bg-background border-2 border-outline-variant/30 text-on-surface p-4 text-base font-body outline-none focus:border-primary transition-colors"
+                      className="w-full bg-surface border border-outline-variant text-on-surface p-3.5 text-base font-body rounded-xl outline-none focus:border-primary transition-colors"
                     />
                   </div>
                 </div>
@@ -580,18 +637,9 @@ export default function SuperCapturaWizard({ open, onClose }) {
                           />
                         </div>
                         <button 
-                          onClick={async () => {
-                              const nueva = window.prompt("Numero de caja nueva (Alta Rapida):");
-                              if(nueva && nueva.trim() !== '') {
-                                try {
-                                  await crud.insert('cajas', { numero_caja: nueva.trim(), estatus: 'disponible', tipo: 'Seca', tipo_caja: 'Seca', placas_mx: 'PENDIENTE' });
-                                  setCaja(nueva.trim());
-                                } catch (e) {
-                                  alert("Error al guardar caja: " + e.message);
-                                }
-                              }
-                            }}
-                          className="bg-surface-variant text-outline hover:text-primary transition-colors p-3 border border-outline-variant/30 rounded" title="Nueva Caja">
+                          type="button"
+                          onClick={() => openQuickAdd('caja', 'cajas', 'Nueva Caja', 'Número Económico de Caja', 'Ej. CX-101')}
+                          className="bg-surface text-outline hover:text-primary hover:border-primary/40 transition-colors p-3 border border-outline-variant rounded-xl" title="Nueva Caja">
                           <Plus size={16} />
                         </button>
                       </div>
@@ -612,18 +660,9 @@ export default function SuperCapturaWizard({ open, onClose }) {
                           />
                         </div>
                         <button 
-                          onClick={async () => {
-                          const nuevo = window.prompt("Nombre del nuevo cliente:");
-                          if(nuevo && nuevo.trim() !== '') {
-                            try {
-                              await crud.insert('clientes', { razon_social: nuevo.trim(), activo: 1 });
-                              setCliente(nuevo.trim());
-                            } catch (e) {
-                              alert("Error al guardar cliente: " + e.message);
-                            }
-                          }
-                        }}
-                          className="bg-surface-variant text-outline hover:text-primary transition-colors p-3 border border-outline-variant/30 rounded" title="Nuevo Cliente">
+                          type="button"
+                          onClick={() => openQuickAdd('cliente', 'clientes', 'Nuevo Cliente', 'Razón Social del Cliente', 'Ej. Lear Corporation')}
+                          className="bg-surface text-outline hover:text-primary hover:border-primary/40 transition-colors p-3 border border-outline-variant rounded-xl" title="Nuevo Cliente">
                           <Plus size={16} />
                         </button>
                       </div>
@@ -640,7 +679,7 @@ export default function SuperCapturaWizard({ open, onClose }) {
                     setRouteForm(p => ({ ...p, caja: caja }));
                     setStep(2);
                   }}
-                  className="flex items-center gap-2 bg-primary text-on-primary font-label text-xs font-bold uppercase tracking-widest px-8 py-4 hover:brightness-110 transition-all shadow-lg disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label text-xs font-bold uppercase tracking-widest px-8 py-3.5 rounded-xl hover:brightness-105 transition-all shadow-md shadow-[#d1a14e]/20 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.99]"
                 >
                   Siguiente: Capturar Rutas <ArrowRight size={16} />
                 </button>
@@ -655,30 +694,30 @@ export default function SuperCapturaWizard({ open, onClose }) {
             <div className="space-y-6 animate-in">
 
               {/* Operator summary chip */}
-              <div className="flex items-center gap-4 bg-primary/5 border border-primary/20 p-4">
+              <div className="flex items-center gap-4 bg-surface-container-low border border-primary/30 rounded-2xl p-4 shadow-md">
                 <UserCircle size={24} className="text-primary" />
                 <div className="flex-1">
-                  <span className="font-bold text-sm">{operador}</span>
+                  <span className="font-bold text-sm text-on-surface">{operador}</span>
                   <span className="mx-2 text-outline">·</span>
                   <span className="font-mono text-xs text-primary">{tractor}</span>
                   <span className="mx-2 text-outline">·</span>
                   <span className="font-mono text-xs text-outline">{caja}</span>
                   <span className="mx-2 text-outline">·</span>
-                  <span className="text-xs font-bold">{cliente}</span>
+                  <span className="text-xs font-bold text-on-surface">{cliente}</span>
                 </div>
-                <button onClick={() => setStep(1)} className="text-[10px] font-label font-bold uppercase text-primary hover:underline">
+                <button onClick={() => setStep(1)} className="text-xs font-label font-bold uppercase text-primary hover:underline">
                   Cambiar
                 </button>
               </div>
 
               {/* Mini-form */}
-              <div className="bg-surface border border-outline-variant/20 p-6 shadow-sm">
-                <h4 className="font-label text-[10px] font-bold uppercase tracking-widest text-primary mb-4">
+              <div className="bg-surface-container-low border border-outline-variant rounded-2xl p-6 space-y-4 shadow-md">
+                <h4 className="font-label text-xs font-bold uppercase tracking-widest text-primary mb-4">
                   {editingId ? '✏️ Editando Ruta' : '➕ Nueva Ruta'}
                 </h4>
 
                 {routeError && (
-                  <div className="flex items-center gap-2 bg-danger/10 border-l-4 border-danger p-3 mb-4 text-danger font-body text-sm font-bold">
+                  <div className="flex items-center gap-2 bg-danger/10 border border-danger/30 rounded-xl p-3 mb-4 text-danger font-body text-sm font-bold">
                     <Warning size={16} /> {routeError}
                   </div>
                 )}
@@ -693,24 +732,15 @@ export default function SuperCapturaWizard({ open, onClose }) {
                           options={localidadesList}
                           value={routeForm.origen}
                           onChange={val => setRouteForm(p => ({...p, origen: val}))}
+                          allowFreeText={true}
                           placeholder="—"
-                          className="text-sm font-body border border-outline-variant/30 px-3 h-[42px]"
+                          className="text-sm font-body border border-outline-variant rounded-xl px-3 h-[42px]"
                         />
                       </div>
                       <button 
                         type="button"
-                        onClick={async () => {
-                          const nuevo = window.prompt("Nueva ubicación (Origen):");
-                          if(nuevo && nuevo.trim() !== '') {
-                            try {
-                              await crud.insert('localidades', { nombre: nuevo.trim(), tipo: 'ciudad', ciudad: 'Juárez' });
-                              setRouteForm(p => ({...p, origen: nuevo.trim()}));
-                            } catch (e) {
-                              alert("Error al guardar localidad: " + e.message);
-                            }
-                          }
-                        }}
-                        className="bg-surface-variant text-outline hover:text-primary transition-colors border border-outline-variant/30 shrink-0 flex items-center justify-center w-[42px] h-[42px]" title="Nueva Ubicación">
+                        onClick={() => openQuickAdd('origen', 'localidades', 'Nueva Ubicación (Origen)', 'Nombre de Ubicación / Planta', 'Ej. Planta 1, Parque Juárez...')}
+                        className="bg-surface text-outline hover:text-primary hover:border-primary/40 transition-colors border border-outline-variant rounded-xl shrink-0 flex items-center justify-center w-[42px] h-[42px]" title="Nueva Ubicación">
                         <Plus size={18} />
                       </button>
                     </div>
@@ -724,24 +754,15 @@ export default function SuperCapturaWizard({ open, onClose }) {
                           options={localidadesList}
                           value={routeForm.destino}
                           onChange={val => setRouteForm(p => ({...p, destino: val}))}
+                          allowFreeText={true}
                           placeholder="—"
-                          className="text-sm font-body border border-outline-variant/30 px-3 h-[42px]"
+                          className="text-sm font-body border border-outline-variant rounded-xl px-3 h-[42px]"
                         />
                       </div>
                       <button 
                         type="button"
-                        onClick={async () => {
-                          const nuevo = window.prompt("Nueva ubicación (Destino):");
-                          if(nuevo && nuevo.trim() !== '') {
-                            try {
-                              await crud.insert('localidades', { nombre: nuevo.trim(), tipo: 'ciudad', ciudad: 'Juárez' });
-                              setRouteForm(p => ({...p, destino: nuevo.trim()}));
-                            } catch (e) {
-                              alert("Error al guardar localidad: " + e.message);
-                            }
-                          }
-                        }}
-                        className="bg-surface-variant text-outline hover:text-primary transition-colors border border-outline-variant/30 shrink-0 flex items-center justify-center w-[42px] h-[42px]" title="Nueva Ubicación">
+                        onClick={() => openQuickAdd('destino', 'localidades', 'Nueva Ubicación (Destino)', 'Nombre de Ubicación / Destino', 'Ej. Bodega El Paso, Cruce Córdova...')}
+                        className="bg-surface text-outline hover:text-primary hover:border-primary/40 transition-colors border border-outline-variant rounded-xl shrink-0 flex items-center justify-center w-[42px] h-[42px]" title="Nueva Ubicación">
                         <Plus size={18} />
                       </button>
                     </div>
@@ -749,49 +770,52 @@ export default function SuperCapturaWizard({ open, onClose }) {
                   {/* Tipo Movimiento */}
                   <div>
                     <label className="block font-label text-[9px] uppercase tracking-widest text-outline font-bold mb-1">Tipo Movimiento</label>
-                    <select value={routeForm.tipoMov} 
-                      onChange={e => setRouteForm(p => ({
+                    <SearchableSelect 
+                      options={filteredTiposMovimiento}
+                      value={routeForm.tipoMov}
+                      onChange={val => setRouteForm(p => ({
                         ...p, 
-                        tipoMov: e.target.value,
-                        puente: ['IMPO', 'EXPO'].includes(e.target.value) ? p.puente : ''
+                        tipoMov: val,
+                        puente: ['IMPO', 'EXPO'].includes(val) ? p.puente : ''
                       }))}
-                      className="w-full bg-background border border-outline-variant/30 text-on-surface px-3 h-[42px] text-sm outline-none focus:border-primary">
-                      <option value="">— Seleccionar —</option>
-                      {filteredTiposMovimiento.map(t => (
-                        <option key={t.id} value={t.nombre}>{t.nombre}</option>
-                      ))}
-                    </select>
+                      placeholder="Seleccionar tipo..."
+                      className="text-sm font-body border border-outline-variant rounded-xl px-3 h-[42px]"
+                    />
                   </div>
                   {/* Vale Físico */}
                   <div>
-                    <label className="block font-label text-[9px] uppercase tracking-widest text-outline font-bold mb-1">Vale Físico</label>
-                    <input type="text" value={routeForm.valeFisico}
+                    <label className="block font-label text-[9px] uppercase tracking-widest text-outline font-bold mb-1">Folio / Vale Físico</label>
+                    <input 
+                      type="text" 
+                      value={routeForm.valeFisico} 
                       onChange={e => setRouteForm(p => ({...p, valeFisico: e.target.value}))}
-                      placeholder="Folio (Opcional)"
-                      className="w-full bg-background border border-outline-variant/30 text-on-surface px-3 h-[42px] text-sm font-mono outline-none focus:border-primary"
+                      placeholder="Ej. 12345"
+                      className="w-full bg-surface border border-outline-variant rounded-xl text-on-surface px-3 h-[42px] text-sm font-mono outline-none focus:border-primary"
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                   {/* Caja */}
                   <div>
-                    <label className="block font-label text-[9px] uppercase tracking-widest text-outline font-bold mb-1">Caja (Por ruta)</label>
-                    <SearchableSelect
+                    <label className="block font-label text-[9px] uppercase tracking-widest text-outline font-bold mb-1">Caja</label>
+                    <SearchableSelect 
                       options={cajasList}
                       value={routeForm.caja}
                       onChange={val => setRouteForm(p => ({...p, caja: val}))}
-                      allowFreeText={true}
-                      placeholder="Caja..."
-                      className="text-sm font-mono border border-outline-variant/30 px-3 h-[42px]"
+                      placeholder={caja || "—"}
+                      className="text-sm font-body border border-outline-variant rounded-xl px-3 h-[42px]"
                     />
                   </div>
                   {/* Hora Salida */}
                   <div>
                     <label className="block font-label text-[9px] uppercase tracking-widest text-outline font-bold mb-1">Hora Salida</label>
-                    <TimeInput24 value={routeForm.horaSalida}
+                    <TimeInput24 
+                      value={routeForm.horaSalida} 
                       onChange={val => setRouteForm(p => ({...p, horaSalida: val}))}
-                      className="w-full bg-background border border-outline-variant/30 text-on-surface px-3 h-[42px] text-sm font-mono outline-none focus:border-primary"
+                      className="w-full bg-surface border border-outline-variant rounded-xl text-on-surface px-3 h-[42px] text-sm font-mono outline-none focus:border-primary"
                     />
                   </div>
-                  
                   {/* Puente */}
                   <div>
                     <label className="block font-label text-[9px] uppercase tracking-widest text-outline font-bold mb-1">Puente</label>
@@ -799,34 +823,32 @@ export default function SuperCapturaWizard({ open, onClose }) {
                       value={routeForm.puente} 
                       onChange={e => setRouteForm(p => ({...p, puente: e.target.value}))}
                       disabled={!['IMPO', 'EXPO'].includes(routeForm.tipoMov)}
-                      className="w-full bg-background border border-outline-variant/30 text-on-surface px-3 h-[42px] text-sm outline-none focus:border-primary disabled:opacity-50 disabled:bg-surface-variant/30">
-                      <option value="">—</option>
-                      {['Zaragoza','Córdova','Santa Teresa','Stanton'].map(p => <option key={p} value={p}>{p}</option>)}
+                      className="w-full bg-surface border border-outline-variant rounded-xl text-on-surface px-3 h-[42px] text-sm outline-none focus:border-primary disabled:opacity-50"
+                    >
+                      <option value="">— Ninguno —</option>
+                      <option value="Zaragoza">Zaragoza</option>
+                      <option value="Córdova">Córdova</option>
+                      <option value="Santa Teresa">Santa Teresa</option>
+                      <option value="Stanton">Stanton</option>
                     </select>
                   </div>
                 </div>
 
-                {/* Add/Update button */}
-                <div className="flex items-center justify-between mt-5 pt-4 border-t border-outline-variant/20">
-                  {editingId && (
-                    <button type="button" onClick={() => { setEditingId(null); setRouteForm(p => ({...p, valeFisico: ''})); }}
-                      className="text-[10px] font-label font-bold uppercase tracking-widest text-outline hover:text-danger transition-colors">
-                      Cancelar edición
-                    </button>
-                  )}
-                  <button
-                    type="button"
+                {/* Add button */}
+                <div className="flex justify-end mt-4">
+                  <button 
+                    type="button" 
                     onClick={handleAddRoute}
-                    className={`ml-auto flex items-center gap-2 font-label text-[10px] font-bold uppercase tracking-widest px-6 py-3 transition-all shadow-sm ${
+                    className={`flex items-center gap-2 font-label text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-xl transition-all shadow-md ${
                       editingId
                         ? 'bg-amber-500 text-white hover:bg-amber-600'
-                        : 'bg-primary text-on-primary hover:brightness-110'
+                        : 'bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] hover:brightness-105'
                     }`}
                   >
                     {editingId ? (
-                      <><PencilSimple size={14} /> Actualizar Ruta</>
+                      <><PencilSimple size={16} /> Actualizar Ruta</>
                     ) : (
-                      <><Plus size={14} weight="bold" /> Agregar Ruta</>
+                      <><Plus size={16} weight="bold" /> Agregar Ruta</>
                     )}
                   </button>
                 </div>
@@ -837,7 +859,7 @@ export default function SuperCapturaWizard({ open, onClose }) {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2 text-primary">
                     <ShoppingCart size={18} weight="bold" />
-                    <h4 className="font-label text-[10px] font-bold uppercase tracking-widest">
+                    <h4 className="font-label text-xs font-bold uppercase tracking-widest">
                       Rutas Capturadas
                     </h4>
                   </div>
@@ -849,7 +871,7 @@ export default function SuperCapturaWizard({ open, onClose }) {
                 </div>
 
                 {routes.length === 0 ? (
-                  <div className="border-2 border-dashed border-outline-variant/30 p-12 text-center text-outline">
+                  <div className="border-2 border-dashed border-outline-variant rounded-2xl p-12 text-center text-outline">
                     <ShoppingCart size={40} className="mx-auto mb-3 opacity-30" />
                     <p className="font-body text-sm">Aún no has agregado rutas.</p>
                     <p className="font-label text-[10px] uppercase tracking-widest mt-1">
@@ -857,47 +879,47 @@ export default function SuperCapturaWizard({ open, onClose }) {
                     </p>
                   </div>
                 ) : (
-                  <div className="border border-outline-variant/20 rounded overflow-x-auto">
+                  <div className="border border-outline-variant rounded-2xl overflow-hidden bg-surface-container-low shadow-md">
                     <table className="w-full text-left font-body text-xs">
                       <thead>
-                        <tr className="bg-surface-variant/30 border-b border-outline-variant/20">
-                          <th className="py-2 px-3 font-label text-[9px] uppercase tracking-widest text-outline">#</th>
-                          <th className="py-2 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Fecha</th>
-                          <th className="py-2 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Tipo</th>
-                          <th className="py-2 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Origen</th>
-                          <th className="py-2 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Destino</th>
-                          <th className="py-2 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Folio</th>
-                          <th className="py-2 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Caja</th>
-                          <th className="py-2 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Hora</th>
-                          <th className="py-2 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Puente</th>
-                          <th className="py-2 px-3 w-10"></th>
+                        <tr className="bg-surface-container-high border-b border-outline-variant">
+                          <th className="py-3 px-3 font-label text-[9px] uppercase tracking-widest text-outline">#</th>
+                          <th className="py-3 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Fecha</th>
+                          <th className="py-3 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Tipo</th>
+                          <th className="py-3 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Origen</th>
+                          <th className="py-3 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Destino</th>
+                          <th className="py-3 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Folio</th>
+                          <th className="py-3 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Caja</th>
+                          <th className="py-3 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Hora</th>
+                          <th className="py-3 px-3 font-label text-[9px] uppercase tracking-widest text-outline">Puente</th>
+                          <th className="py-3 px-3 w-10"></th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y divide-outline-variant">
                         {routes.map((r, i) => (
-                          <tr key={r.tempId} className="border-b border-outline-variant/10 hover:bg-surface-variant/10 transition-colors group">
-                            <td className="py-1 px-3 font-mono text-outline">{i + 1}</td>
-                            <td className="py-1 px-3 font-mono text-primary font-bold">{formatDateDisplay(fechaBloque)}</td>
-                            <td className="py-1 px-3 font-bold text-primary">{r.tipoMov}</td>
-                            <td className="py-1 px-3">
+                          <tr key={r.tempId} className="hover:bg-surface-container-high/60 transition-colors group">
+                            <td className="py-2 px-3 font-mono text-outline">{i + 1}</td>
+                            <td className="py-2 px-3 font-mono text-primary font-bold">{formatDateDisplay(fechaBloque)}</td>
+                            <td className="py-2 px-3 font-bold text-primary">{r.tipoMov}</td>
+                            <td className="py-2 px-3">
                               <InlineEditableField value={r.origen} onChange={val => handleInlineSave({...r, origen: val})} />
                             </td>
-                            <td className="py-1 px-3">
+                            <td className="py-2 px-3">
                               <InlineEditableField value={r.destino} onChange={val => handleInlineSave({...r, destino: val})} />
                             </td>
-                            <td className="py-1 px-3 font-mono">
+                            <td className="py-2 px-3 font-mono">
                               <InlineEditableField value={r.valeFisico} onChange={val => handleInlineSave({...r, valeFisico: val})} />
                             </td>
-                            <td className="py-1 px-3 font-mono">
+                            <td className="py-2 px-3 font-mono">
                               <InlineEditableField value={r.caja} onChange={val => handleInlineSave({...r, caja: val})} />
                             </td>
-                            <td className="py-1 px-3 font-mono text-primary">
+                            <td className="py-2 px-3 font-mono text-primary">
                               <InlineEditableField value={r.horaSalida} onChange={val => handleInlineSave({...r, horaSalida: val})} />
                             </td>
-                            <td className="py-1 px-3 font-bold text-amber-600">
+                            <td className="py-2 px-3 font-bold text-amber-500">
                               <InlineEditableField value={r.puente} onChange={val => handleInlineSave({...r, puente: val})} type="select" options={['Zaragoza','Córdova','Santa Teresa','Stanton']} />
                             </td>
-                            <td className="py-1 px-3">
+                            <td className="py-2 px-3">
                               <button onClick={() => handleDeleteRoute(r.tempId)} className="text-outline hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity p-1">
                                 <Trash size={14} />
                               </button>
@@ -911,15 +933,15 @@ export default function SuperCapturaWizard({ open, onClose }) {
               </div>
 
               {/* Navigation */}
-              <div className="flex items-center justify-between pt-4 border-t border-outline-variant/20">
+              <div className="flex items-center justify-between pt-4 border-t border-outline-variant">
                 <button onClick={() => setStep(1)}
-                  className="flex items-center gap-2 font-label text-[10px] font-bold uppercase tracking-widest text-outline hover:text-primary px-4 py-3 transition-colors">
-                  <ArrowLeft size={14} /> Atrás
+                  className="flex items-center gap-2 font-label text-xs font-bold uppercase tracking-widest text-outline hover:text-primary px-4 py-2.5 rounded-xl transition-colors">
+                  <ArrowLeft size={16} /> Atrás
                 </button>
                 <button
                   disabled={routes.length === 0}
                   onClick={() => setStep(3)}
-                  className="flex items-center gap-2 bg-primary text-on-primary font-label text-xs font-bold uppercase tracking-widest px-8 py-4 hover:brightness-110 transition-all shadow-lg disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 bg-primary text-on-primary font-label text-xs font-bold uppercase tracking-widest px-8 py-3 rounded-xl hover:brightness-110 transition-all shadow-lg disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Revisar y Confirmar <ArrowRight size={16} />
                 </button>
@@ -933,39 +955,39 @@ export default function SuperCapturaWizard({ open, onClose }) {
           {step === 3 && !showSuccess && (
             <div className="space-y-6 animate-in">
               <div className="text-center mb-6">
-                <h3 className="font-headline text-2xl font-bold">Resumen de Captura</h3>
+                <h3 className="font-headline text-2xl font-bold text-on-surface">Resumen de Captura</h3>
                 <p className="font-body text-sm text-outline mt-2">
                   Revisa toda la información antes de confirmar.
                 </p>
               </div>
 
               {/* Operator summary */}
-              <div className="bg-surface border border-outline-variant/20 p-6 shadow-sm">
-                <h4 className="font-label text-[10px] font-bold uppercase tracking-widest text-primary mb-4">Datos del Operador</h4>
+              <div className="bg-surface-container-low border border-outline-variant rounded-2xl p-6 shadow-md">
+                <h4 className="font-label text-xs font-bold uppercase tracking-widest text-primary mb-4">Datos del Operador</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   <div>
-                    <div className="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Operador</div>
-                    <div className="font-bold text-sm">{operador}</div>
+                    <div className="font-label text-[10px] uppercase tracking-widest text-outline mb-1">Operador</div>
+                    <div className="font-bold text-sm text-on-surface">{operador}</div>
                   </div>
                   <div>
-                    <div className="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Tractor</div>
+                    <div className="font-label text-[10px] uppercase tracking-widest text-outline mb-1">Tractor</div>
                     <div className="font-mono font-bold text-sm text-primary">{tractor}</div>
                   </div>
                   <div>
-                    <div className="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Caja</div>
-                    <div className="font-mono text-sm">{caja}</div>
+                    <div className="font-label text-[10px] uppercase tracking-widest text-outline mb-1">Caja</div>
+                    <div className="font-mono text-sm text-on-surface">{caja}</div>
                   </div>
                   <div>
-                    <div className="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Cliente</div>
-                    <div className="font-bold text-sm">{cliente}</div>
+                    <div className="font-label text-[10px] uppercase tracking-widest text-outline mb-1">Cliente</div>
+                    <div className="font-bold text-sm text-on-surface">{cliente}</div>
                   </div>
                 </div>
               </div>
 
               {/* Routes table */}
-              <div className="bg-surface border border-outline-variant/20 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between">
-                  <h4 className="font-label text-[10px] font-bold uppercase tracking-widest text-primary">
+              <div className="bg-surface-container-low border border-outline-variant rounded-2xl shadow-md overflow-hidden">
+                <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between bg-surface-container-high">
+                  <h4 className="font-label text-xs font-bold uppercase tracking-widest text-primary">
                     Rutas a Registrar
                   </h4>
                   <span className="bg-primary text-on-primary font-mono text-xs font-bold px-3 py-1 rounded-full">
@@ -975,32 +997,32 @@ export default function SuperCapturaWizard({ open, onClose }) {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left font-body text-sm">
                     <thead>
-                      <tr className="bg-surface-variant/30">
-                        <th className="py-2 px-4 font-label text-[9px] uppercase tracking-widest text-outline">#</th>
-                        <th className="py-2 px-4 font-label text-[9px] uppercase tracking-widest text-outline">Tipo</th>
-                        <th className="py-2 px-4 font-label text-[9px] uppercase tracking-widest text-outline">Origen</th>
-                        <th className="py-2 px-4 font-label text-[9px] uppercase tracking-widest text-outline">Destino</th>
-                        <th className="py-2 px-4 font-label text-[9px] uppercase tracking-widest text-outline">Folio</th>
-                        <th className="py-2 px-4 font-label text-[9px] uppercase tracking-widest text-outline">Caja</th>
-                        <th className="py-2 px-4 font-label text-[9px] uppercase tracking-widest text-outline">Hora</th>
-                        <th className="py-2 px-4 w-10"></th>
+                      <tr className="bg-surface-container-high border-b border-outline-variant">
+                        <th className="py-3 px-4 font-label text-[10px] uppercase tracking-widest text-outline">#</th>
+                        <th className="py-3 px-4 font-label text-[10px] uppercase tracking-widest text-outline">Tipo</th>
+                        <th className="py-3 px-4 font-label text-[10px] uppercase tracking-widest text-outline">Origen</th>
+                        <th className="py-3 px-4 font-label text-[10px] uppercase tracking-widest text-outline">Destino</th>
+                        <th className="py-3 px-4 font-label text-[10px] uppercase tracking-widest text-outline">Folio</th>
+                        <th className="py-3 px-4 font-label text-[10px] uppercase tracking-widest text-outline">Caja</th>
+                        <th className="py-3 px-4 font-label text-[10px] uppercase tracking-widest text-outline">Hora</th>
+                        <th className="py-3 px-4 w-10"></th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-outline-variant">
                       {routes.map((r, i) => (
-                        <tr key={r.tempId} className="border-b border-outline-variant/10 hover:bg-surface-variant/10 group">
-                          <td className="py-1 px-4 font-mono text-xs text-outline">{i + 1}</td>
-                          <td className="py-1 px-4 font-bold text-primary text-xs">{r.tipoMov}</td>
-                          <td className="py-1 px-4">
+                        <tr key={r.tempId} className="hover:bg-surface-container-high/60 transition-colors group">
+                          <td className="py-2.5 px-4 font-mono text-xs text-outline">{i + 1}</td>
+                          <td className="py-2.5 px-4 font-bold text-primary text-xs">{r.tipoMov}</td>
+                          <td className="py-2.5 px-4">
                             <InlineEditableField value={r.origen} onChange={val => handleInlineSave({...r, origen: val})} />
                           </td>
-                          <td className="py-1 px-4">
+                          <td className="py-2.5 px-4">
                             <InlineEditableField value={r.destino} onChange={val => handleInlineSave({...r, destino: val})} />
                           </td>
-                          <td className="py-1 px-4 font-mono font-bold">
+                          <td className="py-2.5 px-4 font-mono font-bold">
                             <InlineEditableField value={r.valeFisico} onChange={val => handleInlineSave({...r, valeFisico: val})} />
                           </td>
-                          <td className="py-1 px-4 font-mono">
+                          <td className="py-2.5 px-4 font-mono">
                             <InlineEditableField value={r.caja || caja} onChange={val => handleInlineSave({...r, caja: val})} />
                           </td>
                           <td className="py-1 px-4 font-mono text-primary">
@@ -1021,12 +1043,12 @@ export default function SuperCapturaWizard({ open, onClose }) {
               {/* Actions */}
               <div className="flex items-center justify-between pt-4">
                 <button onClick={() => setStep(2)}
-                  className="flex items-center gap-2 font-label text-[10px] font-bold uppercase tracking-widest text-outline hover:text-primary px-4 py-3 transition-colors">
-                  <ArrowLeft size={14} /> Volver a Editar
+                  className="flex items-center gap-2 font-label text-xs font-bold uppercase tracking-widest text-outline hover:text-primary px-4 py-2.5 rounded-xl transition-colors">
+                  <ArrowLeft size={16} /> Volver a Editar
                 </button>
                 <button
                   onClick={handleConfirm}
-                  className="flex items-center gap-3 bg-green-600 text-white font-label text-sm font-bold uppercase tracking-widest px-10 py-4 hover:bg-green-700 transition-all shadow-xl"
+                  className="flex items-center gap-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-label text-sm font-bold uppercase tracking-widest px-8 py-3.5 rounded-xl hover:brightness-110 transition-all shadow-xl shadow-green-600/20"
                 >
                   <CheckCircle size={20} weight="fill" />
                   Confirmar Super Carga ({routes.length} viajes)
@@ -1039,7 +1061,7 @@ export default function SuperCapturaWizard({ open, onClose }) {
           {/*  SUCCESS OVERLAY                                 */}
           {/* ════════════════════════════════════════════════ */}
           {showSuccess && (
-            <div className="flex flex-col items-center justify-center py-20 animate-in">
+            <div className="max-w-xl mx-auto my-auto bg-surface-container-low border border-outline-variant rounded-2xl p-10 shadow-2xl flex flex-col items-center justify-center text-center animate-in">
               <div className="w-24 h-24 bg-green-500/15 rounded-full flex items-center justify-center mb-6">
                 <CheckCircle size={56} weight="fill" className="text-green-500" />
               </div>
@@ -1053,7 +1075,7 @@ export default function SuperCapturaWizard({ open, onClose }) {
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => resetWizard(true)}
-                  className="flex items-center gap-2 bg-primary text-on-primary font-label text-xs font-bold uppercase tracking-widest px-8 py-4 hover:brightness-110 transition-all shadow-lg"
+                  className="flex items-center gap-2 bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label text-xs font-bold uppercase tracking-widest px-8 py-3.5 rounded-xl hover:brightness-110 transition-all shadow-lg"
                 >
                   <UserCircle size={16} /> Nuevo Operador
                 </button>
@@ -1062,7 +1084,7 @@ export default function SuperCapturaWizard({ open, onClose }) {
                     localStorage.removeItem('cif_supercaptura_draft');
                     resetWizard(false);
                   }}
-                  className="flex items-center gap-2 bg-surface border border-outline-variant/30 text-outline font-label text-xs font-bold uppercase tracking-widest px-8 py-4 hover:text-primary hover:border-primary transition-all"
+                  className="flex items-center gap-2 bg-surface border border-outline-variant text-outline font-label text-xs font-bold uppercase tracking-widest px-8 py-3.5 rounded-xl hover:text-primary hover:border-primary transition-all"
                 >
                   <X size={16} /> Cerrar
                 </button>
@@ -1072,6 +1094,99 @@ export default function SuperCapturaWizard({ open, onClose }) {
 
         </div>
       </div>
+
+      {/* ── Quick Add Modal ──────────────────────────────── */}
+      {quickAdd.open && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-in" onClick={() => setQuickAdd(prev => ({ ...prev, open: false }))}>
+          <div className="bg-surface-container-low border border-outline-variant rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-outline-variant pb-3">
+              <h3 className="font-headline font-bold text-base text-on-surface">{quickAdd.title}</h3>
+              <button 
+                type="button"
+                onClick={() => setQuickAdd(prev => ({ ...prev, open: false }))} 
+                className="p-1.5 text-outline hover:text-on-surface rounded-lg transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {quickAdd.error && (
+              <div className="p-3 bg-danger/10 border border-danger/30 rounded-xl text-danger text-xs font-bold flex items-center gap-2">
+                <Warning size={16} /> {quickAdd.error}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveQuickAdd} className="space-y-4">
+              <div>
+                <label className="block font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2">
+                  {quickAdd.label}
+                </label>
+                <input
+                  autoFocus
+                  type="text"
+                  value={quickAdd.value}
+                  onChange={e => setQuickAdd(prev => ({ ...prev, value: e.target.value, error: '' }))}
+                  placeholder={quickAdd.placeholder}
+                  className="w-full bg-surface border border-outline-variant rounded-xl text-on-surface px-4 py-3 text-sm outline-none focus:border-primary transition-colors"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  disabled={quickAdd.loading}
+                  onClick={() => setQuickAdd(prev => ({ ...prev, open: false }))}
+                  className="px-4 py-2 text-xs font-label uppercase tracking-widest text-outline hover:text-on-surface rounded-xl transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={quickAdd.loading || !quickAdd.value.trim()}
+                  className="bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-xl hover:brightness-105 transition-all shadow-md shadow-[#d1a14e]/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {quickAdd.loading ? 'Guardando...' : 'Guardar y Seleccionar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Confirm Clear Modal ──────────────────────────── */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-[80] flex items-center justify-center p-4 animate-in" onClick={() => setShowClearConfirm(false)}>
+          <div className="bg-surface-container-low border border-outline-variant rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="w-12 h-12 rounded-xl bg-danger/10 border border-danger/20 flex items-center justify-center text-danger mx-auto">
+              <Trash size={24} weight="bold" />
+            </div>
+
+            <div className="text-center space-y-2">
+              <h3 className="font-headline font-bold text-lg text-on-surface">¿Limpiar captura actual?</h3>
+              <p className="font-body text-sm text-outline">
+                Se borrarán el operador, vehículo, cliente y todas las rutas capturadas en este borrador. Esta acción no se puede deshacer.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowClearConfirm(false)}
+                className="px-5 py-2.5 text-xs font-label uppercase tracking-widest text-outline hover:text-on-surface rounded-xl border border-outline-variant hover:bg-surface transition-colors font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmClear}
+                className="bg-gradient-to-r from-red-600 to-rose-600 text-white font-label text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-xl hover:brightness-110 transition-all shadow-md shadow-red-600/20 flex items-center gap-2"
+              >
+                <Trash size={16} /> Sí, Limpiar Todo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>,
     document.body
   );

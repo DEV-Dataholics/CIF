@@ -19,8 +19,8 @@ export class MovimientosPage extends BasePage {
   }
 
   async llenarCartaPorte(origen: string, destino: string, peso: string) {
-    // Estos selectores dependerÃ¡n de cÃ³mo implementaste los SearchableSelect
-    // Ejemplo bÃ¡sico:
+    // Estos selectores dependerán de cómo implementaste los SearchableSelect
+    // Ejemplo básico:
     await this.page.locator('input[placeholder="Buscar origen..."]').fill(origen);
     await this.page.keyboard.press('Tab'); // Autocompletar
     
@@ -31,7 +31,7 @@ export class MovimientosPage extends BasePage {
   }
 
   async asignarUnidadYOperador() {
-    // LÃ³gica para asignar un viaje (ejemplo)
+    // Lógica para asignar un viaje (ejemplo)
     await this.page.locator('select[name="operador_id"]').selectOption({ index: 1 });
     await this.page.locator('select[name="tractocamion_id"]').selectOption({ index: 1 });
   }
