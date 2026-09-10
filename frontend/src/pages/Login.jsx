@@ -14,6 +14,7 @@ import {
   GlobeHemisphereWest,
   Buildings
 } from '@phosphor-icons/react';
+import logoCorporativo from '../assets/logo-corporativo.png';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -97,7 +98,7 @@ export default function Login() {
             <div className="w-full flex justify-center lg:justify-start items-center lg:items-start">
               <div className="w-full lg:w-fit bg-white p-3 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-[0_10px_35px_rgba(0,0,0,0.06)] backdrop-blur-sm transition-all hover:shadow-[0_14px_45px_rgba(209,161,78,0.12)] flex items-center justify-center lg:justify-start">
                 <img
-                  src="/assets/logo-corporativo.png"
+                  src={logoCorporativo}
                   alt="Logo Corporativo CIF"
                   className="w-full sm:w-auto h-auto max-h-36 sm:max-h-48 lg:max-h-none lg:h-28 xl:h-32 object-contain"
                 />

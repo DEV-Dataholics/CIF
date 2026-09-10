@@ -1,6 +1,5 @@
 ﻿from ftplib import FTP
 import os
-import re
 
 ftp = FTP('ftp.dataholics.com.mx')
 ftp.login('DEV_CIF@cif.dataholics.com.mx', 'T_EwJd3!bPxC')
@@ -15,24 +14,24 @@ def upload(local, remote):
         print(f"Failed {local}: {e}")
 
 dist_dir = r'C:\Users\luisc\Documents\Dataholics\CIF_Project\frontend\dist'
+assets_dir = os.path.join(dist_dir, 'assets')
 html_path = os.path.join(dist_dir, 'index.html')
 
-with open(html_path, 'r', encoding='utf-8') as f:
-    html = f.read()
+# Subir todos los assets limpios generados por el build
+if os.path.exists(assets_dir):
+    for f in os.listdir(assets_dir):
+        p = os.path.join(assets_dir, f)
+        if os.path.isfile(p):
+            upload(p, f'/assets/{f}')
 
-# Subir primero los assets del bundle activo
-assets = list(set(re.findall(r'/assets/([^"\' >]+)', html)))
-for a in assets:
-    p = os.path.join(dist_dir, 'assets', a)
-    if os.path.exists(p):
-        upload(p, f'/assets/{a}')
+# Subir cualquier archivo estatico en la raiz de dist (favicon, icons, etc.)
+for f in os.listdir(dist_dir):
+    if f != 'assets' and f != 'index.html':
+        p = os.path.join(dist_dir, f)
+        if os.path.isfile(p):
+            upload(p, f'/{f}')
 
-# Subir siempre el logo
-logo_p = os.path.join(dist_dir, 'assets', 'LOGOCIF.png')
-if os.path.exists(logo_p):
-    upload(logo_p, '/assets/LOGOCIF.png')
-
-# Finalmente subir index.html
+# Finalmente subir index.html al ultimo
 upload(html_path, '/index.html')
 
 ftp.quit()
