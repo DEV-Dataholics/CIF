@@ -152,6 +152,97 @@ class CobranzaController extends BaseController
         return $this->json(['ok' => true, 'id' => $id, 'estatus' => 'pagada']);
     }
 
+    // PUT /cobranza/:id
+    public function update(int $id): ResponseInterface
+    {
+        $db = $this->db();
+        if (!$db->tableExists('cobranza_facturas')) {
+            return $this->json(['ok' => false, 'error' => 'Tabla cobranza_facturas no existe. Ejecuta migraciones.'], 500);
+        }
+
+        $factura = $db->table('cobranza_facturas')->where('id', $id)->get()->getRowArray();
+        if (!$factura) {
+            return $this->json(['ok' => false, 'error' => 'Factura no encontrada.'], 404);
+        }
+
+        $data = $this->request->getJSON(true) ?? [];
+
+        $folio = trim((string)($data['folio'] ?? $factura['folio'] ?? ''));
+        $cliente = trim((string)($data['cliente'] ?? $factura['cliente'] ?? ''));
+        $fechaEmision = trim((string)($data['fecha_emision'] ?? $data['fechaEmision'] ?? $factura['fecha_emision'] ?? ''));
+
+        if ($folio === '' || $cliente === '' || $fechaEmision === '') {
+            return $this->json(['ok' => false, 'error' => 'folio, cliente y fecha_emision son requeridos.'], 422);
+        }
+
+        $uuid = trim((string)($data['uuid'] ?? $factura['uuid'] ?? ''));
+        if ($uuid !== '') {
+            $existsUuid = $db->table('cobranza_facturas')
+                ->where('uuid', $uuid)
+                ->where('id !=', $id)
+                ->countAllResults();
+            if ($existsUuid > 0) {
+                return $this->json(['ok' => false, 'error' => 'Ya existe otra factura con ese UUID.'], 409);
+            }
+        }
+
+        $existsFolio = $db->table('cobranza_facturas')
+            ->where('folio', $folio)
+            ->where('id !=', $id)
+            ->countAllResults();
+        if ($existsFolio > 0) {
+            return $this->json(['ok' => false, 'error' => 'Ya existe otra factura con ese folio.'], 409);
+        }
+
+        $fechaVencimiento = trim((string)($data['fecha_vencimiento'] ?? $data['fechaVencimiento'] ?? $factura['fecha_vencimiento'] ?? ''));
+        if ($fechaVencimiento === '') {
+            $fechaVencimiento = null;
+        }
+
+        $fechaPago = trim((string)($data['fecha_pago'] ?? $data['fechaPago'] ?? $factura['fecha_pago'] ?? ''));
+        if ($fechaPago === '') {
+            $fechaPago = null;
+        }
+
+        $estatus = trim((string)($data['estatus'] ?? $factura['estatus'] ?? 'pendiente'));
+        if (!in_array($estatus, ['pendiente', 'vencida', 'pagada'], true)) {
+            $estatus = 'pendiente';
+        }
+
+        $monto = isset($data['monto']) ? (float)$data['monto'] : (float)$factura['monto'];
+        $subtotal = isset($data['subtotal']) ? (float)$data['subtotal'] : (float)($factura['subtotal'] ?? $monto);
+
+        $update = [
+            'folio'             => $folio,
+            'uuid'              => $uuid !== '' ? $uuid : null,
+            'cliente'           => $cliente,
+            'concepto'          => trim((string)($data['concepto'] ?? $factura['concepto'] ?? '')),
+            'monto'             => $monto,
+            'subtotal'          => $subtotal,
+            'moneda'            => trim((string)($data['moneda'] ?? $factura['moneda'] ?? 'MXN')) ?: 'MXN',
+            'forma_pago'        => trim((string)($data['forma_pago'] ?? $factura['forma_pago'] ?? '')) ?: null,
+            'metodo_pago'       => trim((string)($data['metodo_pago'] ?? $factura['metodo_pago'] ?? '')) ?: null,
+            'rfc_emisor'        => trim((string)($data['rfc_emisor'] ?? $factura['rfc_emisor'] ?? '')) ?: null,
+            'rfc_receptor'      => trim((string)($data['rfc_receptor'] ?? $factura['rfc_receptor'] ?? '')) ?: null,
+            'nombre_emisor'     => trim((string)($data['nombre_emisor'] ?? $factura['nombre_emisor'] ?? '')) ?: null,
+            'fecha_emision'     => $fechaEmision,
+            'fecha_vencimiento' => $fechaVencimiento,
+            'fecha_pago'        => $fechaPago,
+            'estatus'           => $estatus,
+            'notas'             => trim((string)($data['notas'] ?? $factura['notas'] ?? '')) ?: null,
+        ];
+
+        $db->table('cobranza_facturas')->where('id', $id)->update($update);
+
+        $updated = $db->table('cobranza_facturas')->where('id', $id)->get()->getRowArray();
+        if ($updated) {
+            $updated['monto'] = (float)($updated['monto'] ?? 0);
+            $updated['subtotal'] = (float)($updated['subtotal'] ?? 0);
+        }
+
+        return $this->json(['ok' => true, 'factura' => $updated, 'data' => $updated]);
+    }
+
     public function delete(int $id): \CodeIgniter\HTTP\ResponseInterface
     {
         try {

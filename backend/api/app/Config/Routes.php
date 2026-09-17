@@ -81,6 +81,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('gamificacion/scorecard/(:num)','PuntosController::scorecard/$1');
     $routes->get('cobranza',                   'CobranzaController::index');
     $routes->post('cobranza',                  'CobranzaController::create');
+    $routes->put('cobranza/(:num)',            'CobranzaController::update/$1');
     $routes->put('cobranza/(:num)/pagar',      'CobranzaController::pagar/$1');
     $routes->delete('cobranza/(:num)',         'CobranzaController::delete/$1');
 
