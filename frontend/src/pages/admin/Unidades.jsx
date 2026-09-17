@@ -33,7 +33,11 @@ const columns = [
     key: 'alertas', 
     label: 'Alertas', 
     hideInForm: true,
-    render: (_, row) => renderAlertas(row.vigenciaSCT, row.vigenciaSeguro, row.vigenciaMecanico)
+    render: (_, row) => renderAlertas(
+      row.vencimiento_sct || row.vigenciaSCT,
+      row.vencimiento_poliza_mx || row.vigenciaSeguro,
+      row.vencimiento_mecanico || row.vigenciaMecanico
+    )
   },
   { 
     key: 'estatus', 

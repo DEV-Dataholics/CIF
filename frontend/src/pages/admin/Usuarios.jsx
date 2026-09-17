@@ -1,4 +1,4 @@
-﻿import { Users } from '@phosphor-icons/react';
+import { Users } from '@phosphor-icons/react';
 import AdminCrud from '../../components/AdminCrud';
 import { useState, useEffect } from 'react';
 import { db } from '../../services/db';
@@ -8,7 +8,7 @@ const columns = [
   { key: 'nombre', label: 'Nombre', render: (v) => <span className="font-semibold">{v}</span> },
   { key: 'email', label: 'Email' },
   { key: 'password', label: 'Contraseña (Dejar en blanco para mantener actual)', hideInTable: true, render: () => '***' },
-  { key: 'rol', label: 'Rol', formType: 'select', options: ['admin', 'operador', 'visor'], render: (v) => <span className="badge badge-info uppercase">{v}</span> },
+  { key: 'rol', label: 'Rol', formType: 'select', options: ['admin', 'trafico', 'operador', 'facturacion', 'taller', 'porteria'], render: (v) => <span className="badge badge-info uppercase">{v}</span> },
     { key: 'activo', label: 'Estatus', formType: 'boolean', render: (v) => <span className={`badge ${v ? 'badge-success' : 'badge-muted'}`}>{v ? 'Activo' : 'Inactivo'}</span> },
 ];
 

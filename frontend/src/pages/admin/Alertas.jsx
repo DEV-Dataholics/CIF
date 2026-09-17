@@ -4,7 +4,7 @@ import { useData } from '../../context/DataContext';
 
 export default function Alertas() {
   const { operadores: operadoresData, unidades: unidadesData, cajas: cajasData } = useData();
-  const today = new Date('2026-06-15');
+  const today = new Date();
 
   const checkVigencia = (fecha) => {
     if (!fecha) return null;

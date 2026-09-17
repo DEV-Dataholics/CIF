@@ -15,13 +15,6 @@ $routes->options('(:any)', static function () {
         ->setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
         ->setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept')
         ->setHeader('Access-Control-Allow-Credentials', 'true');
-
-    // Usuarios CRUD Routes
-    $routes->get('usuarios',                   'UsuarioController::index');
-    $routes->post('usuarios',                  'UsuarioController::create');
-    $routes->put('usuarios/(:num)',            'UsuarioController::update/$1');
-    $routes->delete('usuarios/(:num)',         'UsuarioController::delete/$1');
-
 });
 
 // â”€â”€ AUTH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -121,5 +114,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('usuarios',                  'UsuarioController::create');
     $routes->put('usuarios/(:num)',            'UsuarioController::update/$1');
     $routes->delete('usuarios/(:num)',         'UsuarioController::delete/$1');
+
+    // Notificaciones Engine
+    $routes->get('notificaciones',             'NotificacionesController::index');
 });
 

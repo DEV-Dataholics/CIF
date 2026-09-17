@@ -7,6 +7,14 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
   const [editRow, setEditRow] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({});
+  const [modalError, setModalError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const filtered = useMemo(() => {
     if (!search.trim()) return data;
@@ -28,6 +36,7 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
       if (setData) {
         setData(prev => prev.filter(r => r.id !== id));
       }
+      showToast('Registro eliminado con éxito.', 'success');
     } catch (err) {
       // 409 = foreign key conflict: record has associated data, offer to deactivate instead
       if (err.status === 409) {
@@ -41,51 +50,62 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
             if (setData) {
               setData(prev => prev.map(r => r.id === id ? { ...r, activo: false } : r));
             }
+            showToast('Registro marcado como inactivo.', 'success');
           } catch (err2) {
-            alert('Error al desactivar: ' + err2.message);
+            showToast('Error al desactivar: ' + err2.message, 'error');
           }
         }
       } else {
-        alert('Error al eliminar: ' + err.message);
+        showToast('Error al eliminar: ' + err.message, 'error');
       }
     }
   };
 
   const handleEdit = (row) => {
+    setModalError('');
     setEditRow(row);
     setFormData(row);
     setShowModal(true);
   };
 
   const handleAdd = () => {
+    setModalError('');
     setEditRow(null);
     setFormData({});
     setShowModal(true);
   };
 
   const handleSave = async () => {
+    setModalError('');
+    setIsSaving(true);
     try {
-      let savedData = { ...formData };
       if (crud && tableName) {
         if (editRow) {
-          savedData = await crud.update(tableName, editRow.id, formData);
+          const res = await crud.update(tableName, editRow.id, formData);
+          const resData = (res && typeof res === 'object' && res.data) ? res.data : (res || {});
+          const updatedRow = { ...editRow, ...formData, ...resData };
+          if (setData) {
+            setData(prev => prev.map(r => r.id === editRow.id ? updatedRow : r));
+          }
+          showToast('Registro actualizado con éxito.', 'success');
         } else {
-          // Garantizar activo:true por defecto al crear
-          savedData = await crud.insert(tableName, { activo: true, ...formData });
-        }
-      }
-      
-      if (setData) {
-        if (editRow) {
-          setData(prev => prev.map(r => r.id === editRow.id ? { ...r, ...savedData } : r));
-        } else {
-          const newId = savedData.id || (data.length > 0 ? Math.max(...data.map(d => typeof d.id === 'number' ? d.id : 0)) + 1 : 1);
-          setData(prev => [{ id: newId, activo: true, ...savedData }, ...prev]);
+          const res = await crud.insert(tableName, { activo: true, ...formData });
+          const resData = (res && typeof res === 'object' && res.data) ? res.data : (res || {});
+          const newId = resData.id || res.id || (data && data.length > 0 ? Math.max(...data.map(d => typeof d.id === 'number' ? d.id : 0)) + 1 : 1);
+          const createdRow = { activo: true, ...formData, ...resData, id: newId };
+          if (setData) {
+            setData(prev => [createdRow, ...prev]);
+          }
+          showToast('Registro creado con éxito.', 'success');
         }
       }
       setShowModal(false);
     } catch (err) {
-      alert("Error al guardar: " + err.message);
+      console.error("Error al guardar:", err);
+      setModalError(err.message || "Error al guardar el registro.");
+      showToast(err.message || "Error al guardar.", 'error');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -172,6 +192,12 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
               <button onClick={() => setShowModal(false)} className="w-7 h-7 rounded-lg flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container transition-colors"><X size={16} weight="bold" /></button>
             </div>
             <div className="p-6 space-y-4">
+              {modalError && (
+                <div className="p-3 bg-danger/10 border border-danger/30 rounded-xl text-danger text-xs font-body flex items-start gap-2 animate-in">
+                  <span className="font-bold">⚠️</span>
+                  <span>{modalError}</span>
+                </div>
+              )}
               {columns.filter(c => c.key !== 'id' && !c.hideInForm).map(c => (
                 <div key={c.key} className="space-y-1.5">
                   <label className="block font-label text-[10.5px] uppercase tracking-wider text-outline font-semibold">{c.label}</label>
@@ -210,14 +236,27 @@ export default function AdminCrud({ title, subtitle, icon: Icon, columns, data, 
               ))}
               <button
                 onClick={handleSave}
-                className="w-full bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label text-xs font-bold uppercase tracking-wider py-3.5 rounded-xl hover:brightness-105 transition-all mt-4 shadow-md shadow-[#d1a14e]/15 active:scale-[0.99]"
+                disabled={isSaving}
+                className="w-full bg-gradient-to-r from-[#d1a14e] via-[#dfb15d] to-[#c79843] text-[#070709] font-label text-xs font-bold uppercase tracking-wider py-3.5 rounded-xl hover:brightness-105 transition-all mt-4 shadow-md shadow-[#d1a14e]/15 active:scale-[0.99] disabled:opacity-60 disabled:pointer-events-none"
               >
-                {editRow ? 'Guardar Cambios' : 'Crear Registro'}
+                {isSaving ? 'Guardando...' : (editRow ? 'Guardar Cambios' : 'Crear Registro')}
               </button>
             </div>
           </div>
         </div>,
         document.body
+      )}
+
+      {/* Floating Toast Notification */}
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border text-xs font-semibold flex items-center gap-2.5 animate-in backdrop-blur-md ${
+          toast.type === 'error'
+            ? 'bg-danger/95 text-white border-danger/40'
+            : 'bg-surface-container-high/95 text-on-surface border-primary/40 text-primary'
+        }`}>
+          <span>{toast.type === 'error' ? '⚠️' : '✓'}</span>
+          <span>{toast.message}</span>
+        </div>
       )}
     </div>
   );

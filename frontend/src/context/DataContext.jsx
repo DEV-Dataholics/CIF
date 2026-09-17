@@ -18,18 +18,8 @@ export function DataProvider({ children }) {
 
   const refreshData = async () => {
     try {
-      // 1. Cargar catálogos de manera paralela
-      const [
-        dbClientes,
-        dbTiposMov,
-        dbOperadores,
-        dbUnidades,
-        dbCajas,
-        dbFacturas,
-        dbLocalidades,
-        dbPeajes,
-        dbPrecios
-      ] = await Promise.all([
+      // 1. Cargar catálogos de manera resiliente e independiente (Promise.allSettled)
+      const results = await Promise.allSettled([
         db.getAll('clientes'),
         db.getAll('tiposMovimiento'),
         db.getAll('operadores'),
@@ -41,6 +31,25 @@ export function DataProvider({ children }) {
         db.getAll('precios')
       ]);
 
+      const getVal = (idx, name) => {
+        const res = results[idx];
+        if (res && res.status === 'fulfilled' && res.value) {
+          return Array.isArray(res.value) ? res.value : [];
+        }
+        console.warn(`[DataContext] Falló la carga del catálogo '${name}':`, res?.reason || 'Sin datos');
+        return [];
+      };
+
+      const dbClientes = getVal(0, 'clientes');
+      const dbTiposMov = getVal(1, 'tiposMovimiento');
+      const dbOperadores = getVal(2, 'operadores');
+      const dbUnidades = getVal(3, 'unidades');
+      const dbCajas = getVal(4, 'cajas');
+      const dbFacturas = getVal(5, 'facturas');
+      const dbLocalidades = getVal(6, 'localidades');
+      const dbPeajes = getVal(7, 'peajes');
+      const dbPrecios = getVal(8, 'precios');
+
       // Map database snake_case keys to camelCase keys for frontend compatibility
       const mappedUnidades = (dbUnidades || []).map(u => ({
         ...u,
@@ -49,6 +58,12 @@ export function DataProvider({ children }) {
         marca: u.marca || '',
         modelo: u.modelo || '',
         anio: u.anio || '',
+        vencimiento_sct: u.vencimiento_sct || u.vigenciaSCT || '',
+        vigenciaSCT: u.vencimiento_sct || u.vigenciaSCT || '',
+        vencimiento_poliza_mx: u.vencimiento_poliza_mx || u.vigenciaSeguro || '',
+        vigenciaSeguro: u.vencimiento_poliza_mx || u.vigenciaSeguro || '',
+        vencimiento_poliza_usa: u.vencimiento_poliza_usa || u.vigenciaPolizaUsa || '',
+        vigenciaPolizaUsa: u.vencimiento_poliza_usa || u.vigenciaPolizaUsa || '',
         activo: (u.activo === true || u.activo == 1 || u.activo === '1')
       }));
 
@@ -82,8 +97,8 @@ export function DataProvider({ children }) {
       // 2. Hidratar (Populate) Movimientos y Precios para no romper la UI actual
       // SINGLE SOURCE OF TRUTH: El nombre siempre viene del ID
       const dbPreciosHydrated = (dbPrecios || []).map(p => {
-        const c = dbClientes.find(cli => cli.id === p.clienteId || cli.id == p.cliente_id);
-        const t = dbTiposMov.find(tm => tm.id === p.tipoMovId || tm.id == p.tipo_mov_id);
+        const c = (dbClientes || []).find(cli => cli.id === p.clienteId || cli.id == p.cliente_id);
+        const t = (dbTiposMov || []).find(tm => tm.id === p.tipoMovId || tm.id == p.tipo_mov_id);
         return {
           ...p,
           cliente: c ? c.razonSocial || c.razon_social : p.cliente,
@@ -92,11 +107,16 @@ export function DataProvider({ children }) {
       });
       setPrecios(dbPreciosHydrated);
 
-      const dbMovimientos = await db.getAll('movimientos');
+      let dbMovimientos = [];
+      try {
+        dbMovimientos = await db.getAll('movimientos');
+      } catch (errMov) {
+        console.warn("[DataContext] Falló la carga de movimientos:", errMov);
+      }
       const dbMovimientosHydrated = (dbMovimientos || []).map(m => {
-        const c = dbClientes.find(cli => cli.id === m.clienteId || cli.id == m.cliente_id);
-        const o = dbOperadores.find(op => op.id === m.operadorId || op.id == m.operador_id);
-        const u = dbUnidades.find(un => un.id === m.tractorId || un.id == m.tractocamion_id);
+        const c = (dbClientes || []).find(cli => cli.id === m.clienteId || cli.id == m.cliente_id);
+        const o = (dbOperadores || []).find(op => op.id === m.operadorId || op.id == m.operador_id);
+        const u = (dbUnidades || []).find(un => un.id === m.tractorId || un.id == m.tractocamion_id);
         const rawTipo = String(m.tipo_movimiento || m.tipoMov || '').trim();
         const rawTipoLower = rawTipo.toLowerCase();
         const rawTipoSlug = rawTipoLower.replace(/[\s\/-]+/g, '_');
@@ -126,7 +146,7 @@ export function DataProvider({ children }) {
           tipoMovNombre = legacyMap[rawTipoLower] || rawTipo.toUpperCase().replace(/_/g, ' ');
         }
 
-        const caja = dbCajas.find(cj => cj.id === m.cajaId || cj.id == m.caja_id);
+        const caja = (dbCajas || []).find(cj => cj.id === m.cajaId || cj.id == m.caja_id);
         
         let fecha = m.fecha;
         let hora = m.hora;
